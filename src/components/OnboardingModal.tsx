@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Activity, Check, ChevronRight, Heart, LayoutGrid, Scissors, Sparkles, Star, Zap } from 'lucide-react';
 import { type BusinessType, type FeatureFlags, TYPE_PRESETS, useBusiness } from '@/context/BusinessContext';
+import api from '@/lib/api';
 
 /* ── Business type catalogue ──────────────────────────────────────────────── */
 
@@ -13,13 +14,13 @@ const TYPES: {
     icon: React.ElementType;
     color: string;
 }[] = [
-    { value: 'barberia',    label: 'Barbería',           desc: 'Cortes, arreglo de barba, alquiler de silla',       icon: Scissors,   color: '#6366f1' },
-    { value: 'peluqueria',  label: 'Peluquería / Salón', desc: 'Cortes, coloración, tratamientos y estilismo',      icon: Scissors,   color: '#8b5cf6' },
-    { value: 'estetica',    label: 'Estética / Spa',     desc: 'Faciales, masajes, depilación y tratamientos',      icon: Sparkles,   color: '#ec4899' },
-    { value: 'manicura',    label: 'Manicura / Nail Art', desc: 'Uñas gel, acrílicas, diseños y cuidado de manos',  icon: Star,       color: '#f59e0b' },
-    { value: 'consultorio', label: 'Consultorio / Salud', desc: 'Médicos, psicólogos, nutricionistas y terapistas', icon: Heart,      color: '#10b981' },
-    { value: 'fitness',     label: 'Fitness / Bienestar', desc: 'Personal trainers, yoga, pilates y deportes',      icon: Activity,   color: '#3b82f6' },
-    { value: 'otro',        label: 'Otro tipo de negocio', desc: 'Cualquier servicio con reservas y turnos',        icon: LayoutGrid, color: '#64748b' },
+    { value: 'barberia',    label: 'Barbería',            desc: 'Cortes, arreglo de barba, alquiler de silla',       icon: Scissors,   color: '#6366f1' },
+    { value: 'peluqueria',  label: 'Peluquería / Salón',  desc: 'Cortes, coloración, tratamientos y estilismo',      icon: Scissors,   color: '#8b5cf6' },
+    { value: 'estetica',    label: 'Estética / Spa',      desc: 'Faciales, masajes, depilación y tratamientos',      icon: Sparkles,   color: '#ec4899' },
+    { value: 'manicura',    label: 'Manicura / Nail Art',  desc: 'Uñas gel, acrílicas, diseños y cuidado de manos',  icon: Star,       color: '#f59e0b' },
+    { value: 'consultorio', label: 'Consultorio / Salud',  desc: 'Médicos, psicólogos, nutricionistas y terapistas', icon: Heart,      color: '#10b981' },
+    { value: 'fitness',     label: 'Fitness / Bienestar',  desc: 'Personal trainers, yoga, pilates y deportes',      icon: Activity,   color: '#3b82f6' },
+    { value: 'otro',        label: 'Otro tipo de negocio', desc: 'Cualquier servicio con reservas y turnos',         icon: LayoutGrid, color: '#64748b' },
 ];
 
 const FLAG_LABELS: { key: keyof FeatureFlags; label: string; desc: string }[] = [
@@ -32,11 +33,13 @@ const FLAG_LABELS: { key: keyof FeatureFlags; label: string; desc: string }[] = 
 /* ── Component ────────────────────────────────────────────────────────────── */
 
 export default function OnboardingModal() {
-    const { updateBusiness } = useBusiness();
-    const [step, setStep]             = useState<1 | 2>(1);
-    const [selected, setSelected]     = useState<BusinessType | null>(null);
-    const [flags, setFlags]           = useState<FeatureFlags | null>(null);
-    const [saving, setSaving]         = useState(false);
+    const { updateBusiness, refetch } = useBusiness();
+    const [step, setStep]         = useState<0 | 1 | 2>(0);
+    const [businessName, setBusinessName] = useState('');
+    const [nameError, setNameError]       = useState('');
+    const [selected, setSelected] = useState<BusinessType | null>(null);
+    const [flags, setFlags]       = useState<FeatureFlags | null>(null);
+    const [saving, setSaving]     = useState(false);
 
     const chooseType = (type: BusinessType) => {
         setSelected(type);
@@ -45,6 +48,23 @@ export default function OnboardingModal() {
 
     const toggleFlag = (key: keyof FeatureFlags) => {
         setFlags(f => f ? { ...f, [key]: !f[key] } : f);
+    };
+
+    const handleNameContinue = async () => {
+        const name = businessName.trim();
+        if (!name) { setNameError('Ingresá el nombre de tu negocio.'); return; }
+        if (name.length < 2) { setNameError('El nombre debe tener al menos 2 caracteres.'); return; }
+        setSaving(true);
+        try {
+            await api.post('/businesses', { name });
+            await refetch();
+            setStep(1);
+        } catch (err: unknown) {
+            const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+            setNameError(msg || 'Error al crear el negocio. Intentá de nuevo.');
+        } finally {
+            setSaving(false);
+        }
     };
 
     const handleSkip = async () => {
@@ -66,6 +86,9 @@ export default function OnboardingModal() {
         }
     };
 
+    const totalSteps = 3;
+    const stepLabels = ['Nombre', 'Tipo', 'Funciones'];
+
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
             <div className="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden animate-scale-in">
@@ -74,32 +97,70 @@ export default function OnboardingModal() {
                 <div className="px-8 pt-8 pb-6">
                     <div className="flex items-center justify-between mb-1">
                         <span className="text-2xl font-bold text-gradient">AgendaPro</span>
-                        <button
-                            onClick={handleSkip}
-                            disabled={saving}
-                            className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors disabled:opacity-40"
-                        >
-                            Saltar por ahora
-                        </button>
+                        {step > 0 && (
+                            <button
+                                onClick={handleSkip}
+                                disabled={saving}
+                                className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors disabled:opacity-40"
+                            >
+                                Saltar por ahora
+                            </button>
+                        )}
                     </div>
                     <h2 className="text-xl font-bold text-slate-900 dark:text-white mt-4">
-                        {step === 1 ? '¿Qué tipo de negocio tenés?' : 'Funcionalidades activas'}
+                        {step === 0 && '¿Cómo se llama tu negocio?'}
+                        {step === 1 && '¿Qué tipo de negocio tenés?'}
+                        {step === 2 && 'Funcionalidades activas'}
                     </h2>
                     <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                        {step === 1
-                            ? 'Personalizamos el panel en función de tu negocio. Podés cambiarlo después en Configuración.'
-                            : 'Estas son las funciones que se activarán. Podés ajustarlas ahora o más tarde.'}
+                        {step === 0 && 'Este nombre aparecerá en tu página pública de reservas.'}
+                        {step === 1 && 'Personalizamos el panel en función de tu negocio. Podés cambiarlo después en Configuración.'}
+                        {step === 2 && 'Estas son las funciones que se activarán. Podés ajustarlas ahora o más tarde.'}
                     </p>
 
                     {/* Steps indicator */}
                     <div className="flex items-center gap-2 mt-5">
-                        {([1, 2] as const).map(s => (
-                            <div key={s} className={`h-1 rounded-full transition-all duration-300 ${
-                                s === step ? 'flex-1 bg-indigo-500' : s < step ? 'flex-1 bg-indigo-200 dark:bg-indigo-500/40' : 'w-8 bg-slate-200 dark:bg-white/10'
+                        {Array.from({ length: totalSteps }, (_, i) => (
+                            <div key={i} className={`h-1 rounded-full transition-all duration-300 flex-1 ${
+                                i === step ? 'bg-indigo-500' : i < step ? 'bg-indigo-200 dark:bg-indigo-500/40' : 'bg-slate-200 dark:bg-white/10'
                             }`} />
                         ))}
                     </div>
+                    <div className="flex justify-between mt-1.5">
+                        {stepLabels.map((label, i) => (
+                            <span key={i} className={`text-[10px] ${i === step ? 'text-indigo-500 font-semibold' : 'text-slate-400'}`}>
+                                {label}
+                            </span>
+                        ))}
+                    </div>
                 </div>
+
+                {/* Step 0 — business name */}
+                {step === 0 && (
+                    <div className="px-8 pb-8">
+                        <div className="mb-6">
+                            <input
+                                type="text"
+                                placeholder="Ej: Barbería El Tigre, Centro de Estética Sol..."
+                                value={businessName}
+                                onChange={e => { setBusinessName(e.target.value); setNameError(''); }}
+                                onKeyDown={e => e.key === 'Enter' && handleNameContinue()}
+                                className="w-full px-4 py-3.5 rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm transition-all"
+                                autoFocus
+                            />
+                            {nameError && (
+                                <p className="mt-2 text-xs text-red-500">{nameError}</p>
+                            )}
+                        </div>
+                        <button
+                            onClick={handleNameContinue}
+                            disabled={saving || !businessName.trim()}
+                            className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-2xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:scale-100 shadow-lg shadow-indigo-500/25 flex items-center justify-center gap-2 text-sm"
+                        >
+                            {saving ? 'Creando...' : <>Continuar <ChevronRight className="w-4 h-4" /></>}
+                        </button>
+                    </div>
+                )}
 
                 {/* Step 1 — type selection */}
                 {step === 1 && (
