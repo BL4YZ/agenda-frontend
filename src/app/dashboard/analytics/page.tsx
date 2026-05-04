@@ -832,7 +832,7 @@ export default function AnalyticsPage() {
                                         <Tooltip cursor={{fill:'rgba(255,255,255,0.04)'}} content={<RevenueTooltip />} />
                                         <Bar dataKey="revenue" fill={brandColor} radius={[6,6,0,0]}
                                             activeBar={{fill:brandColor,fillOpacity:0.75}} style={{cursor:'pointer'}}
-                                            onClick={(data) => handleChartBarClick(data as RevenuePoint & {label:string})} />
+                                            onClick={(data) => handleChartBarClick(data as unknown as RevenuePoint & {label:string})} />
                                     </BarChart>
                                 ) : chartType === 'line' ? (
                                     <LineChart data={chartData} margin={{top:4,right:4,left:0,bottom:4}}>
