@@ -14,8 +14,10 @@ const ThemeContext = createContext<ThemeContextType>({ theme: 'light', toggle: (
 function applyTheme(t: Theme) {
     if (t === 'light') {
         document.documentElement.setAttribute('data-theme', 'light');
+        document.documentElement.classList.remove('dark');
     } else {
         document.documentElement.removeAttribute('data-theme');
+        document.documentElement.classList.add('dark');
     }
 }
 
