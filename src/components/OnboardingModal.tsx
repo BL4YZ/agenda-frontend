@@ -33,7 +33,7 @@ const FLAG_LABELS: { key: keyof FeatureFlags; label: string; desc: string }[] = 
 /* ── Component ────────────────────────────────────────────────────────────── */
 
 export default function OnboardingModal() {
-    const { updateBusiness, refetch } = useBusiness();
+    const { updateBusiness } = useBusiness();
     const [step, setStep]         = useState<0 | 1 | 2>(0);
     const [businessName, setBusinessName] = useState('');
     const [nameError, setNameError]       = useState('');
@@ -57,7 +57,6 @@ export default function OnboardingModal() {
         setSaving(true);
         try {
             await api.post('/businesses', { name });
-            await refetch();
             setStep(1);
         } catch (err: unknown) {
             const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
