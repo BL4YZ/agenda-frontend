@@ -328,7 +328,7 @@ function SettingsContent() {
         finally { setSavingBrand(false); }
     };
 
-    const publicUrl  = business ? `http://localhost:3001/public/${business.slug}` : '';
+    const publicUrl  = business ? `${process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin}/public/${business.slug}` : '';
     const plan       = business?.subscription_plan ?? 'gratis';
     const planMeta   = PLAN_META[plan] ?? PLAN_META.gratis;
     const PlanIcon   = planMeta.icon;

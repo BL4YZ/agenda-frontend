@@ -115,7 +115,7 @@ export default function BranchesPage() {
     };
 
     const copyUrl = (branchId: number) => {
-        const url = `http://localhost:3001/public/${slug}?branch=${branchId}`;
+        const url = `${process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin}/public/${slug}?branch=${branchId}`;
         navigator.clipboard.writeText(url);
         setCopiedId(branchId);
         setTimeout(() => setCopiedId(null), 2000);
