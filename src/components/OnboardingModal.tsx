@@ -33,8 +33,8 @@ const FLAG_LABELS: { key: keyof FeatureFlags; label: string; desc: string }[] = 
 /* ── Component ────────────────────────────────────────────────────────────── */
 
 export default function OnboardingModal() {
-    const { updateBusiness } = useBusiness();
-    const [step, setStep]         = useState<0 | 1 | 2>(0);
+    const { updateBusiness, business } = useBusiness();
+    const [step, setStep]         = useState<0 | 1 | 2>(business ? 1 : 0);
     const [businessName, setBusinessName] = useState('');
     const [nameError, setNameError]       = useState('');
     const [selected, setSelected] = useState<BusinessType | null>(null);
