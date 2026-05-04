@@ -133,7 +133,7 @@ export default function ResetPasswordPage() {
         <div className="min-h-screen flex items-center justify-center px-4">
             <div className="w-full max-w-sm animate-scale-in">
                 <div className="text-center mb-8">
-                    <span className="text-2xl font-bold text-gradient">AgendaPro</span>
+                    <span className="text-2xl font-bold text-gradient">MiAgenda</span>
                     <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Restablecer contraseña</p>
                 </div>
                 <div className="glass rounded-3xl p-8 shadow-2xl shadow-black/5 dark:shadow-black/30">

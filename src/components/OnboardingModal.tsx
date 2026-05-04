@@ -95,7 +95,7 @@ export default function OnboardingModal() {
                 {/* Header */}
                 <div className="px-8 pt-8 pb-6">
                     <div className="flex items-center justify-between mb-1">
-                        <span className="text-2xl font-bold text-gradient">AgendaPro</span>
+                        <span className="text-2xl font-bold text-gradient">MiAgenda</span>
                         {step > 0 && (
                             <button
                                 onClick={handleSkip}

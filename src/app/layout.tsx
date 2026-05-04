@@ -18,7 +18,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-    title: "AgendaPro",
+    title: "MiAgenda",
     description: "Tu agenda profesional",
 };
 

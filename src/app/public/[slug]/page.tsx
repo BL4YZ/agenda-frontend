@@ -204,7 +204,7 @@ function PublicBusinessContent() {
             <div className="mt-auto text-center pb-8 pt-2">
                 <p className="text-xs text-slate-400 dark:text-slate-600">
                     Reservas online con{' '}
-                    <span className="font-semibold text-slate-500 dark:text-slate-500">AgendaPro</span>
+                    <span className="font-semibold text-slate-500 dark:text-slate-500">MiAgenda</span>
                 </p>
             </div>
         </div>
