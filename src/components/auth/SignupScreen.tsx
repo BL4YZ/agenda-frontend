@@ -88,13 +88,12 @@ export default function SignupScreen() {
       /* TODO: el backend actualmente acepta { email, password }.
          Agregar businessName al endpoint POST /api/users/register
          para que quede: { email, password, businessName }            */
-      await axios.post('http://localhost:3000/api/users/register', {
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/users/register`, {
         email,
         password: pwd,
         businessName: name.trim(),
       });
       setSuccess(true);
-      setTimeout(() => router.push('/login'), 2500);
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         setServerError(
@@ -144,7 +143,7 @@ export default function SignupScreen() {
 
             {success ? (
               <div className="auth-success-banner" role="status" aria-live="polite">
-                ✓ ¡Cuenta creada! Redirigiendo al inicio de sesión…
+                ✓ ¡Cuenta creada! Revisá tu correo para verificar tu cuenta antes de ingresar.
               </div>
             ) : (
               <form className="auth-form" onSubmit={handleSubmit} noValidate>
