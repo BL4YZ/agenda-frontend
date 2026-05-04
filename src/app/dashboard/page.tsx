@@ -10,6 +10,7 @@ import axios from 'axios';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useAuth } from '@/context/AuthContext';
+import GettingStartedGuide from '@/components/GettingStartedGuide';
 
 /* ── SVG icons needed for this page ───────────────────────────────────────── */
 const Icon = {
@@ -547,6 +548,9 @@ export default function DashboardPage() {
           </button>
         </div>
       </div>
+
+      {/* Getting Started Guide */}
+      <GettingStartedGuide />
 
       {/* KPI Grid */}
       {metrics && (
