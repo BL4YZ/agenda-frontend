@@ -10,7 +10,22 @@ export default function ThemeToggle({ rootRef }: ThemeToggleProps) {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
 
   useEffect(() => {
+    const stored = localStorage.getItem('theme') as 'dark' | 'light' | null;
+    const system = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    const resolved = stored ?? system;
+    setTheme(resolved);
+  }, []);
+
+  useEffect(() => {
     if (rootRef.current) rootRef.current.dataset.theme = theme;
+    if (theme === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+      document.documentElement.classList.remove('dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+      document.documentElement.classList.add('dark');
+    }
+    localStorage.setItem('theme', theme);
   }, [theme, rootRef]);
 
   return (

@@ -3,9 +3,14 @@
 import Link from 'next/link';
 import MiAgendaLogo from './MiAgendaLogo';
 
+interface FooterLink {
+  label: string;
+  href?: string;
+}
+
 interface FooterColProps {
   title: string;
-  links: string[];
+  links: FooterLink[];
 }
 
 function FooterCol({ title, links }: FooterColProps) {
@@ -16,8 +21,12 @@ function FooterCol({ title, links }: FooterColProps) {
       </div>
       <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
         {links.map(x => (
-          <li key={x}>
-            <a style={{ fontSize: 13, color: 'var(--fg-1)', cursor: 'pointer' }}>{x}</a>
+          <li key={x.label}>
+            {x.href ? (
+              <Link href={x.href} style={{ fontSize: 13, color: 'var(--fg-1)', cursor: 'pointer', textDecoration: 'none' }}>{x.label}</Link>
+            ) : (
+              <a style={{ fontSize: 13, color: 'var(--fg-1)', cursor: 'pointer' }}>{x.label}</a>
+            )}
           </li>
         ))}
       </ul>
@@ -37,9 +46,9 @@ export default function FooterSection() {
           </p>
         </div>
         <div className="vc-footer-cols">
-          <FooterCol title="Producto"  links={['Características', 'Precios', 'Integraciones', 'Cambios']} />
-          <FooterCol title="Recursos"  links={['Centro de ayuda', 'Blog', 'API', 'Estado']} />
-          <FooterCol title="Empresa"   links={['Sobre nosotros', 'Contacto', 'Términos', 'Privacidad']} />
+          <FooterCol title="Producto"  links={[{label:'Características'},{label:'Precios'},{label:'Integraciones'},{label:'Cambios'}]} />
+          <FooterCol title="Recursos"  links={[{label:'Centro de ayuda'},{label:'Blog'},{label:'API'},{label:'Estado'}]} />
+          <FooterCol title="Empresa"   links={[{label:'Sobre nosotros',href:'/about'},{label:'Contacto'},{label:'Términos',href:'/terms'},{label:'Privacidad',href:'/privacy'}]} />
         </div>
       </div>
 
