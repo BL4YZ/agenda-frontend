@@ -561,7 +561,7 @@ export default function AnalyticsPage() {
             pdf.setFontSize(8.5); pdf.setFont('helvetica','normal');
             pdf.text(`Reporte de métricas · ${rangeLabel} · ${format(new Date(),"dd 'de' MMMM yyyy",{locale:es})}`,margin,20);
             let y = 32;
-            const addSection = async (ref: React.RefObject<HTMLDivElement>, label?: string) => {
+            const addSection = async (ref: React.RefObject<HTMLDivElement | null>, label?: string) => {
                 if (!ref.current) return;
                 if (label) { pdf.setTextColor(148,163,184); pdf.setFontSize(7); pdf.setFont('helvetica','bold'); pdf.text(label.toUpperCase(),margin,y+1); y += 5; }
                 const canvas = await toCanvas(ref.current, { pixelRatio:2, backgroundColor:'#ffffff', filter:(node) => !(node as Element).classList?.contains('recharts-tooltip-wrapper') });
