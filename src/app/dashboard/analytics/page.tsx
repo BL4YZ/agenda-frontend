@@ -683,19 +683,31 @@ export default function AnalyticsPage() {
 
             {/* Plan info banner */}
             {!isPro && (
-                <div className="gcard" style={{
-                    display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:16, marginBottom:24,
-                    border:'1px solid rgba(167,139,250,.2)', background:'rgba(167,139,250,.04)',
+                <div style={{
+                    display:'flex', alignItems:'center', justifyContent:'space-between', gap:16, marginBottom:24,
+                    padding:'12px 16px', borderRadius:14,
+                    background:'linear-gradient(135deg, rgba(139,92,246,.12) 0%, rgba(99,102,241,.08) 100%)',
+                    border:'1px solid rgba(139,92,246,.25)',
                 }}>
-                    <div style={{ display:'flex', alignItems:'flex-start', gap:12 }}>
-                        <span style={{ color:'var(--accent)', flexShrink:0, marginTop:1 }}>{IcoLock}</span>
+                    <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                        <span style={{
+                            display:'flex', alignItems:'center', justifyContent:'center',
+                            width:30, height:30, borderRadius:8, flexShrink:0,
+                            background:'rgba(139,92,246,.15)', color:'#a78bfa',
+                        }}>{IcoLock}</span>
                         <div>
-                            <p style={{ fontSize:13, fontWeight:700, color:'var(--fg-0)' }}>Plan Gratis — Vista limitada</p>
-                            <p style={{ fontSize:12, color:'var(--fg-3)', marginTop:2, maxWidth:520 }}>
-                                Ves el total del mes actual. <span style={{ fontWeight:600, color:'var(--accent)' }}>Plan Pro</span> desbloquea filtros, gráficas, heatmap, top clientes y CSV. <span style={{ fontWeight:600, color:'var(--accent)' }}>Plan Negocio</span> agrega filtros por empleado, gráficas por sucursal/servicio/profesional y Excel/PDF.
+                            <p style={{ fontSize:12, fontWeight:700, color:'var(--fg-0)', marginBottom:1 }}>Plan Gratis — Vista limitada</p>
+                            <p style={{ fontSize:11, color:'var(--fg-3)', lineHeight:1.4 }}>
+                                Solo ves el total del mes actual. <strong style={{ color:'#a78bfa', fontWeight:600 }}>Pro</strong> desbloquea filtros, gráficas y heatmap · <strong style={{ color:'#a78bfa', fontWeight:600 }}>Negocio</strong> suma reportes por empleado y exportación Excel/PDF.
                             </p>
                         </div>
                     </div>
+                    <a href="/dashboard/settings" style={{
+                        flexShrink:0, padding:'6px 14px', borderRadius:8, fontSize:11, fontWeight:600,
+                        background:'rgba(139,92,246,.2)', color:'#c4b5fd',
+                        border:'1px solid rgba(139,92,246,.3)', textDecoration:'none', whiteSpace:'nowrap',
+                        transition:'background .15s',
+                    }}>Ver planes</a>
                 </div>
             )}
 
