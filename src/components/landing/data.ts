@@ -59,7 +59,7 @@ export const PLANS: Plan[] = [
     price: '$490',
     desc: 'Para negocios que quieren crecer.',
     highlight: true,
-    cta: 'Probar Pro 14 días gratis',
+    cta: 'Iniciar prueba de 14 días',
     features: [
       { label: 'Hasta 5 profesionales',                 available: true  },
       { label: 'Citas ilimitadas',                      available: true  },
@@ -121,7 +121,7 @@ export interface FaqEntry {
 export const FAQS: FaqEntry[] = [
   {
     q: '¿Necesito tarjeta de crédito para empezar?',
-    a: 'No. El plan Gratis es completamente gratuito. Creás tu cuenta y empezás a usarla de inmediato, sin ingresar ningún dato de pago.',
+    a: 'No para el plan Gratis — creás tu cuenta y empezás de inmediato. Para el plan Pro, la prueba de 14 días se activa desde tu cuenta de MercadoPago: no te cobramos durante el período de prueba y podés cancelar antes de que finalice.',
   },
   {
     q: '¿Mis clientes necesitan instalar algo?',

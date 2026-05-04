@@ -2,6 +2,7 @@
 
 import ProtectedRoute from "@/components/ProtectedRoute";
 import OnboardingModal from "@/components/OnboardingModal";
+import TrialBanner from "@/components/TrialBanner";
 import { useAuth } from "@/context/AuthContext";
 import { BusinessProvider, useBusiness } from "@/context/BusinessContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -452,6 +453,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
 
       <div className="dash-main">
         <DashTopbar crumbs={crumbs} initial={initial} />
+        <TrialBanner />
         {children}
       </div>
     </div>

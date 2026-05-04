@@ -27,6 +27,7 @@ export type Business = {
     subscription_plan: 'gratis' | 'pro' | 'negocio';
     subscription_status: string;
     subscription_ends_at: string | null;
+    trial_ends_at: string | null;
     payment_mode: string;
     deposit_percentage: number;
     mp_connected: boolean;
