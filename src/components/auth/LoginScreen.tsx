@@ -36,7 +36,7 @@ export default function LoginScreen() {
       setServerError('');
       setGoogleLoading(true);
       try {
-        const res = await axios.post('http://localhost:3000/api/users/auth/google', {
+        const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/users/auth/google`, {
           access_token: tokenResponse.access_token,
         });
         if (res.data.token) login(res.data.token);
