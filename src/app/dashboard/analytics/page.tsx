@@ -842,7 +842,7 @@ export default function AnalyticsPage() {
                                         <Tooltip content={<RevenueTooltip />} />
                                         <Line dataKey="revenue" stroke={brandColor} strokeWidth={2.5} dot={{r:4,fill:brandColor,strokeWidth:0,cursor:'pointer'}}
                                             activeDot={{r:6,fill:brandColor,style:{cursor:'pointer'}}}
-                                            onClick={(data) => handleChartBarClick(data?.payload as RevenuePoint & {label:string})} />
+                                            onClick={(data) => handleChartBarClick((data as unknown as {payload: RevenuePoint & {label:string}})?.payload)} />
                                     </LineChart>
                                 ) : (
                                     <AreaChart data={cumulativeData} margin={{top:4,right:4,left:0,bottom:4}}>
@@ -888,7 +888,7 @@ export default function AnalyticsPage() {
                                             <Pie data={donutData} dataKey="value" cx="50%" cy="50%"
                                                 innerRadius={42} outerRadius={65} paddingAngle={3} strokeWidth={0}
                                                 style={{cursor:'pointer'}}
-                                                onClick={(data) => handleDonutClick(data as {name:string;status:string})}>
+                                                onClick={(data) => handleDonutClick(data as unknown as {name:string;status:string})}>
                                                 {donutData.map((d, i) => (
                                                     <Cell key={i} fill={d.color} opacity={tableStatusFilter ? (tableStatusFilter === d.status ? 1 : 0.35) : 1} />
                                                 ))}
@@ -944,7 +944,7 @@ export default function AnalyticsPage() {
                                             <YAxis type="category" dataKey="employee_name" tick={{fontSize:11,fill:'#666'}} axisLine={false} tickLine={false} width={80} />
                                             <Tooltip cursor={{fill:'rgba(255,255,255,0.04)'}} content={<EmployeeTooltip />} />
                                             <Bar dataKey="revenue" radius={[0,6,6,0]} style={{cursor:'pointer'}} activeBar={{fill:brandColor,fillOpacity:0.75}}
-                                                onClick={(data) => handleEmployeeBarClick(data as EmployeeStat)}>
+                                                onClick={(data) => handleEmployeeBarClick(data as unknown as EmployeeStat)}>
                                                 {employeeStats.slice(0,5).map((e,i) => (
                                                     <Cell key={i} fill={brandColor} opacity={selectedEmployee ? (selectedEmployee === String(e.employee_id) ? 1 : 0.35) : 1} />
                                                 ))}
