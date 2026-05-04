@@ -28,7 +28,7 @@ function ResetPasswordContent() {
         }
         setLoading(true);
         try {
-            await axios.post('http://localhost:3000/api/users/reset-password', { token, password });
+            await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/users/reset-password`, { token, password });
             setSuccess(true);
             setTimeout(() => router.push('/login'), 3000);
         } catch (err) {

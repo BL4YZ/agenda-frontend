@@ -124,9 +124,9 @@ function EventPopover({ target, event, onClose, onCancel }: {
   const handleConfirmed = async () => {
     try {
       if (isBlock) {
-        await axios.delete(`http://localhost:3000/api/blocks/${event.id.replace('block-', '')}`);
+        await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/blocks/${event.id.replace('block-', '')}`);
       } else {
-        await axios.delete(`http://localhost:3000/api/appointments/${event.id}`);
+        await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/appointments/${event.id}`);
       }
       onCancel(event.id); onClose();
     } catch { setShowConfirm(false); }
@@ -271,7 +271,7 @@ function NewEntryModal({ initial, token, services, team, onClose, onCreated }: {
     setSaving(true);
     try {
       if (mode === 'block') {
-        const res = await axios.post('http://localhost:3000/api/blocks', {
+        const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/blocks`, {
           employeeId, startTime: `${date}T${startTime}:00`, endTime: `${date}T${endTime}:00`, reason: reason || null,
         }, { headers: { Authorization: `Bearer ${token}` } });
         const emp = team.find(m => m.id === Number(employeeId));
@@ -282,7 +282,7 @@ function NewEntryModal({ initial, token, services, team, onClose, onCreated }: {
           employee_name: emp?.name || emp?.email,
         });
       } else {
-        const res = await axios.post('http://localhost:3000/api/appointments/manual', {
+        const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/appointments/manual`, {
           serviceId: Number(serviceId), employeeId: Number(employeeId),
           startTime: `${date}T${startTime}:00`, clientName: clientName || 'Cliente', clientEmail: clientEmail || null,
         }, { headers: { Authorization: `Bearer ${token}` } });
@@ -454,7 +454,7 @@ export default function DashboardPage() {
     if (!token) return;
     const headers = { Authorization: `Bearer ${token}` };
 
-    axios.get('http://localhost:3000/api/appointments', { headers })
+    axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/appointments`, { headers })
       .then(res => setEvents(prev => [
         ...prev.filter(e => e.isBlock),
         ...res.data.map((e: ApiEvent) => ({
@@ -465,10 +465,10 @@ export default function DashboardPage() {
         })),
       ])).catch(console.error);
 
-    axios.get('http://localhost:3000/api/appointments/metrics', { headers })
+    axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/appointments/metrics`, { headers })
       .then(res => setMetrics(res.data)).catch(console.error);
 
-    axios.get('http://localhost:3000/api/blocks', { headers })
+    axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/blocks`, { headers })
       .then(res => setEvents(prev => [
         ...prev.filter(e => !e.isBlock),
         ...res.data.map((b: { id: number; employee_id: number; start_time: string; end_time: string; reason: string; employee_name: string }) => ({
@@ -479,8 +479,8 @@ export default function DashboardPage() {
         })),
       ])).catch(console.error);
 
-    axios.get('http://localhost:3000/api/services', { headers }).then(res => setServices(res.data)).catch(console.error);
-    axios.get('http://localhost:3000/api/team', { headers }).then(res => setTeam(res.data)).catch(console.error);
+    axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/services`, { headers }).then(res => setServices(res.data)).catch(console.error);
+    axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/team`, { headers }).then(res => setTeam(res.data)).catch(console.error);
   }, [token]);
 
   const openNewEntry = (mode: 'block' | 'appointment', start?: Date, end?: Date) => {
@@ -691,9 +691,9 @@ export default function DashboardPage() {
           onConfirm={async () => {
             try {
               if (selected.id.startsWith('block-')) {
-                await axios.delete(`http://localhost:3000/api/blocks/${selected.id.replace('block-', '')}`);
+                await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/blocks/${selected.id.replace('block-', '')}`);
               } else {
-                await axios.delete(`http://localhost:3000/api/appointments/${selected.id}`);
+                await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/appointments/${selected.id}`);
               }
               setEvents(ev => ev.filter(e => String(e.id) !== selected.id));
               setSelected(null); setMobileConfirm(false);

@@ -42,7 +42,7 @@ export default function TeamReportsPage() {
     useEffect(() => {
         if (!token) return;
         setLoading(true);
-        axios.get(`http://localhost:3000/api/commissions/summary?from=${from}&to=${to}`, {
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/commissions/summary?from=${from}&to=${to}`, {
             headers: { Authorization: `Bearer ${token}` }
         })
             .then(res => setRows(res.data.rows ?? []))

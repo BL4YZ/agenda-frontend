@@ -218,7 +218,7 @@ function SettingsContent() {
 
     useEffect(() => {
         if (!token) return;
-        axios.get('http://localhost:3000/api/businesses/me', { headers: { Authorization: `Bearer ${token}` } })
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/me`, { headers: { Authorization: `Bearer ${token}` } })
             .then(res => {
                 if (res.data) {
                     setBusiness(res.data);
@@ -237,7 +237,7 @@ function SettingsContent() {
     const handleSubscribe = async (plan: 'pro' | 'negocio') => {
         setSubscribing(plan);
         try {
-            const res = await axios.post('http://localhost:3000/api/payments/subscription', { plan }, { headers: { Authorization: `Bearer ${token}` } });
+            const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/subscription`, { plan }, { headers: { Authorization: `Bearer ${token}` } });
             window.location.href = res.data.init_point;
         } catch (err: unknown) {
             if (axios.isAxiosError(err)) alert(err.response?.data?.message || 'Error al iniciar la suscripción.');
@@ -248,7 +248,7 @@ function SettingsContent() {
     const handleCancelSubscription = async () => {
         setCancelling(true);
         try {
-            await axios.delete('http://localhost:3000/api/payments/subscription', { headers: { Authorization: `Bearer ${token}` } });
+            await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/subscription`, { headers: { Authorization: `Bearer ${token}` } });
             const endsAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
             setBusiness(prev => prev ? { ...prev, subscription_status: 'cancelled', subscription_ends_at: endsAt } : prev);
             setShowCancelModal(false);
@@ -261,7 +261,7 @@ function SettingsContent() {
         setError('');
         setSubmitting(true);
         try {
-            const res = await axios.post('http://localhost:3000/api/businesses', { name }, { headers: { Authorization: `Bearer ${token}` } });
+            const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses`, { name }, { headers: { Authorization: `Bearer ${token}` } });
             localStorage.setItem('business_slug', res.data.slug);
             localStorage.setItem('business_name', res.data.name);
             localStorage.setItem('business_id', String(res.data.id));
@@ -274,7 +274,7 @@ function SettingsContent() {
 
     const handleConnectMp = async () => {
         try {
-            const res = await axios.get('http://localhost:3000/api/payments/mp/connect', { headers: { Authorization: `Bearer ${token}` } });
+            const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/mp/connect`, { headers: { Authorization: `Bearer ${token}` } });
             window.location.href = res.data.url;
         } catch { console.error('Error al conectar MercadoPago'); }
     };
@@ -282,7 +282,7 @@ function SettingsContent() {
     const handleDisconnectMp = async () => {
         if (!confirm('¿Desconectar MercadoPago?')) return;
         try {
-            await axios.delete('http://localhost:3000/api/payments/mp/disconnect', { headers: { Authorization: `Bearer ${token}` } });
+            await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/mp/disconnect`, { headers: { Authorization: `Bearer ${token}` } });
             setBusiness(prev => prev ? { ...prev, mp_connected: false } : prev);
             setMpStatus('idle');
         } catch (err) { console.error('Error al desconectar MercadoPago', err); alert('No se pudo desconectar. Revisá la consola.'); }
@@ -292,7 +292,7 @@ function SettingsContent() {
         if (!manualToken.trim()) return;
         setSavingToken(true);
         try {
-            await axios.post('http://localhost:3000/api/payments/mp/manual', { access_token: manualToken.trim() }, { headers: { Authorization: `Bearer ${token}` } });
+            await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/mp/manual`, { access_token: manualToken.trim() }, { headers: { Authorization: `Bearer ${token}` } });
             setBusiness(prev => prev ? { ...prev, mp_connected: true } : prev);
             setMpStatus('connected');
             setManualToken('');
@@ -303,7 +303,7 @@ function SettingsContent() {
     const handleSavePayment = async () => {
         setSavingPayment(true);
         try {
-            await axios.put('http://localhost:3000/api/payments/settings',
+            await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/settings`,
                 { payment_mode: paymentMode, deposit_percentage: depositPct },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -317,7 +317,7 @@ function SettingsContent() {
     const handleSaveBrand = async () => {
         setSavingBrand(true);
         try {
-            const res = await axios.patch('http://localhost:3000/api/businesses/me',
+            const res = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/me`,
                 { logo_url: logoUrl || null, brand_color: brandColor },
                 { headers: { Authorization: `Bearer ${token}` } }
             );

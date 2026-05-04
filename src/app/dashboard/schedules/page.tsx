@@ -77,7 +77,7 @@ export default function SchedulesPage() {
 
     useEffect(() => {
         if (!token) return;
-        axios.get('http://localhost:3000/api/team', { headers: { Authorization: `Bearer ${token}` } })
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/team`, { headers: { Authorization: `Bearer ${token}` } })
             .then(res => {
                 setMembers(res.data);
                 if (res.data.length > 0) setSelectedId(res.data[0].id);
@@ -88,7 +88,7 @@ export default function SchedulesPage() {
     useEffect(() => {
         if (!selectedId || !token) return;
         setLoading(true);
-        axios.get(`http://localhost:3000/api/schedules/${selectedId}`, {
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/schedules/${selectedId}`, {
             headers: { Authorization: `Bearer ${token}` }
         }).then(res => {
             const next = DAYS.map(d => {
@@ -120,7 +120,7 @@ export default function SchedulesPage() {
             });
         try {
             await axios.put(
-                `http://localhost:3000/api/schedules/${selectedId}`,
+                `${process.env.NEXT_PUBLIC_API_URL}/api/schedules/${selectedId}`,
                 { schedule },
                 { headers: { Authorization: `Bearer ${token}` } }
             );

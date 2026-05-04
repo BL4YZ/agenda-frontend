@@ -43,9 +43,9 @@ function PublicBusinessContent() {
         if (!slug) return;
         const branchParam = searchParams.get('branch');
         Promise.all([
-            axios.get(`http://localhost:3000/api/public/businesses/${slug}`),
-            axios.get(`http://localhost:3000/api/public/businesses/${slug}/services`),
-            axios.get(`http://localhost:3000/api/public/businesses/${slug}/branches`),
+            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/public/businesses/${slug}`),
+            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/public/businesses/${slug}/services`),
+            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/public/businesses/${slug}/branches`),
         ]).then(([businessRes, servicesRes, branchesRes]) => {
             setBusiness(businessRes.data);
             setServices(servicesRes.data);

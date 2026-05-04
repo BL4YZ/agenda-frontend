@@ -31,7 +31,7 @@ export default function ForgotPasswordScreen() {
     setEmailError('');
     setLoading(true);
     try {
-      await axios.post('http://localhost:3000/api/users/forgot-password', { email });
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/users/forgot-password`, { email });
       setSent(true);
     } catch {
       setServerError('Ocurrió un error. Por favor intentá de nuevo.');

@@ -360,8 +360,8 @@ export default function AnalyticsPage() {
         setMounted(true);
         if (!token) return;
         Promise.all([
-            axios.get('http://localhost:3000/api/businesses/me', { headers: h }),
-            axios.get('http://localhost:3000/api/team', { headers: h }),
+            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/me`, { headers: h }),
+            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/team`, { headers: h }),
         ]).then(([bRes, tRes]) => { setBusiness(bRes.data); setEmployees(tRes.data); }).catch(console.error);
     }, [token]);
 
@@ -374,15 +374,15 @@ export default function AnalyticsPage() {
         const gbp = { ...p, groupBy };
         try {
             const [sumRes, revRes, empRes, svcRes, listRes, heatRes, topRes, branchRes, clientRes] = await Promise.all([
-                axios.get('http://localhost:3000/api/analytics/summary',            { headers: h, params: p }),
-                axios.get('http://localhost:3000/api/analytics/revenue-over-time',  { headers: h, params: gbp }),
-                axios.get('http://localhost:3000/api/analytics/by-employee',        { headers: h, params: p }),
-                axios.get('http://localhost:3000/api/analytics/by-service',         { headers: h, params: p }),
-                axios.get('http://localhost:3000/api/analytics/appointments-list',  { headers: h, params: p }),
-                axios.get('http://localhost:3000/api/analytics/heatmap',            { headers: h, params: p }),
-                axios.get('http://localhost:3000/api/analytics/top-clients',        { headers: h, params: p }),
-                axios.get('http://localhost:3000/api/analytics/by-branch',          { headers: h, params: p }),
-                axios.get('http://localhost:3000/api/analytics/client-stats',       { headers: h, params: p }),
+                axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/analytics/summary`,            { headers: h, params: p }),
+                axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/analytics/revenue-over-time`,  { headers: h, params: gbp }),
+                axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/analytics/by-employee`,        { headers: h, params: p }),
+                axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/analytics/by-service`,         { headers: h, params: p }),
+                axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/analytics/appointments-list`,  { headers: h, params: p }),
+                axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/analytics/heatmap`,            { headers: h, params: p }),
+                axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/analytics/top-clients`,        { headers: h, params: p }),
+                axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/analytics/by-branch`,          { headers: h, params: p }),
+                axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/analytics/client-stats`,       { headers: h, params: p }),
             ]);
             setPeriodData(sumRes.data);
             setRevenueData(revRes.data);

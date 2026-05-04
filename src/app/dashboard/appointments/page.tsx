@@ -167,7 +167,7 @@ export default function AppointmentsPage() {
             if (to) params.to = to + 'T23:59:59';
             if (search) params.search = search;
 
-            const res = await axios.get('http://localhost:3000/api/appointments', {
+            const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/appointments`, {
                 headers: { Authorization: `Bearer ${token}` },
                 params,
             });
@@ -207,7 +207,7 @@ export default function AppointmentsPage() {
         setOpenRowStatus(null);
         setAppointments(prev => prev.map(a => a.id === id ? { ...a, payment_status: newStatus } : a));
         try {
-            await axios.patch(`http://localhost:3000/api/appointments/${id}/status`,
+            await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/appointments/${id}/status`,
                 { payment_status: newStatus },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -218,7 +218,7 @@ export default function AppointmentsPage() {
         if (!window.confirm('¿Eliminar esta cita? Esta acción no se puede deshacer.')) return;
         setAppointments(prev => prev.filter(a => a.id !== id));
         try {
-            await axios.delete(`http://localhost:3000/api/appointments/${id}`, {
+            await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/appointments/${id}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
         } catch { fetchAppts(); }

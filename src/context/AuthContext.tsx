@@ -44,7 +44,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const fetchProfile = useCallback(async (tok: string) => {
         setProfileLoading(true);
         try {
-            const res = await axios.get('http://localhost:3000/api/users/me', {
+            const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/users/me`, {
                 headers: { Authorization: `Bearer ${tok}` },
             });
             setRole(res.data.role ?? null);

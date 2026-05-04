@@ -18,7 +18,7 @@ function SuccessContent() {
         const interval = setInterval(async () => {
             attempts++;
             try {
-                const res = await axios.get(`http://localhost:3000/api/public/appointments/${appointmentId}/status`);
+                const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/public/appointments/${appointmentId}/status`);
                 if (res.data.payment_status === 'paid') {
                     setStatus('paid');
                     clearInterval(interval);

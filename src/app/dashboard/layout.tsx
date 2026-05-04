@@ -289,7 +289,7 @@ function DashSearch() {
     const tid = setTimeout(async () => {
       setBusy(true);
       try {
-        const res = await axios.get<SearchAppt[]>('http://localhost:3000/api/appointments', {
+        const res = await axios.get<SearchAppt[]>(`${process.env.NEXT_PUBLIC_API_URL}/api/appointments`, {
           params: { search: q },
           headers: { Authorization: `Bearer ${token}` },
         });

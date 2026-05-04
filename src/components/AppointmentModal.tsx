@@ -27,7 +27,7 @@ export default function AppointmentModal({ isOpen, onClose, event, onAppointment
     const handleCancel = async () => {
         if (window.confirm('¿Estás seguro de que quieres cancelar esta cita?')) {
             try {
-                await axios.delete(`http://localhost:3000/api/appointments/${event.id}`);
+                await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/appointments/${event.id}`);
                 onAppointmentCancel(event.id);
                 onClose();
             } catch (error) {

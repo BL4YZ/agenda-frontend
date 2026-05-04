@@ -64,7 +64,7 @@ export default function LoginScreen() {
 
     setLoading(true);
     try {
-      const res = await axios.post('http://localhost:3000/api/users/login', {
+      const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/users/login`, {
         email,
         password: pwd,
       });

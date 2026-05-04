@@ -55,7 +55,7 @@ export default function ExpensesPage() {
     const load = () => {
         if (!token) return;
         setLoading(true);
-        axios.get(`http://localhost:3000/api/expenses?from=${from}&to=${to}`, {
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/expenses?from=${from}&to=${to}`, {
             headers: { Authorization: `Bearer ${token}` }
         })
             .then(res => setExpenses(res.data))
@@ -71,7 +71,7 @@ export default function ExpensesPage() {
         if (!fAmount || isNaN(Number(fAmount)) || Number(fAmount) <= 0) { setFError('Ingresá un monto válido.'); return; }
         setFSaving(true);
         try {
-            await axios.post('http://localhost:3000/api/expenses',
+            await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/expenses`,
                 { category: fCategory, amount: Number(fAmount), date: fDate, description: fDescription || null },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -88,7 +88,7 @@ export default function ExpensesPage() {
     const handleDelete = async (id: number) => {
         setDeletingId(id);
         try {
-            await axios.delete(`http://localhost:3000/api/expenses/${id}`, {
+            await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/expenses/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setExpenses(prev => prev.filter(e => e.id !== id));

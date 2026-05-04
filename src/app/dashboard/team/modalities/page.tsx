@@ -49,7 +49,7 @@ export default function ModalitiesPage() {
 
     useEffect(() => {
         if (!token) return;
-        axios.get('http://localhost:3000/api/team', { headers: { Authorization: `Bearer ${token}` } })
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/team`, { headers: { Authorization: `Bearer ${token}` } })
             .then(res => setMembers(res.data.filter((m: Member) => m.role === 'employee' && !m.plan_suspended)))
             .catch(console.error)
             .finally(() => setLoading(false));
@@ -73,7 +73,7 @@ export default function ModalitiesPage() {
             if (modality === 'rental'     || modality === 'mixed') { body.rental_amount = parseFloat(rentalAmount) || null; body.rental_period = rentalPeriod; }
 
             const res = await axios.patch(
-                `http://localhost:3000/api/team/${selected.id}/modality`,
+                `${process.env.NEXT_PUBLIC_API_URL}/api/team/${selected.id}/modality`,
                 body,
                 { headers: { Authorization: `Bearer ${token}` } }
             );

@@ -89,7 +89,7 @@ export default function TeamPage() {
 
     useEffect(() => {
         if (!token) return;
-        axios.get('http://localhost:3000/api/team', { headers: { Authorization: `Bearer ${token}` } })
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/team`, { headers: { Authorization: `Bearer ${token}` } })
             .then(res => setMembers(res.data))
             .catch(console.error)
             .finally(() => setLoading(false));
@@ -99,7 +99,7 @@ export default function TeamPage() {
         setSelectedMember(member);
         setServicesLoading(true);
         try {
-            const res = await axios.get(`http://localhost:3000/api/team/${member.id}/services`, {
+            const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/team/${member.id}/services`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setServices(res.data);
@@ -112,11 +112,11 @@ export default function TeamPage() {
         setTogglingId(service.id);
         try {
             if (service.assigned) {
-                await axios.delete(`http://localhost:3000/api/team/${selectedMember.id}/services/${service.id}`, {
+                await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/team/${selectedMember.id}/services/${service.id}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
             } else {
-                await axios.post(`http://localhost:3000/api/team/${selectedMember.id}/services`,
+                await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/team/${selectedMember.id}/services`,
                     { serviceId: service.id },
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
@@ -131,7 +131,7 @@ export default function TeamPage() {
         setAddError('');
         setSubmitting(true);
         try {
-            const res = await axios.post('http://localhost:3000/api/team/add', { email: addEmail },
+            const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/team/add`, { email: addEmail },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             setMembers(prev => [...prev, res.data.employee]);
@@ -158,7 +158,7 @@ export default function TeamPage() {
         setSaving(true);
         try {
             const fullPhone = editPhone.trim() ? `+598${editPhone.trim()}` : '';
-            const res = await axios.put(`http://localhost:3000/api/team/${editMember.id}`,
+            const res = await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/team/${editMember.id}`,
                 { name: editName, phone: fullPhone || null },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -174,7 +174,7 @@ export default function TeamPage() {
         if (!confirm(`¿Eliminar a ${member.name || member.email} del equipo?`)) return;
         setDeletingId(member.id);
         try {
-            await axios.delete(`http://localhost:3000/api/team/${member.id}`, {
+            await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/team/${member.id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setMembers(prev => prev.filter(m => m.id !== member.id));
@@ -189,7 +189,7 @@ export default function TeamPage() {
         setSelectedMember(prev => prev ? { ...prev, permissions: newPerms } : null);
         setMembers(prev => prev.map(m => m.id === selectedMember.id ? { ...m, permissions: newPerms } : m));
         try {
-            await axios.patch(`http://localhost:3000/api/team/${selectedMember.id}/permissions`,
+            await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/team/${selectedMember.id}/permissions`,
                 { permissions: newPerms },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -203,7 +203,7 @@ export default function TeamPage() {
         if (!confirmSelect) return;
         setSelecting(true);
         try {
-            await axios.post(`http://localhost:3000/api/team/select-active/${confirmSelect.id}`, {},
+            await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/team/select-active/${confirmSelect.id}`, {},
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             setMembers(prev => prev.map(m =>

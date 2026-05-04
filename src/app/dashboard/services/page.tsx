@@ -149,7 +149,7 @@ export default function ServicesPage() {
 
     useEffect(() => {
         if (!token) return;
-        axios.get('http://localhost:3000/api/services', {
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/services`, {
             headers: { Authorization: `Bearer ${token}` }
         })
             .then(res => setServices(res.data))
@@ -163,7 +163,7 @@ export default function ServicesPage() {
         setSubmitting(true);
         try {
             const res = await axios.post(
-                'http://localhost:3000/api/services',
+                `${process.env.NEXT_PUBLIC_API_URL}/api/services`,
                 { name, duration_minutes: parseInt(duration), price: parseFloat(price) },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -193,7 +193,7 @@ export default function ServicesPage() {
         setEditSubmitting(true);
         try {
             const res = await axios.put(
-                `http://localhost:3000/api/services/${editService.id}`,
+                `${process.env.NEXT_PUBLIC_API_URL}/api/services/${editService.id}`,
                 { name: editName, duration_minutes: parseInt(editDuration), price: parseFloat(editPrice) },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -209,7 +209,7 @@ export default function ServicesPage() {
     const handleDelete = async (id: number) => {
         setDeletingId(id);
         try {
-            await axios.delete(`http://localhost:3000/api/services/${id}`, {
+            await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/services/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setServices(prev => prev.filter(s => s.id !== id));

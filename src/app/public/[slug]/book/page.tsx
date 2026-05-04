@@ -57,11 +57,11 @@ function BookingContent() {
 
     useEffect(() => {
         if (!slug) return;
-        axios.get(`http://localhost:3000/api/public/businesses/${slug}`)
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/public/businesses/${slug}`)
             .then(res => setBusiness(res.data))
             .catch(console.error);
         if (serviceId) {
-            const url = `http://localhost:3000/api/public/services/${serviceId}/employees${branchId ? `?branchId=${branchId}` : ''}`;
+            const url = `${process.env.NEXT_PUBLIC_API_URL}/api/public/services/${serviceId}/employees${branchId ? `?branchId=${branchId}` : ''}`;
             axios.get(url)
                 .then(res => setEmployees(res.data))
                 .catch(console.error);
@@ -74,7 +74,7 @@ function BookingContent() {
         setSlots([]);
         setLoadingSlots(true);
         try {
-            const res = await axios.get(`http://localhost:3000/api/public/businesses/${slug}/availability`, {
+            const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/public/businesses/${slug}/availability`, {
                 params: { date: dateStr, serviceId, employeeId: selectedEmployee?.id },
             });
             setSlots(res.data);
@@ -90,7 +90,7 @@ function BookingContent() {
         setError('');
         setSubmitting(true);
         try {
-            await axios.post(`http://localhost:3000/api/public/businesses/${slug}/appointments`, {
+            await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/public/businesses/${slug}/appointments`, {
                 serviceId: parseInt(serviceId!),
                 employeeId: selectedEmployee?.id,
                 startTime: `${selectedDate}T${selectedSlot}:00`,
@@ -107,7 +107,7 @@ function BookingContent() {
         setError('');
         setSubmitting(true);
         try {
-            const res = await axios.post(`http://localhost:3000/api/public/businesses/${slug}/pay`, {
+            const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/public/businesses/${slug}/pay`, {
                 serviceId: parseInt(serviceId!),
                 employeeId: selectedEmployee?.id,
                 startTime: `${selectedDate}T${selectedSlot}:00`,

@@ -36,9 +36,9 @@ export default function BranchesPage() {
         const load = async () => {
             try {
                 const [bRes, tRes, bizRes] = await Promise.all([
-                    axios.get('http://localhost:3000/api/branches', { headers }),
-                    axios.get('http://localhost:3000/api/team', { headers }),
-                    axios.get('http://localhost:3000/api/businesses/me', { headers }),
+                    axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/branches`, { headers }),
+                    axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/team`, { headers }),
+                    axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/me`, { headers }),
                 ]);
                 setBranches(bRes.data);
                 setEmployees(tRes.data);
@@ -72,11 +72,11 @@ export default function BranchesPage() {
         const headers = { Authorization: `Bearer ${token}` };
         try {
             if (editBranch) {
-                const res = await axios.put(`http://localhost:3000/api/branches/${editBranch.id}`,
+                const res = await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/branches/${editBranch.id}`,
                     { name: formName, address: formAddress || null }, { headers });
                 setBranches(prev => prev.map(b => b.id === editBranch.id ? { ...b, ...res.data } : b));
             } else {
-                const res = await axios.post('http://localhost:3000/api/branches',
+                const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/branches`,
                     { name: formName, address: formAddress || null }, { headers });
                 setBranches(prev => [...prev, res.data]);
             }
@@ -91,7 +91,7 @@ export default function BranchesPage() {
     const handleDelete = async (id: number) => {
         setDeletingId(id);
         try {
-            await axios.delete(`http://localhost:3000/api/branches/${id}`, {
+            await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/branches/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setBranches(prev => prev.filter(b => b.id !== id));
@@ -102,7 +102,7 @@ export default function BranchesPage() {
 
     const handleAssignBranch = async (employeeId: number, branchId: number | null) => {
         try {
-            await axios.patch(`http://localhost:3000/api/branches/employees/${employeeId}`,
+            await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/branches/employees/${employeeId}`,
                 { branchId },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
