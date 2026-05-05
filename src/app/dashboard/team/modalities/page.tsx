@@ -50,7 +50,7 @@ export default function ModalitiesPage() {
     useEffect(() => {
         if (!token) return;
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/team`, { headers: { Authorization: `Bearer ${token}` } })
-            .then(res => setMembers(res.data.filter((m: Member) => m.role === 'employee' && !m.plan_suspended)))
+            .then(res => setMembers(res.data.filter((m: Member) => !m.plan_suspended)))
             .catch(console.error)
             .finally(() => setLoading(false));
     }, [token]);
