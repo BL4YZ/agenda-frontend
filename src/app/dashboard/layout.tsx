@@ -368,6 +368,7 @@ function DashTopbar({ crumbs, initial, businessName, role, logout, token }: {
   const [open, setOpen] = useState<TopPanel>(null);
   const [notifs, setNotifs] = useState<NotifItem[]>([]);
   const [notifCount, setNotifCount] = useState(0);
+  const [notifSeen, setNotifSeen] = useState(false);
   const [notifLoading, setNotifLoading] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
 
@@ -392,9 +393,11 @@ function DashTopbar({ crumbs, initial, businessName, role, logout, token }: {
     }).catch(() => {});
   }, [token]);
 
-  // Refresh full list when panel is opened
+  // Mark as seen and refresh list when panel is opened
   useEffect(() => {
-    if (open !== 'notif' || !token) return;
+    if (open !== 'notif') return;
+    setNotifSeen(true);
+    if (!token) return;
     setNotifLoading(true);
     const today = new Date().toISOString().slice(0, 10);
     axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/appointments?from=${today}`, {
@@ -456,11 +459,23 @@ function DashTopbar({ crumbs, initial, businessName, role, logout, token }: {
         {/* Notifications */}
         <button className={`dash-iconbtn${open === 'notif' ? ' is-active' : ''}`} onClick={() => toggle('notif')}>
           {Icon.bell}
-          {notifCount > 0 && <span className="dash-iconbtn__dot" />}
+          {notifCount > 0 && !notifSeen && <span className="dash-iconbtn__dot" />}
         </button>
         {open === 'notif' && (
           <div className="topbar-drop" style={{ right: 72, width: 300 }}>
-            <div className="topbar-drop__head">Próximas citas</div>
+            <div className="topbar-drop__head" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span>Próximas citas</span>
+              {notifCount > 0 && (
+                <button
+                  onClick={() => setNotifSeen(true)}
+                  style={{ fontSize: 11, color: 'var(--fg-3)', background: 'none', border: 0, cursor: 'pointer', padding: '2px 6px', borderRadius: 6, transition: 'color .15s' }}
+                  onMouseEnter={e => (e.currentTarget.style.color = 'var(--fg-1)')}
+                  onMouseLeave={e => (e.currentTarget.style.color = 'var(--fg-3)')}
+                >
+                  Marcar leído
+                </button>
+              )}
+            </div>
             {notifLoading ? (
               <div className="skel-page" style={{ padding: '8px 12px' }}>
                 {[0,1,2].map(i => (
