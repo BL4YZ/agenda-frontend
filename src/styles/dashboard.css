@@ -1689,6 +1689,27 @@
   border-top-color: rgba(0, 0, 0, 0.07);
 }
 
+/* Light mode: chip filter pills */
+[data-theme="light"] .chip {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: var(--fg-2);
+}
+[data-theme="light"] .chip:hover {
+  background: rgba(0, 0, 0, 0.07);
+}
+[data-theme="light"] .chip.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: none;
+}
+
+/* Light mode: tab pills (chart type toggles) */
+[data-theme="light"] .tab-pills {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
 /* Light mode: insight cards */
 [data-theme="light"] .insight {
   background: rgba(109, 40, 217, 0.06);
