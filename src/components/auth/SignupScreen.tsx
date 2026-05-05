@@ -19,6 +19,7 @@ interface FormErrors {
   name?: string;
   email?: string;
   password?: string;
+  confirmPwd?: string;
 }
 
 function validateEmail(email: string) {
@@ -37,6 +38,7 @@ export default function SignupScreen() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [pwd, setPwd] = useState('');
+  const [confirmPwd, setConfirmPwd] = useState('');
   const [accepted, setAccepted] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [serverError, setServerError] = useState('');
@@ -70,6 +72,7 @@ export default function SignupScreen() {
     if (!validateEmail(email))  errs.email = 'Ingresá un email válido.';
     const pwdErr = validatePassword(pwd);
     if (pwdErr)                 errs.password = pwdErr;
+    if (!pwdErr && pwd !== confirmPwd) errs.confirmPwd = 'Las contraseñas no coinciden.';
     setErrors(errs);
     return Object.keys(errs).length === 0;
   }
@@ -195,11 +198,27 @@ export default function SignupScreen() {
                     onChange={e => {
                       setPwd(e.target.value);
                       if (errors.password) setErrors(p => ({ ...p, password: undefined }));
+                      if (errors.confirmPwd) setErrors(p => ({ ...p, confirmPwd: undefined }));
                     }}
                     error={errors.password}
                   />
                   <StrengthMeter value={pwd} />
                 </div>
+
+                <GlassInput
+                  id="signup-confirm-password"
+                  label="Confirmá tu contraseña"
+                  type="password"
+                  placeholder="••••••••"
+                  name="confirmPassword"
+                  autoComplete="new-password"
+                  value={confirmPwd}
+                  onChange={e => {
+                    setConfirmPwd(e.target.value);
+                    if (errors.confirmPwd) setErrors(p => ({ ...p, confirmPwd: undefined }));
+                  }}
+                  error={errors.confirmPwd}
+                />
 
                 <label className="auth-remember">
                   <input
