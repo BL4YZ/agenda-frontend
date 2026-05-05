@@ -405,6 +405,69 @@ function EmployeeBlockedScreen({ suspended, logout }: { suspended: boolean; logo
   );
 }
 
+/* ── Mobile sub-navigation ───────────────────────────────────────────────── */
+interface SubNavProps {
+  hasEquipo: boolean;
+  hasFinanzas: boolean;
+  canSettings: boolean;
+  isOwner: boolean;
+  isNegocio: boolean;
+  showModalities: boolean;
+  showTeamReports: boolean;
+  showExpenses: boolean;
+  showCommissions: boolean;
+}
+
+function MobileSubNav({
+  hasEquipo, hasFinanzas, canSettings, isOwner, isNegocio,
+  showModalities, showTeamReports, showExpenses, showCommissions,
+}: SubNavProps) {
+  const pathname = usePathname();
+
+  const inAgenda = ['/dashboard/appointments', '/dashboard/services', '/dashboard/schedules'].some(p => pathname === p);
+  const inTeam   = pathname.startsWith('/dashboard/team');
+  const inFin    = pathname.startsWith('/dashboard/analytics') || pathname.startsWith('/dashboard/finances');
+  const inCfg    = ['/dashboard/settings', '/dashboard/branches'].some(p => pathname === p);
+
+  type SubItem = { href: string; label: string };
+  let items: SubItem[] = [];
+
+  if (inAgenda) {
+    items = [
+      { href: '/dashboard/appointments', label: 'Citas' },
+      { href: '/dashboard/services',     label: 'Servicios' },
+      { href: '/dashboard/schedules',    label: 'Horarios' },
+    ];
+  } else if (inTeam && hasEquipo) {
+    items = [{ href: '/dashboard/team', label: 'Integrantes' }];
+    if (showModalities) items.push({ href: '/dashboard/team/modalities', label: 'Modalidades' });
+    if (showTeamReports) items.push({ href: '/dashboard/team/reports', label: 'Reportes' });
+  } else if (inFin && hasFinanzas) {
+    items = [{ href: '/dashboard/analytics', label: 'Métricas' }];
+    if (showExpenses) items.push({ href: '/dashboard/finances/expenses', label: 'Gastos' });
+    if (isOwner && showCommissions) items.push({ href: '/dashboard/finances/commissions', label: 'Comisiones' });
+  } else if (inCfg && canSettings) {
+    items = [{ href: '/dashboard/settings', label: 'Negocio' }];
+    if (isOwner && isNegocio) items.push({ href: '/dashboard/branches', label: 'Sucursales' });
+  }
+
+  if (items.length <= 1) return null;
+
+  return (
+    <nav className="dash-mobile-subnav">
+      {items.map(item => (
+        <Link
+          key={item.href}
+          href={item.href}
+          className={`dash-mobile-subnav__item${pathname === item.href ? ' is-active' : ''}`}
+        >
+          {item.label}
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
 /* ── Mobile bottom nav ───────────────────────────────────────────────────── */
 function MobileNav({ isOwner, hasFinanzas, canSettings, logout }: {
   isOwner: boolean; hasFinanzas: boolean; canSettings: boolean; logout: () => void;
@@ -494,6 +557,17 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
 
       <div className="dash-main">
         <DashTopbar crumbs={crumbs} initial={initial} />
+        <MobileSubNav
+          hasEquipo={hasEquipo}
+          hasFinanzas={hasFinanzas}
+          canSettings={canSettings}
+          isOwner={isOwner}
+          isNegocio={isNegocio}
+          showModalities={featureFlags.showModalities}
+          showTeamReports={featureFlags.showTeamReports}
+          showExpenses={featureFlags.showExpenses}
+          showCommissions={featureFlags.showCommissions}
+        />
         <TrialBanner />
         {children}
       </div>

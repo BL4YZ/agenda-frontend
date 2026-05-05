@@ -310,7 +310,7 @@ export default function TeamPage() {
             )}
 
             {/* Two-column layout */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+            <div className="two-col" style={{ gap: 20, marginBottom: 0 }}>
 
                 {/* Member list */}
                 <div className="gcard" style={{ padding: 0, overflow: 'hidden' }}>
