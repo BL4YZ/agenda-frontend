@@ -139,7 +139,7 @@ function EventPopover({ target, event, onClose, onCancel }: {
         position: 'fixed', zIndex: 50, width: 264, top, left,
         padding: 16,
         animation: 'scale-in 0.2s cubic-bezier(0.16,1,0.3,1)',
-        background: 'oklch(0.11 0.025 280)',
+        background: 'var(--glass-bg-strong)',
         border: '1px solid var(--line)',
         borderRadius: 16,
         boxShadow: '0 20px 60px oklch(0 0 0 / 0.65)',

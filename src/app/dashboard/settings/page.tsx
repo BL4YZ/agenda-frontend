@@ -405,7 +405,7 @@ function SettingsContent() {
                                                 style={{
                                                     padding:'12px 14px', borderRadius:10, textAlign:'left', cursor:'pointer',
                                                     border:`1px solid ${active ? 'var(--accent)' : 'var(--line)'}`,
-                                                    background: active ? 'oklch(0.25 0.08 290 / 0.4)' : 'oklch(0.13 0.03 280 / 0.5)',
+                                                    background: active ? 'rgba(139, 92, 246, 0.18)' : 'var(--glass-bg)',
                                                     transition:'all .2s',
                                                 }}>
                                                 <p style={{ fontSize:12, fontWeight:600, color: active ? 'var(--accent)' : 'var(--fg-1)' }}>{opt.label}</p>
@@ -500,7 +500,7 @@ function SettingsContent() {
                                 <p style={{ fontSize:12, color:'var(--fg-2)', marginBottom:12 }}>Compartí este link con tus clientes para que puedan reservar online.</p>
                                 <div style={{ display:'flex', gap:6 }}>
                                     <input readOnly value={publicUrl}
-                                        style={{ flex:1, minWidth:0, background:'oklch(0.13 0.02 280 / 0.6)', border:'1px solid var(--line)', borderRadius:9, padding:'9px 12px', color:'var(--fg-1)', fontFamily:'var(--font-mono)', fontSize:11 }} />
+                                        style={{ flex:1, minWidth:0, background:'var(--glass-bg)', border:'1px solid var(--line)', borderRadius:9, padding:'9px 12px', color:'var(--fg-1)', fontFamily:'var(--font-mono)', fontSize:11 }} />
                                     <button onClick={() => { navigator.clipboard.writeText(publicUrl); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
                                         className="dbtn dbtn--primary dbtn--sm">
                                         {copied ? <>{IcoCheck}<span>Copiado</span></> : <>{IcoCopy}<span>Copiar</span></>}

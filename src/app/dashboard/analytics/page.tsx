@@ -183,7 +183,7 @@ function CustomSelect({ value, onChange, options }: {
                 <div style={{
                     position:'absolute', top:'100%', left:0, marginTop:4, zIndex:50,
                     minWidth:'100%', borderRadius:12,
-                    border:'1px solid var(--line)', background:'oklch(0.12 0.03 280)',
+                    border:'1px solid var(--line)', background:'var(--glass-bg-strong)',
                     boxShadow:'0 8px 32px rgba(0,0,0,.5)', overflow:'hidden',
                 }}>
                     {options.map(opt => (
@@ -212,7 +212,7 @@ type TooltipProps = { active?: boolean; payload?: { value: number; name: string 
 function TooltipBox({ label, children, hint }: { label?: string; children: React.ReactNode; hint?: string }) {
     return (
         <div style={{
-            background:'oklch(0.14 0.03 280)', border:'1px solid var(--line)',
+            background:'var(--glass-bg-strong)', border:'1px solid var(--line)',
             borderRadius:10, padding:'8px 12px', boxShadow:'0 8px 24px rgba(0,0,0,.4)', fontSize:12,
         }}>
             {label && <p style={{ fontWeight:600, color:'var(--fg-3)', marginBottom:4 }}>{label}</p>}
