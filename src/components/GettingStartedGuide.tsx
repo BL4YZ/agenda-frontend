@@ -3,11 +3,12 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useBusiness } from '@/context/BusinessContext';
+import { useAuth } from '@/context/AuthContext';
 import api from '@/lib/api';
 
 const DISMISS_KEY = 'miagenda_guide_dismissed';
 
-type StepStatus = 'done' | 'pending' | 'optional';
+type StepStatus = 'done' | 'pending' | 'optional' | 'loading';
 
 type Step = {
     id: string;
@@ -22,6 +23,7 @@ type Step = {
 const IcoDone     = () => <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="7" fill="#22c55e"/><path d="M4 7l2 2 4-4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 const IcoPending  = () => <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6.5" stroke="currentColor" strokeWidth="1" opacity="0.3"/></svg>;
 const IcoOptional = () => <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6.5" stroke="#a78bfa" strokeWidth="1" strokeDasharray="2 2"/></svg>;
+const IcoLoading  = () => <span style={{ display:'inline-block', width:14, height:14, borderRadius:'50%', border:'1.5px solid rgba(255,255,255,0.15)', borderTopColor:'rgba(255,255,255,0.4)', animation:'spin 0.8s linear infinite' }} />;
 const IcoArrow    = () => <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 const IcoChev     = ({ open }: { open: boolean }) => (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ transition: 'transform .2s', transform: open ? 'rotate(180deg)' : 'rotate(0)' }}>
@@ -31,6 +33,7 @@ const IcoChev     = ({ open }: { open: boolean }) => (
 
 export default function GettingStartedGuide() {
     const { business } = useBusiness();
+    const { userId }   = useAuth();
     const [dismissed, setDismissed] = useState(false);
     const [open, setOpen]           = useState(true);
     const [hasServices, setHasServices]   = useState<boolean | null>(null);
@@ -46,8 +49,12 @@ export default function GettingStartedGuide() {
 
     useEffect(() => {
         api.get('/services').then(r => setHasServices(r.data.length > 0)).catch(() => setHasServices(false));
-        api.get('/schedules').then(r => setHasSchedules(r.data.length > 0)).catch(() => setHasSchedules(false));
     }, []);
+
+    useEffect(() => {
+        if (!userId) return;
+        api.get(`/schedules/${userId}`).then(r => setHasSchedules(r.data.length > 0)).catch(() => setHasSchedules(false));
+    }, [userId]);
 
     const dismiss = () => {
         localStorage.setItem(DISMISS_KEY, '1');
@@ -78,7 +85,7 @@ export default function GettingStartedGuide() {
             id: 'services',
             title: 'Agregar tus servicios',
             desc: 'Definí qué ofrecés: nombre, duración y precio. Tus clientes los verán al reservar.',
-            status: hasServices ? 'done' : 'pending',
+            status: hasServices === null ? 'loading' : hasServices ? 'done' : 'pending',
             href: '/dashboard/services',
             action: 'Ir a Servicios',
         },
@@ -86,7 +93,7 @@ export default function GettingStartedGuide() {
             id: 'schedules',
             title: 'Configurar tus horarios',
             desc: 'Indicá en qué días y horarios atendés para que las reservas estén disponibles.',
-            status: hasSchedules ? 'done' : 'pending',
+            status: hasSchedules === null ? 'loading' : hasSchedules ? 'done' : 'pending',
             href: '/dashboard/schedules',
             action: 'Ir a Horarios',
         },
@@ -110,10 +117,11 @@ export default function GettingStartedGuide() {
         },
     ];
 
-    const done  = steps.filter(s => s.status === 'done').length;
-    const total = steps.length;
-    const allDone = done === total;
-    const pct = Math.round((done / total) * 100);
+    const loaded  = steps.filter(s => s.status !== 'loading');
+    const done    = loaded.filter(s => s.status === 'done').length;
+    const total   = steps.length;
+    const allDone = loaded.length === total && done === total;
+    const pct     = Math.round((done / total) * 100);
 
     return (
         <div style={{
@@ -188,6 +196,7 @@ export default function GettingStartedGuide() {
                                 {step.status === 'done'     && <IcoDone />}
                                 {step.status === 'pending'  && <IcoPending />}
                                 {step.status === 'optional' && <IcoOptional />}
+                                {step.status === 'loading'  && <IcoLoading />}
                             </div>
 
                             {/* Text */}
@@ -213,7 +222,7 @@ export default function GettingStartedGuide() {
                             </div>
 
                             {/* CTA */}
-                            {step.status !== 'done' && step.action && (
+                            {step.status !== 'done' && step.status !== 'loading' && step.action && (
                                 step.id === 'link' ? (
                                     <button
                                         onClick={copyLink}

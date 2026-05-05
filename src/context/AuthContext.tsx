@@ -8,6 +8,7 @@ type Permissions = Record<string, boolean>;
 
 interface AuthContextType {
     token: string | null;
+    userId: number | null;
     role: string | null;
     permissions: Permissions;
     businessPlan: string | null;
@@ -20,17 +21,19 @@ interface AuthContextType {
     refetchProfile: () => void;
 }
 
-function decodeJwtRole(token: string): string | null {
+function decodeJwt(token: string) {
     try {
-        const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-        return payload?.user?.role ?? null;
+        return JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
     } catch { return null; }
 }
+function decodeJwtRole(token: string): string | null { return decodeJwt(token)?.user?.role ?? null; }
+function decodeJwtId(token: string): number | null   { return decodeJwt(token)?.user?.id   ?? null; }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [token, setToken] = useState<string | null>(null);
+    const [userId, setUserId] = useState<number | null>(null);
     const [role, setRole] = useState<string | null>(null);
     const [permissions, setPermissions] = useState<Permissions>({});
     const [businessPlan, setBusinessPlan] = useState<string | null>(null);
@@ -75,6 +78,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const storedToken = localStorage.getItem('token');
         if (storedToken) {
             setToken(storedToken);
+            setUserId(decodeJwtId(storedToken));
             setRole(decodeJwtRole(storedToken));
             axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
             fetchProfile(storedToken);
@@ -106,6 +110,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const login = useCallback((newToken: string) => {
         setToken(newToken);
+        setUserId(decodeJwtId(newToken));
         setRole(decodeJwtRole(newToken));
         setPermissions({});
         localStorage.setItem('token', newToken);
@@ -118,7 +123,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (token) fetchProfile(token);
     }, [token, fetchProfile]);
 
-    const value = { token, role, permissions, businessPlan, planSuspended, planBlocked, isLoading, profileLoading, login, logout, refetchProfile };
+    const value = { token, userId, role, permissions, businessPlan, planSuspended, planBlocked, isLoading, profileLoading, login, logout, refetchProfile };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
