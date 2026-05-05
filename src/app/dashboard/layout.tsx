@@ -368,9 +368,14 @@ function DashTopbar({ crumbs, initial, businessName, role, logout, token }: {
   const [open, setOpen] = useState<TopPanel>(null);
   const [notifs, setNotifs] = useState<NotifItem[]>([]);
   const [notifCount, setNotifCount] = useState(0);
-  const [notifSeen, setNotifSeen] = useState(false);
+  const [notifSeen, setNotifSeen] = useState(true);
   const [notifLoading, setNotifLoading] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
+
+  const markNotifsRead = (count: number) => {
+    setNotifSeen(true);
+    localStorage.setItem('notif_seen_count', String(count));
+  };
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -380,7 +385,7 @@ function DashTopbar({ crumbs, initial, businessName, role, logout, token }: {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  // Fetch count on mount so the dot appears before the panel is opened
+  // Fetch count on mount — compare with last seen count to decide if dot shows
   useEffect(() => {
     if (!token) return;
     const today = new Date().toISOString().slice(0, 10);
@@ -390,13 +395,14 @@ function DashTopbar({ crumbs, initial, businessName, role, logout, token }: {
       const data = res.data.slice(0, 6);
       setNotifs(data);
       setNotifCount(data.length);
+      const seenCount = parseInt(localStorage.getItem('notif_seen_count') ?? '-1', 10);
+      setNotifSeen(data.length <= seenCount);
     }).catch(() => {});
   }, [token]);
 
   // Mark as seen and refresh list when panel is opened
   useEffect(() => {
     if (open !== 'notif') return;
-    setNotifSeen(true);
     if (!token) return;
     setNotifLoading(true);
     const today = new Date().toISOString().slice(0, 10);
@@ -406,8 +412,10 @@ function DashTopbar({ crumbs, initial, businessName, role, logout, token }: {
       const data = res.data.slice(0, 6);
       setNotifs(data);
       setNotifCount(data.length);
+      markNotifsRead(data.length);
     }).catch(() => {})
       .finally(() => setNotifLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, token]);
 
   const toggle = (panel: NonNullable<TopPanel>) =>
@@ -467,7 +475,7 @@ function DashTopbar({ crumbs, initial, businessName, role, logout, token }: {
               <span>Próximas citas</span>
               {notifCount > 0 && (
                 <button
-                  onClick={() => setNotifSeen(true)}
+                  onClick={() => markNotifsRead(notifCount)}
                   style={{ fontSize: 11, color: 'var(--fg-3)', background: 'none', border: 0, cursor: 'pointer', padding: '2px 6px', borderRadius: 6, transition: 'color .15s' }}
                   onMouseEnter={e => (e.currentTarget.style.color = 'var(--fg-1)')}
                   onMouseLeave={e => (e.currentTarget.style.color = 'var(--fg-3)')}
