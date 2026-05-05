@@ -115,6 +115,14 @@ function BusinessTypeSection() {
     const [saving, setSaving]         = useState(false);
     const [saved, setSaved]           = useState(false);
 
+    useEffect(() => {
+        if (business) {
+            setLocalType(business.business_type ?? '');
+            setLocalFlags({ ...featureFlags });
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [business?.id]);
+
     const applyPreset = (type: BusinessType) => {
         setLocalType(type);
         setLocalFlags({ ...TYPE_PRESETS[type] });
