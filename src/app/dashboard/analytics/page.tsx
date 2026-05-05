@@ -111,7 +111,7 @@ function LockOverlay({ label = 'Plan Pro' }: { label?: string }) {
         <div style={{
             position:'absolute', inset:0, display:'flex', flexDirection:'column',
             alignItems:'center', justifyContent:'center', borderRadius:24,
-            background:'oklch(0.09 0.03 280 / 0.82)', backdropFilter:'blur(3px)', zIndex:10,
+            background:'var(--glass-bg-strong)', backdropFilter:'blur(8px)', zIndex:10,
         }}>
             <span style={{ color:'var(--fg-3)', marginBottom:8 }}>{IcoLock}</span>
             <p style={{ fontSize:14, fontWeight:700, color:'var(--fg-1)' }}>{label}</p>

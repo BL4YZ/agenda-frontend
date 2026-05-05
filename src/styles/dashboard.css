@@ -1689,6 +1689,18 @@
   border-top-color: rgba(0, 0, 0, 0.07);
 }
 
+/* Light mode: insight cards */
+[data-theme="light"] .insight {
+  background: rgba(109, 40, 217, 0.06);
+  border-color: rgba(109, 40, 217, 0.15);
+}
+[data-theme="light"] .insight:hover {
+  border-color: rgba(109, 40, 217, 0.3);
+}
+[data-theme="light"] .insight__icon {
+  background: rgba(109, 40, 217, 0.1);
+}
+
 /* Light mode: filter form + inputs */
 [data-theme="light"] .filter-form {
   background: rgba(0, 0, 0, 0.03);
@@ -1711,19 +1723,27 @@
 
 /* Light mode: calendar */
 [data-theme="light"] .dash-fc-wrap {
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.95);
   border-color: rgba(0, 0, 0, 0.08);
+  backdrop-filter: none;
+  --fc-page-bg-color: #fff;
+  --fc-neutral-bg-color: rgba(0, 0, 0, 0.03);
+  --fc-button-hover-bg-color: rgba(0, 0, 0, 0.06);
 }
 [data-theme="light"] .dash-fc-wrap .fc-theme-standard td,
 [data-theme="light"] .dash-fc-wrap .fc-theme-standard th {
   border-color: rgba(0, 0, 0, 0.08) !important;
 }
 [data-theme="light"] .dash-fc-wrap .fc .fc-col-header-cell {
-  background: rgba(0, 0, 0, 0.04);
+  background: rgba(0, 0, 0, 0.04) !important;
 }
-[data-theme="light"] .dash-fc-wrap .fc .fc-daygrid-day-bg,
-[data-theme="light"] .dash-fc-wrap .fc .fc-daygrid-day {
-  background: transparent;
+[data-theme="light"] .dash-fc-wrap .fc .fc-daygrid-day,
+[data-theme="light"] .dash-fc-wrap .fc .fc-timegrid-slot,
+[data-theme="light"] .dash-fc-wrap .fc .fc-timegrid-col {
+  background: transparent !important;
+}
+[data-theme="light"] .dash-fc-wrap .fc .fc-scrollgrid {
+  background: #fff;
 }
 [data-theme="light"] .dash-fc-wrap .fc .fc-button {
   background: rgba(0, 0, 0, 0.05) !important;
