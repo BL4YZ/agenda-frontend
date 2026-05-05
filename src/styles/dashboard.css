@@ -1211,6 +1211,44 @@
   color: white;
 }
 
+/* ---------- Skeleton shimmer ---------- */
+@keyframes skelShimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position:  600px 0; }
+}
+.skel {
+  background: linear-gradient(
+    90deg,
+    var(--glass-bg)        25%,
+    var(--glass-bg-strong) 50%,
+    var(--glass-bg)        75%
+  );
+  background-size: 600px 100%;
+  animation: skelShimmer 1.8s ease-in-out infinite;
+  border-radius: 6px;
+  display: block;
+  flex-shrink: 0;
+}
+.skel-page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 4px 0;
+}
+.skel-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.skel-card {
+  padding: 20px 22px;
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 /* ---------- Empty state ---------- */
 .empty {
   display: flex;

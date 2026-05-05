@@ -282,7 +282,19 @@ export default function ServicesPage() {
             {/* List */}
             <div className="dtable-wrap">
                 {loading ? (
-                    <div className="empty">Cargando servicios…</div>
+                    <div className="skel-page">
+                        {[0, 1, 2, 3].map(i => (
+                            <div key={i} className="skel-card skel-row" style={{ animationDelay: `${i * 0.08}s` }}>
+                                <span className="skel" style={{ width: 42, height: 42, borderRadius: 12 }} />
+                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                    <span className="skel" style={{ height: 13, width: `${40 + (i % 3) * 15}%` }} />
+                                    <span className="skel" style={{ height: 11, width: `${25 + (i % 2) * 10}%` }} />
+                                </div>
+                                <span className="skel" style={{ height: 13, width: 50 }} />
+                                <span className="skel" style={{ height: 32, width: 32, borderRadius: 8 }} />
+                            </div>
+                        ))}
+                    </div>
                 ) : services.length === 0 ? (
                     <div className="empty">
                         No hay servicios todavía.<br />

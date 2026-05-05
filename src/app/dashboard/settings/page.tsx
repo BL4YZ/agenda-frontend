@@ -352,7 +352,27 @@ function SettingsContent() {
                         <p className="dash-page__sub">Personalizá tu negocio</p>
                     </div>
                 </div>
-                <div className="empty">Cargando…</div>
+                <div className="skel-page">
+                    {/* Business type card */}
+                    <div className="skel-card" style={{ gap: 16 }}>
+                        <span className="skel" style={{ height: 13, width: '28%' }} />
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+                            {[0, 1, 2].map(i => <span key={i} className="skel" style={{ height: 72, borderRadius: 12, animationDelay: `${i * 0.06}s` }} />)}
+                        </div>
+                        <span className="skel" style={{ height: 42, borderRadius: 10, width: '100%', animationDelay: '0.18s' }} />
+                    </div>
+                    {/* Plan card */}
+                    <div className="skel-card" style={{ gap: 14 }}>
+                        <span className="skel" style={{ height: 13, width: '22%' }} />
+                        <span className="skel" style={{ height: 80, borderRadius: 12, animationDelay: '0.06s' }} />
+                    </div>
+                    {/* Payments card */}
+                    <div className="skel-card" style={{ gap: 14 }}>
+                        <span className="skel" style={{ height: 13, width: '30%' }} />
+                        <span className="skel" style={{ height: 56, borderRadius: 12, animationDelay: '0.06s' }} />
+                        <span className="skel" style={{ height: 42, borderRadius: 10, width: '100%', animationDelay: '0.12s' }} />
+                    </div>
+                </div>
             </div>
         );
     }

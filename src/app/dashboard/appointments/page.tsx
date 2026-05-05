@@ -341,7 +341,20 @@ export default function AppointmentsPage() {
 
             {/* Content */}
             {loading ? (
-                <div className="empty">Cargando…</div>
+                <div className="skel-page">
+                    {[0, 1, 2, 3, 4].map(i => (
+                        <div key={i} className="skel-card" style={{ animationDelay: `${i * 0.08}s` }}>
+                            <div className="skel-row">
+                                <span className="skel" style={{ width: 36, height: 36, borderRadius: 10 }} />
+                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                    <span className="skel" style={{ height: 13, width: `${55 + (i % 3) * 12}%` }} />
+                                    <span className="skel" style={{ height: 11, width: `${35 + (i % 2) * 10}%` }} />
+                                </div>
+                                <span className="skel" style={{ height: 22, width: 72, borderRadius: 20 }} />
+                            </div>
+                        </div>
+                    ))}
+                </div>
             ) : appointments.length === 0 ? (
                 <div className="empty">No hay citas con los filtros seleccionados.</div>
             ) : (

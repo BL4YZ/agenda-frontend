@@ -553,7 +553,18 @@ export default function DashboardPage() {
       <GettingStartedGuide />
 
       {/* KPI Grid */}
-      {metrics && (
+      {!metrics ? (
+        <div className="kpi-grid kpi-grid--5">
+          {[0, 1, 2, 3, 4].map(i => (
+            <div key={i} className="kpi" style={{ gap: 10 }}>
+              <span className="skel" style={{ width: 36, height: 36, borderRadius: 10, animationDelay: `${i * 0.07}s` }} />
+              <span className="skel" style={{ height: 28, width: '55%', borderRadius: 8, animationDelay: `${i * 0.07 + 0.05}s` }} />
+              <span className="skel" style={{ height: 11, width: '70%', animationDelay: `${i * 0.07 + 0.1}s` }} />
+              <span className="skel" style={{ height: 10, width: '45%', animationDelay: `${i * 0.07 + 0.15}s` }} />
+            </div>
+          ))}
+        </div>
+      ) : (
         <div className="kpi-grid kpi-grid--5">
           <div className="kpi">
             <div className="kpi__icon">{Icon.cal}</div>

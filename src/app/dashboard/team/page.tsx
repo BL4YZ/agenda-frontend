@@ -315,7 +315,18 @@ export default function TeamPage() {
                 {/* Member list */}
                 <div className="gcard" style={{ padding: 0, overflow: 'hidden' }}>
                     {loading ? (
-                        <div className="empty">Cargando equipo…</div>
+                        <div className="skel-page" style={{ padding: '12px 16px' }}>
+                            {[0, 1, 2, 3].map(i => (
+                                <div key={i} className="skel-row" style={{ padding: '10px 0', animationDelay: `${i * 0.08}s` }}>
+                                    <span className="skel" style={{ width: 38, height: 38, borderRadius: '50%' }} />
+                                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 7 }}>
+                                        <span className="skel" style={{ height: 13, width: `${45 + (i % 3) * 12}%` }} />
+                                        <span className="skel" style={{ height: 11, width: `${25 + (i % 2) * 8}%` }} />
+                                    </div>
+                                    <span className="skel" style={{ height: 22, width: 60, borderRadius: 20 }} />
+                                </div>
+                            ))}
+                        </div>
                     ) : members.length === 0 ? (
                         <div className="empty">
                             No hay empleados todavía.<br />
