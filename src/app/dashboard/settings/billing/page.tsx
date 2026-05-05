@@ -265,7 +265,7 @@ export default function BillingPage() {
 
             {/* Pending notice */}
             {pendingPlan && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 10, background: 'rgba(251,191,36,.08)', border: '1px solid rgba(251,191,36,.2)', marginBottom: 12, fontSize: 12, color: '#fbbf24' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 10, background: 'rgba(251,191,36,.08)', border: '1px solid rgba(251,191,36,.2)', marginBottom: 28, fontSize: 12, color: '#fbbf24' }}>
                     <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#fbbf24', flexShrink: 0, display: 'inline-block' }} />
                     Suscripción a <strong style={{ marginLeft: 3 }}>{pendingPlan === 'pro' ? 'Pro' : 'Negocio'}</strong>&nbsp;pendiente de confirmación en MercadoPago.
                 </div>
