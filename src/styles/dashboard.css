@@ -1460,10 +1460,18 @@
   .dash-side {
     display: none;
   }
-  /* Topbar: hide breadcrumbs (redundant with bottom nav + page title), shrink padding */
+  /* Topbar: compact + clean for mobile */
   .dash-top { padding: 10px 16px; gap: 8px; }
   .dash-crumbs { display: none; }
-  .dash-search { margin-left: 0; }
+  .dash-top__spacer { display: none; }
+  .dash-search { margin-left: 0; max-width: none; }
+  .dash-search__kbd { display: none; }
+  /* Avatar: match glass icon-button style on mobile */
+  .dash-avatar {
+    background: oklch(0.18 0.06 290 / 0.7);
+    border-color: oklch(0.65 0.18 290 / 0.4);
+    color: var(--accent);
+  }
   .kpi-grid--5 { grid-template-columns: repeat(2, 1fr); }
   .kpi-grid--6 { grid-template-columns: repeat(2, 1fr); }
   .kpi-grid--3 { grid-template-columns: repeat(2, 1fr); }
@@ -1577,5 +1585,6 @@
   }
   .dash-mobile-nav__item svg {
     flex-shrink: 0;
+    stroke-width: 2;
   }
 }
