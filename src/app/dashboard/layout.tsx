@@ -367,6 +367,7 @@ function DashTopbar({ crumbs, initial, businessName, role, logout, token }: {
 }) {
   const [open, setOpen] = useState<TopPanel>(null);
   const [notifs, setNotifs] = useState<NotifItem[]>([]);
+  const [notifCount, setNotifCount] = useState(0);
   const [notifLoading, setNotifLoading] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
 
@@ -378,13 +379,31 @@ function DashTopbar({ crumbs, initial, businessName, role, logout, token }: {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
+  // Fetch count on mount so the dot appears before the panel is opened
+  useEffect(() => {
+    if (!token) return;
+    const today = new Date().toISOString().slice(0, 10);
+    axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/appointments?from=${today}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }).then(res => {
+      const data = res.data.slice(0, 6);
+      setNotifs(data);
+      setNotifCount(data.length);
+    }).catch(() => {});
+  }, [token]);
+
+  // Refresh full list when panel is opened
   useEffect(() => {
     if (open !== 'notif' || !token) return;
     setNotifLoading(true);
     const today = new Date().toISOString().slice(0, 10);
     axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/appointments?from=${today}`, {
       headers: { Authorization: `Bearer ${token}` },
-    }).then(res => setNotifs(res.data.slice(0, 6))).catch(() => {})
+    }).then(res => {
+      const data = res.data.slice(0, 6);
+      setNotifs(data);
+      setNotifCount(data.length);
+    }).catch(() => {})
       .finally(() => setNotifLoading(false));
   }, [open, token]);
 
@@ -437,7 +456,7 @@ function DashTopbar({ crumbs, initial, businessName, role, logout, token }: {
         {/* Notifications */}
         <button className={`dash-iconbtn${open === 'notif' ? ' is-active' : ''}`} onClick={() => toggle('notif')}>
           {Icon.bell}
-          {notifs.length > 0 && <span className="dash-iconbtn__dot" />}
+          {notifCount > 0 && <span className="dash-iconbtn__dot" />}
         </button>
         {open === 'notif' && (
           <div className="topbar-drop" style={{ right: 72, width: 300 }}>
