@@ -16,7 +16,7 @@ interface AuthContextType {
     planBlocked: boolean;
     isLoading: boolean;
     profileLoading: boolean;
-    login: (token: string) => void;
+    login: (token: string, remember?: boolean) => void;
     logout: () => void;
     refetchProfile: () => void;
 }
@@ -70,12 +70,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setPlanSuspended(false);
         setPlanBlocked(false);
         localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
         delete axios.defaults.headers.common['Authorization'];
         router.push('/login');
     }, [router]);
 
     useEffect(() => {
-        const storedToken = localStorage.getItem('token');
+        const storedToken = localStorage.getItem('token') ?? sessionStorage.getItem('token');
         if (storedToken) {
             setToken(storedToken);
             setUserId(decodeJwtId(storedToken));
@@ -95,6 +96,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                     setRole(null);
                     setPermissions({});
                     localStorage.removeItem('token');
+                    sessionStorage.removeItem('token');
                     delete axios.defaults.headers.common['Authorization'];
                     router.push('/login');
                 }
@@ -108,12 +110,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         };
     }, [router]);
 
-    const login = useCallback((newToken: string) => {
+    const login = useCallback((newToken: string, remember = true) => {
         setToken(newToken);
         setUserId(decodeJwtId(newToken));
         setRole(decodeJwtRole(newToken));
         setPermissions({});
-        localStorage.setItem('token', newToken);
+        if (remember) {
+            localStorage.setItem('token', newToken);
+            sessionStorage.removeItem('token');
+        } else {
+            sessionStorage.setItem('token', newToken);
+            localStorage.removeItem('token');
+        }
         axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
         fetchProfile(newToken);
         router.push('/dashboard');

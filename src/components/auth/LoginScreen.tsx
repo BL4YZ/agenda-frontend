@@ -25,6 +25,7 @@ function validateEmail(email: string) {
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [pwd, setPwd] = useState('');
+  const [remember, setRemember] = useState(true);
   const [errors, setErrors] = useState<FormErrors>({});
   const [serverError, setServerError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -39,7 +40,7 @@ export default function LoginScreen() {
         const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/users/auth/google`, {
           access_token: tokenResponse.access_token,
         });
-        if (res.data.token) login(res.data.token);
+        if (res.data.token) login(res.data.token, remember);
       } catch {
         setServerError('Error al iniciar sesión con Google. Intentá de nuevo.');
       } finally {
@@ -68,7 +69,7 @@ export default function LoginScreen() {
         email,
         password: pwd,
       });
-      if (res.data.token) login(res.data.token);
+      if (res.data.token) login(res.data.token, remember);
     } catch {
       setServerError('Credenciales inválidas. Por favor intentá de nuevo.');
     } finally {
@@ -150,7 +151,7 @@ export default function LoginScreen() {
               />
 
               <label className="auth-remember">
-                <input type="checkbox" defaultChecked />
+                <input type="checkbox" checked={remember} onChange={e => setRemember(e.target.checked)} />
                 <span className="auth-remember__box" aria-hidden="true">
                   <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M2 6.5L5 9.5L10 3.5" />
