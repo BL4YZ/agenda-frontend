@@ -144,7 +144,7 @@ function BusinessTypeSection() {
                 <h3 className="gcard__title">Tipo de negocio</h3>
             </div>
             <div className="gcard__body">
-                <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:8, marginBottom:20 }}>
+                <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(130px,1fr))', gap:8, marginBottom:20 }}>
                     {BIZ_TYPES.map(t => {
                         const active = localType === t.value;
                         return (
@@ -167,8 +167,8 @@ function BusinessTypeSection() {
                 <div style={{ fontFamily:'var(--font-mono)', fontSize:10, letterSpacing:'0.14em', textTransform:'uppercase', color:'var(--fg-3)', marginBottom:12 }}>Funcionalidades activas</div>
                 <div style={{ display:'flex', flexDirection:'column', marginBottom:20 }}>
                     {FLAG_LABELS.map(({ key, label }, i) => (
-                        <div key={key} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 0', borderBottom: i < FLAG_LABELS.length - 1 ? '1px solid var(--line)' : '0', fontSize:13 }}>
-                            <span style={{ color:'var(--fg-1)' }}>{label}</span>
+                        <div key={key} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, padding:'10px 0', borderBottom: i < FLAG_LABELS.length - 1 ? '1px solid var(--line)' : '0', fontSize:13 }}>
+                            <span style={{ color:'var(--fg-1)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', minWidth:0 }}>{label}</span>
                             <Toggle checked={!!localFlags[key as keyof typeof localFlags]} onChange={() => setLocalFlags(f => ({ ...f, [key]: !f[key as keyof typeof f] }))} />
                         </div>
                     ))}

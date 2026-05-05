@@ -405,6 +405,45 @@ function EmployeeBlockedScreen({ suspended, logout }: { suspended: boolean; logo
   );
 }
 
+/* ── Mobile bottom nav ───────────────────────────────────────────────────── */
+function MobileNav({ isOwner, hasFinanzas, canSettings, logout }: {
+  isOwner: boolean; hasFinanzas: boolean; canSettings: boolean; logout: () => void;
+}) {
+  const pathname = usePathname();
+  const active = (href: string) => pathname === href || pathname.startsWith(href + '/');
+
+  return (
+    <nav className="dash-mobile-nav">
+      <Link href="/dashboard" className={`dash-mobile-nav__item${active('/dashboard') && pathname === '/dashboard' ? ' is-active' : ''}`}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+        Inicio
+      </Link>
+      <Link href="/dashboard/appointments" className={`dash-mobile-nav__item${active('/dashboard/appointments') ? ' is-active' : ''}`}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        Agenda
+      </Link>
+      {hasFinanzas && (
+        <Link href="/dashboard/analytics" className={`dash-mobile-nav__item${active('/dashboard/analytics') || active('/dashboard/finances') ? ' is-active' : ''}`}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>
+          Métricas
+        </Link>
+      )}
+      {isOwner && (
+        <Link href="/dashboard/team" className={`dash-mobile-nav__item${active('/dashboard/team') ? ' is-active' : ''}`}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87M16 3.13A4 4 0 0119 7a4 4 0 01-3 3.87"/></svg>
+          Equipo
+        </Link>
+      )}
+      {canSettings && (
+        <Link href="/dashboard/settings" className={`dash-mobile-nav__item${active('/dashboard/settings') ? ' is-active' : ''}`}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33h0a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51h0a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82v0a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          Config.
+        </Link>
+      )}
+    </nav>
+  );
+}
+
 /* ── Inner layout ────────────────────────────────────────────────────────── */
 function DashboardInner({ children }: { children: React.ReactNode }) {
   const { logout, role, permissions, planSuspended, planBlocked, profileLoading } = useAuth();
@@ -458,6 +497,9 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
         <TrialBanner />
         {children}
       </div>
+
+      {/* Mobile bottom navigation */}
+      <MobileNav isOwner={isOwner} hasFinanzas={hasFinanzas} canSettings={canSettings} logout={logout} />
     </div>
   );
 }
