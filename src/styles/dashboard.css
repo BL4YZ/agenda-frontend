@@ -1462,9 +1462,9 @@
   .kpi-grid--6 { grid-template-columns: repeat(2, 1fr); }
   .kpi-grid--3 { grid-template-columns: repeat(2, 1fr); }
   .two-col, .three-col, .col-2-1 { grid-template-columns: 1fr; }
-  .dash-page { padding: 16px; }
+  .dash-page { padding: 16px 16px 24px; }
   .insights { grid-template-columns: 1fr; }
-  .dash-main { padding-bottom: 88px; }
+  .dash-main { padding-bottom: calc(62px + env(safe-area-inset-bottom, 0px)); }
 }
 
 /* Mobile/desktop visibility helpers for hybrid table+card layouts */
