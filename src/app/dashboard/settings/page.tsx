@@ -371,7 +371,7 @@ function SettingsContent() {
                     <p className="dash-page__sub">Personalizá tu negocio y sus funcionalidades</p>
                 </div>
                 {business && (
-                    <div className="dash-page__actions">
+                    <div className="dash-page__actions settings-header-info">
                         <div className="gcard" style={{ padding:'8px 14px', display:'flex', alignItems:'center', gap:10 }}>
                             <div className="kpi__icon" style={{ width:28, height:28, margin:0, borderRadius:7 }}>{IcoBldg}</div>
                             <div>

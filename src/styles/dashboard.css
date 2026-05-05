@@ -1478,6 +1478,10 @@
   .dtable-wrap { overflow-x: auto; }
   .dtable-mobile  { display: flex; flex-direction: column; gap: 12px; }
   .dtable-desktop { display: none; }
+  /* Trim vertical space so content doesn't land behind bottom nav */
+  .dash-page__head { margin-bottom: 16px; }
+  .trial-banner__text { display: none; }
+  .settings-header-info { display: none; }
 }
 
 /* ── Mobile sub-nav ── */

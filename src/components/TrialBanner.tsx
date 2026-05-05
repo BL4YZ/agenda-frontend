@@ -44,7 +44,7 @@ export default function TrialBanner() {
                         {daysLeft === 1 ? 'día' : 'días'}
                     </span>
                 </div>
-                <span style={{ color: 'var(--fg-2)' }}>
+                <span className="trial-banner__text" style={{ color: 'var(--fg-2)' }}>
                     {isUrgent
                         ? `Tu prueba de Plan Pro vence pronto — no pierdas el acceso a filtros, gráficas y más.`
                         : `Estás en tu período de prueba del Plan Pro. Disfrutá todas las funciones gratis por ${daysLeft} días más.`}
