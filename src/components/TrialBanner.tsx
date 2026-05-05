@@ -50,7 +50,7 @@ export default function TrialBanner() {
                         : `Estás en tu período de prueba del Plan Pro. Disfrutá todas las funciones gratis por ${daysLeft} días más.`}
                 </span>
             </div>
-            <Link href="/dashboard/settings" style={{
+            <Link href="/dashboard/settings/billing" style={{
                 flexShrink: 0, padding: '4px 12px', borderRadius: 8, fontSize: 11, fontWeight: 600,
                 background: isUrgent ? 'rgba(239,68,68,.15)' : 'rgba(99,102,241,.15)',
                 color: isUrgent ? '#f87171' : '#a78bfa',
