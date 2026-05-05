@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Prevent horizontal scroll at document level */
+html, body { overflow-x: hidden; }
+
 /* ── Class-based dark mode ── */
 @custom-variant dark (&:where(.dark, .dark *));
 
