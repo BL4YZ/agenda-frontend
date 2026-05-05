@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useAuth } from '@/context/AuthContext';
 import { useBusiness, TYPE_PRESETS, type BusinessType } from '@/context/BusinessContext';
 import { useSearchParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Suspense } from 'react';
 
 type Business = {
@@ -39,8 +40,6 @@ const IcoExtLink = (<svg width="13" height="13" viewBox="0 0 13 13" fill="none">
 const IcoBldg    = (<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 13V4.5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1V13M2 13h9M11 13V7a1 1 0 0 0-1-1H8" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/><rect x="4" y="7" width="2" height="2" stroke="currentColor" strokeWidth="1.1"/></svg>);
 const IcoCard    = (<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="3" width="12" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M1.5 6.5h12" stroke="currentColor" strokeWidth="1.3"/></svg>);
 const IcoLink    = (<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M6 9a3 3 0 0 0 4.5.5l1.5-1.5A3 3 0 0 0 8 4.5L7 5.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/><path d="M9 6a3 3 0 0 0-4.5-.5L3 7A3 3 0 0 0 7 10.5L8 9.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>);
-const IcoArrow   = (<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 11L11 3M11 3H7M11 3V7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>);
-const IcoWarn    = (<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 3L19.5 19H2.5L11 3z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/><path d="M11 9v4M11 15.5v.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>);
 const IcoLock    = (<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="3.5" y="8" width="11" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><path d="M6 8V6a3 3 0 1 1 6 0v2" stroke="currentColor" strokeWidth="1.4"/></svg>);
 const IcoRefresh = (<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M12 2v4H8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/><path d="M12 6A5 5 0 1 1 7 2a5 5 0 0 1 4.6 3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>);
 
@@ -49,13 +48,6 @@ const PLAN_META = {
     gratis:  { label: 'Gratis',  icon: IcoZap,     color: 'var(--fg-3)', accent: 'rgba(255,255,255,.08)' },
     pro:     { label: 'Pro',     icon: IcoSparkles, color: '#a78bfa',    accent: 'rgba(167,139,250,.1)' },
     negocio: { label: 'Negocio', icon: IcoCrown,    color: '#c084fc',    accent: 'rgba(192,132,252,.1)' },
-};
-
-const STATUS_META = {
-    active:    { label: 'Activo',    dot: '#34d399' },
-    pending:   { label: 'Pendiente', dot: '#fbbf24' },
-    paused:    { label: 'Pausado',   dot: '#fbbf24' },
-    cancelled: { label: 'Cancelado', dot: '#f87171' },
 };
 
 const BIZ_TYPES: { value: BusinessType; label: string; icon: React.ElementType }[] = [
@@ -78,33 +70,6 @@ const FLAG_LABELS: { key: string; label: string }[] = [
 // ── Toggle ────────────────────────────────────────────────────────────────────
 function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void }) {
     return <button className={`dtoggle${checked ? ' is-on' : ''}`} onClick={onChange} />;
-}
-
-// ── CancelModal ───────────────────────────────────────────────────────────────
-function CancelModal({ onConfirm, onClose, loading }: {
-    onConfirm: () => void; onClose: () => void; loading: boolean;
-}) {
-    return (
-        <div className="dash-modal-overlay" onClick={onClose}>
-            <div className="dash-modal" style={{ maxWidth:380 }} onClick={e => e.stopPropagation()}>
-                <div style={{ display:'flex', flexDirection:'column', alignItems:'center', textAlign:'center' }}>
-                    <div style={{ width:48, height:48, borderRadius:14, background:'rgba(239,68,68,.1)', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:16, color:'#ef4444' }}>
-                        {IcoWarn}
-                    </div>
-                    <h3 style={{ fontSize:16, fontWeight:700, color:'var(--fg-0)', marginBottom:8 }}>Cancelar suscripción</h3>
-                    <p style={{ fontSize:13, color:'var(--fg-3)', lineHeight:1.6, marginBottom:24 }}>
-                        Tu plan seguirá activo hasta el final del período actual. Una vez que venza, pasarás automáticamente al plan <strong style={{ color:'var(--fg-1)' }}>Gratis</strong>.
-                    </p>
-                    <div style={{ display:'flex', gap:10, width:'100%' }}>
-                        <button onClick={onClose} disabled={loading} className="dbtn" style={{ flex:1 }}>Mantener plan</button>
-                        <button onClick={onConfirm} disabled={loading} className="dbtn dbtn--danger" style={{ flex:1 }}>
-                            {loading ? 'Cancelando…' : 'Sí, cancelar'}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
 }
 
 // ── BusinessTypeSection ───────────────────────────────────────────────────────
@@ -207,9 +172,6 @@ function SettingsContent() {
     const [paymentSaved, setPaymentSaved] = useState(false);
     const [manualToken, setManualToken] = useState('');
     const [savingToken, setSavingToken] = useState(false);
-    const [subscribing, setSubscribing] = useState<string | null>(null);
-    const [cancelling, setCancelling] = useState(false);
-    const [showCancelModal, setShowCancelModal] = useState(false);
 
     const [logoUrl, setLogoUrl] = useState('');
     const [brandColor, setBrandColor] = useState('#6366f1');
@@ -241,28 +203,6 @@ function SettingsContent() {
             }).catch(console.error)
             .finally(() => setLoadingBusiness(false));
     }, [token]);
-
-    const handleSubscribe = async (plan: 'pro' | 'negocio') => {
-        setSubscribing(plan);
-        try {
-            const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/subscription`, { plan }, { headers: { Authorization: `Bearer ${token}` } });
-            window.location.href = res.data.init_point;
-        } catch (err: unknown) {
-            if (axios.isAxiosError(err)) alert(err.response?.data?.message || 'Error al iniciar la suscripción.');
-            else alert('Error al iniciar la suscripción.');
-        } finally { setSubscribing(null); }
-    };
-
-    const handleCancelSubscription = async () => {
-        setCancelling(true);
-        try {
-            await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/subscription`, { headers: { Authorization: `Bearer ${token}` } });
-            const endsAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
-            setBusiness(prev => prev ? { ...prev, subscription_status: 'cancelled', subscription_ends_at: endsAt } : prev);
-            setShowCancelModal(false);
-        } catch { alert('Error al cancelar la suscripción. Intentá de nuevo.'); }
-        finally { setCancelling(false); }
-    };
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -341,7 +281,6 @@ function SettingsContent() {
     const planMeta   = PLAN_META[plan] ?? PLAN_META.gratis;
     const PlanIcon   = planMeta.icon;
     const isPro      = plan === 'pro' || plan === 'negocio';
-    const pendingPlan = business?.pending_plan ?? null;
 
     if (loadingBusiness) {
         return (
@@ -377,8 +316,6 @@ function SettingsContent() {
         );
     }
 
-    const status     = business?.subscription_status ?? 'active';
-    const statusMeta = STATUS_META[status] ?? STATUS_META.active;
     const mpConnected = business?.mp_connected || mpStatus === 'connected';
 
     return (
@@ -448,9 +385,9 @@ function SettingsContent() {
                                         <p style={{ fontSize:14, fontWeight:600, color:'var(--fg-0)' }}>Requiere plan Pro</p>
                                         <p style={{ fontSize:12, color:'var(--fg-3)', marginTop:4 }}>Cobrá señas y pagos online con MercadoPago</p>
                                     </div>
-                                    <button onClick={() => handleSubscribe('pro')} disabled={subscribing === 'pro'} className="dbtn dbtn--primary">
-                                        <IcoSparkles /><span>{subscribing === 'pro' ? 'Redirigiendo…' : 'Actualizar a Pro · $490/mes'}</span>
-                                    </button>
+                                    <Link href="/dashboard/settings/billing" className="dbtn dbtn--primary" style={{ textDecoration:'none' }}>
+                                        <IcoSparkles /><span>Ver planes · desde $490/mes</span>
+                                    </Link>
                                 </div>
                             )}
 
@@ -534,95 +471,23 @@ function SettingsContent() {
                     {/* Right column: plan + link + brand */}
                     <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
 
-                        {/* Plan card */}
+                        {/* Plan card — compact summary, full management on /settings/billing */}
                         <div className="gcard">
                             <div className="gcard__head">
                                 <h3 className="gcard__title">Plan y suscripción</h3>
-                                <div style={{ display:'flex', alignItems:'center', gap:6, flexShrink:0 }}>
-                                    <span style={{ display:'inline-flex', alignItems:'center', gap:5, fontSize:11, fontWeight:700, padding:'3px 10px', borderRadius:99, background:planMeta.accent, color:planMeta.color }}>
-                                        <PlanIcon size={10} /> {planMeta.label}
-                                    </span>
-                                    {plan !== 'gratis' && (
-                                        <span style={{ display:'inline-flex', alignItems:'center', gap:5, fontSize:11, padding:'3px 10px', borderRadius:99, background:'rgba(255,255,255,.06)', color:'var(--fg-3)' }}>
-                                            <span style={{ width:6, height:6, borderRadius:'50%', background:statusMeta.dot, display:'inline-block' }} />
-                                            {statusMeta.label}
-                                        </span>
-                                    )}
-                                </div>
+                                <span style={{ display:'inline-flex', alignItems:'center', gap:5, fontSize:11, fontWeight:700, padding:'3px 10px', borderRadius:99, background:planMeta.accent, color:planMeta.color, flexShrink:0 }}>
+                                    <PlanIcon size={10} /> {planMeta.label}
+                                </span>
                             </div>
                             <div className="gcard__body">
-                                {plan === 'gratis' && (
-                                    <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
-                                        <p style={{ fontSize:12, color:'var(--fg-3)' }}>Estás en el plan gratuito (1 profesional · 50 citas/mes). Mejorá tu plan para desbloquear todo.</p>
-                                        {pendingPlan && (
-                                            <div style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 12px', borderRadius:10, background:'rgba(251,191,36,.08)', border:'1px solid rgba(251,191,36,.2)' }}>
-                                                <span style={{ width:6, height:6, borderRadius:'50%', background:'#fbbf24', flexShrink:0, display:'inline-block' }} />
-                                                <p style={{ fontSize:12, color:'#fbbf24' }}>Suscripción a {pendingPlan === 'pro' ? 'Pro' : 'Negocio'} pendiente de confirmación.</p>
-                                            </div>
-                                        )}
-                                        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
-                                            <button onClick={() => handleSubscribe('pro')} disabled={subscribing === 'pro'}
-                                                style={{ padding:'12px', borderRadius:12, border:'1px solid rgba(167,139,250,.25)', background:'rgba(167,139,250,.06)', cursor:'pointer', textAlign:'left', transition:'background .2s' }}>
-                                                <p style={{ fontSize:12, fontWeight:700, color:'var(--accent)', display:'flex', alignItems:'center', gap:5 }}><IcoSparkles /> Pro</p>
-                                                <p style={{ fontSize:11, color:'var(--fg-3)', marginTop:3 }}>$490/mes · 14 días gratis</p>
-                                            </button>
-                                            <button onClick={() => handleSubscribe('negocio')} disabled={subscribing === 'negocio'}
-                                                style={{ padding:'12px', borderRadius:12, border:'1px solid rgba(192,132,252,.25)', background:'rgba(192,132,252,.06)', cursor:'pointer', textAlign:'left', transition:'background .2s' }}>
-                                                <p style={{ fontSize:12, fontWeight:700, color:'#c084fc', display:'flex', alignItems:'center', gap:5 }}><IcoCrown /> Negocio</p>
-                                                <p style={{ fontSize:11, color:'var(--fg-3)', marginTop:3 }}>$990/mes · Ilimitado</p>
-                                            </button>
-                                        </div>
-                                        {subscribing && <p style={{ fontSize:12, color:'var(--fg-3)', textAlign:'center' }}>Redirigiendo a MercadoPago…</p>}
-                                    </div>
-                                )}
-
-                                {plan === 'pro' && (
-                                    <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
-                                        <p style={{ fontSize:12, color:'var(--fg-1)' }}>5 profesionales · Citas ilimitadas · Señas · Estadísticas</p>
-                                        {(pendingPlan === 'negocio' || status === 'pending') && (
-                                            <div style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 12px', borderRadius:10, background:'rgba(251,191,36,.08)', border:'1px solid rgba(251,191,36,.2)' }}>
-                                                <span style={{ width:6, height:6, borderRadius:'50%', background:'#fbbf24', flexShrink:0, display:'inline-block' }} />
-                                                <p style={{ fontSize:12, color:'#fbbf24' }}>
-                                                    {pendingPlan === 'negocio' ? 'Upgrade a Negocio pendiente. Tu plan Pro sigue activo.' : 'Pendiente de confirmación en MercadoPago.'}
-                                                </p>
-                                            </div>
-                                        )}
-                                        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-                                            <button onClick={() => handleSubscribe('negocio')} disabled={!!subscribing || cancelling}
-                                                className="dbtn dbtn--sm" style={{ color:'#c084fc' }}>
-                                                <IcoCrown /><span>Subir a Negocio</span>
-                                            </button>
-                                            <span style={{ color:'var(--line)' }}>·</span>
-                                            <button onClick={() => setShowCancelModal(true)} disabled={cancelling || !!subscribing}
-                                                className="dbtn dbtn--sm" style={{ color:'#fda4af' }}>
-                                                {cancelling ? 'Cancelando…' : 'Cancelar suscripción'}
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {plan === 'negocio' && (
-                                    <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
-                                        <p style={{ fontSize:12, color:'var(--fg-1)' }}>Profesionales ilimitados · Citas ilimitadas · Marca propia · Sucursales</p>
-                                        {status === 'pending' && (
-                                            <div style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 12px', borderRadius:10, background:'rgba(251,191,36,.08)', border:'1px solid rgba(251,191,36,.2)' }}>
-                                                <span style={{ width:6, height:6, borderRadius:'50%', background:'#fbbf24', flexShrink:0, display:'inline-block' }} />
-                                                <p style={{ fontSize:12, color:'#fbbf24' }}>Pendiente de confirmación en MercadoPago.</p>
-                                            </div>
-                                        )}
-                                        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-                                            <button onClick={() => handleSubscribe('pro')} disabled={!!subscribing || cancelling}
-                                                className="dbtn dbtn--sm">
-                                                <IcoSparkles /><span>Bajar a Pro ($490/mes)</span>
-                                            </button>
-                                            <span style={{ color:'var(--line)' }}>·</span>
-                                            <button onClick={() => setShowCancelModal(true)} disabled={cancelling || !!subscribing}
-                                                className="dbtn dbtn--sm" style={{ color:'#fda4af' }}>
-                                                {cancelling ? 'Cancelando…' : 'Cancelar suscripción'}
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
+                                <p style={{ fontSize:12, color:'var(--fg-3)', marginBottom:14 }}>
+                                    {plan === 'gratis'  && 'Plan gratuito · 1 profesional · 50 citas/mes'}
+                                    {plan === 'pro'     && 'Plan Pro · 5 profesionales · Citas ilimitadas · Pagos online'}
+                                    {plan === 'negocio' && 'Plan Negocio · Ilimitado · Marca propia · Sucursales'}
+                                </p>
+                                <Link href="/dashboard/settings/billing" className="dbtn dbtn--primary" style={{ textDecoration:'none', justifyContent:'center', padding:'10px 16px', display:'flex' }}>
+                                    {plan === 'gratis' ? 'Ver planes y mejorar →' : 'Administrar suscripción →'}
+                                </Link>
                             </div>
                         </div>
 
@@ -693,9 +558,6 @@ function SettingsContent() {
                 </div>
             )}
 
-            {showCancelModal && (
-                <CancelModal loading={cancelling} onConfirm={handleCancelSubscription} onClose={() => !cancelling && setShowCancelModal(false)} />
-            )}
         </div>
     );
 }
