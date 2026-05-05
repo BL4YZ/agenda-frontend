@@ -3,6 +3,7 @@
 import ProtectedRoute from "@/components/ProtectedRoute";
 import OnboardingModal from "@/components/OnboardingModal";
 import TrialBanner from "@/components/TrialBanner";
+import RouteProgress from "@/components/RouteProgress";
 import { useAuth } from "@/context/AuthContext";
 import { BusinessProvider, useBusiness } from "@/context/BusinessContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -432,6 +433,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="dash-shell ma-root">
+      <RouteProgress />
       <DashBackdrop />
 
       {!loading && isOwner && !isOnboarded && <OnboardingModal />}
