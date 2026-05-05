@@ -284,8 +284,14 @@ export default function VariantCStyles() {
 
       /* ── Responsive: mobile ── */
       @media (max-width: 768px) {
-        /* Nav: ocultar pill, mostrar logo + ambos botones */
+        /* Nav: ocultar pill, fondo glass para separar en light mode */
         .vc-nav-pill { display: none; }
+        .vc-nav {
+          background: var(--glass-bg);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border-bottom: 1px solid var(--glass-border);
+        }
 
         /* Hero */
         .vc-hero { padding: 110px 20px 60px; }
