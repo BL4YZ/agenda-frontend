@@ -284,9 +284,8 @@ export default function VariantCStyles() {
 
       /* ── Responsive: mobile ── */
       @media (max-width: 768px) {
-        /* Nav: ocultar pill, mostrar solo logo + botón */
+        /* Nav: ocultar pill, mostrar logo + ambos botones */
         .vc-nav-pill { display: none; }
-        .vc-nav-entrar { display: none; }
 
         /* Hero */
         .vc-hero { padding: 110px 20px 60px; }
