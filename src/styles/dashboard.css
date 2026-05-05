@@ -1877,9 +1877,7 @@
 }
 
 .pricing-feat--off {
-  color: var(--fg-3);
-  text-decoration: line-through;
-  text-decoration-color: oklch(1 0 0 / 0.12);
+  color: oklch(1 0 0 / 0.28);
 }
 
 .pricing-feat__icon {
@@ -1890,8 +1888,8 @@
   height: 18px;
   border-radius: 5px;
   flex-shrink: 0;
-  background: oklch(1 0 0 / 0.05);
-  color: var(--fg-3);
+  background: oklch(0.55 0.18 25 / 0.12);
+  color: oklch(1 0 0 / 0.28);
 }
 
 .pricing-feat:not(.pricing-feat--off) .pricing-feat__icon {

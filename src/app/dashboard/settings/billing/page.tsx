@@ -265,7 +265,7 @@ export default function BillingPage() {
 
             {/* Pending notice */}
             {pendingPlan && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderRadius: 12, background: 'rgba(251,191,36,.08)', border: '1px solid rgba(251,191,36,.2)', marginBottom: 4, fontSize: 13, color: '#fbbf24' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 10, background: 'rgba(251,191,36,.08)', border: '1px solid rgba(251,191,36,.2)', marginBottom: 12, fontSize: 12, color: '#fbbf24' }}>
                     <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#fbbf24', flexShrink: 0, display: 'inline-block' }} />
                     Suscripción a <strong style={{ marginLeft: 3 }}>{pendingPlan === 'pro' ? 'Pro' : 'Negocio'}</strong>&nbsp;pendiente de confirmación en MercadoPago.
                 </div>
@@ -273,7 +273,7 @@ export default function BillingPage() {
 
             {/* Skeleton */}
             {loading && (
-                <div className="skel-page" style={{ marginTop: 8 }}>
+                <div className="skel-page" style={{ marginTop: 4 }}>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
                         {[0, 1, 2].map(i => (
                             <div key={i} className="skel-card" style={{ gap: 16, animationDelay: `${i * 0.08}s` }}>
@@ -353,13 +353,12 @@ export default function BillingPage() {
                                     '--plan-border': plan.border,
                                 } as React.CSSProperties}
                             >
-                                {/* Badge */}
-                                {plan.badge && (
-                                    <div className="pricing-card__badge">{plan.badge}</div>
-                                )}
-                                {isCurrent && isActive && (
+                                {/* Badge — only one at a time, current takes priority */}
+                                {isCurrent && isActive ? (
                                     <div className="pricing-card__badge pricing-card__badge--current">Plan actual</div>
-                                )}
+                                ) : plan.badge ? (
+                                    <div className="pricing-card__badge">{plan.badge}</div>
+                                ) : null}
 
                                 {/* Plan header */}
                                 <div className="pricing-card__head">
