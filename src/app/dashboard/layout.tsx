@@ -455,15 +455,17 @@ function MobileSubNav({
 
   return (
     <nav className="dash-mobile-subnav">
-      {items.map(item => (
-        <Link
-          key={item.href}
-          href={item.href}
-          className={`dash-mobile-subnav__item${pathname === item.href ? ' is-active' : ''}`}
-        >
-          {item.label}
-        </Link>
-      ))}
+      <div className="dash-mobile-subnav__scroll">
+        {items.map(item => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={`dash-mobile-subnav__item${pathname === item.href ? ' is-active' : ''}`}
+          >
+            {item.label}
+          </Link>
+        ))}
+      </div>
     </nav>
   );
 }

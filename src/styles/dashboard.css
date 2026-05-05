@@ -1503,20 +1503,25 @@
   display: none;
 }
 @media (max-width: 1024px) {
+  /* Outer nav: decorative only — no flex/overflow so parent's overflow-x:hidden
+     doesn't collapse the intrinsic height of the flex children inside. */
   .dash-mobile-subnav {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+    display: block;
     background: var(--glass-bg);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--glass-border);
   }
-  .dash-mobile-subnav::-webkit-scrollbar { display: none; }
+  /* Inner scroll row: owns the flex layout + horizontal scroll */
+  .dash-mobile-subnav__scroll {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .dash-mobile-subnav__scroll::-webkit-scrollbar { display: none; }
   .dash-mobile-subnav__item {
     display: inline-flex;
     align-items: center;
