@@ -356,7 +356,45 @@ function DashSearch() {
 }
 
 /* ── Topbar ──────────────────────────────────────────────────────────────── */
-function DashTopbar({ crumbs, initial }: { crumbs: string[]; initial: string }) {
+type NotifItem = { id: string; title: string; start: string; client_name?: string };
+type TopPanel = 'help' | 'notif' | 'profile' | null;
+
+function DashTopbar({ crumbs, initial, businessName, role, logout, token }: {
+  crumbs: string[]; initial: string; businessName: string;
+  role: string | null; logout: () => void; token: string | null;
+}) {
+  const [open, setOpen] = useState<TopPanel>(null);
+  const [notifs, setNotifs] = useState<NotifItem[]>([]);
+  const [notifLoading, setNotifLoading] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(null);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  useEffect(() => {
+    if (open !== 'notif' || !token) return;
+    setNotifLoading(true);
+    const today = new Date().toISOString().slice(0, 10);
+    axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/appointments?from=${today}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }).then(res => setNotifs(res.data.slice(0, 6))).catch(() => {})
+      .finally(() => setNotifLoading(false));
+  }, [open, token]);
+
+  const toggle = (panel: NonNullable<TopPanel>) =>
+    setOpen(prev => prev === panel ? null : panel);
+
+  const formatNotifTime = (iso: string) => {
+    const d = new Date(iso);
+    return d.toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric', month: 'short' }) +
+      ' · ' + iso.slice(11, 16);
+  };
+
   return (
     <div className="dash-top">
       <div className="dash-crumbs">
@@ -369,12 +407,100 @@ function DashTopbar({ crumbs, initial }: { crumbs: string[]; initial: string }) 
       </div>
       <DashSearch />
       <div className="dash-top__spacer" />
-      <button className="dash-iconbtn">{Icon.help}</button>
-      <button className="dash-iconbtn">
-        {Icon.bell}
-        <span className="dash-iconbtn__dot" />
-      </button>
-      <div className="dash-avatar">{initial}</div>
+
+      <div ref={wrapRef} style={{ display: 'flex', alignItems: 'center', gap: 6, position: 'relative' }}>
+
+        {/* Help */}
+        <button className={`dash-iconbtn${open === 'help' ? ' is-active' : ''}`} onClick={() => toggle('help')}>
+          {Icon.help}
+        </button>
+        {open === 'help' && (
+          <div className="topbar-drop" style={{ right: 140 }}>
+            <div className="topbar-drop__head">Centro de ayuda</div>
+            <Link href="/dashboard/settings" className="topbar-drop__item" onClick={() => setOpen(null)}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33h0a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51h0a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82v0a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+              Configuración
+            </Link>
+            <a href="mailto:soporte@miagenda.app" className="topbar-drop__item" onClick={() => setOpen(null)}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              Contactar soporte
+            </a>
+            <a href="/public" target="_blank" className="topbar-drop__item" onClick={() => setOpen(null)}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+              Ver mi página pública
+            </a>
+          </div>
+        )}
+
+        {/* Notifications */}
+        <button className={`dash-iconbtn${open === 'notif' ? ' is-active' : ''}`} onClick={() => toggle('notif')}>
+          {Icon.bell}
+          {notifs.length > 0 && <span className="dash-iconbtn__dot" />}
+        </button>
+        {open === 'notif' && (
+          <div className="topbar-drop" style={{ right: 72, width: 300 }}>
+            <div className="topbar-drop__head">Próximas citas</div>
+            {notifLoading ? (
+              <div className="skel-page" style={{ padding: '8px 12px' }}>
+                {[0,1,2].map(i => (
+                  <div key={i} className="skel-row" style={{ gap: 10, padding: '6px 0' }}>
+                    <span className="skel" style={{ width: 32, height: 32, borderRadius: 8 }} />
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      <span className="skel" style={{ height: 11, width: '60%' }} />
+                      <span className="skel" style={{ height: 10, width: '45%' }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : notifs.length === 0 ? (
+              <div style={{ padding: '20px 16px', textAlign: 'center', color: 'var(--fg-3)', fontSize: 13 }}>
+                No hay citas próximas
+              </div>
+            ) : notifs.map(n => (
+              <Link key={n.id} href="/dashboard/appointments" className="topbar-drop__item topbar-drop__item--notif" onClick={() => setOpen(null)}>
+                <div className="topbar-drop__notif-icon">
+                  {n.title.charAt(0).toUpperCase()}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--fg-0)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.title}</div>
+                  <div style={{ fontSize: 11, color: 'var(--fg-3)', marginTop: 2 }}>
+                    {n.client_name && <span>{n.client_name} · </span>}
+                    {formatNotifTime(n.start)}
+                  </div>
+                </div>
+              </Link>
+            ))}
+            <div className="topbar-drop__sep" />
+            <Link href="/dashboard/appointments" className="topbar-drop__item topbar-drop__item--footer" onClick={() => setOpen(null)}>
+              Ver todas las citas →
+            </Link>
+          </div>
+        )}
+
+        {/* Profile */}
+        <button className={`dash-avatar${open === 'profile' ? ' is-active' : ''}`} onClick={() => toggle('profile')}>
+          {initial}
+        </button>
+        {open === 'profile' && (
+          <div className="topbar-drop" style={{ right: 0, width: 220 }}>
+            <div className="topbar-drop__profile">
+              <div className="topbar-drop__avatar">{initial}</div>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--fg-0)' }}>{businessName}</div>
+                <div style={{ fontSize: 11, color: 'var(--fg-3)', marginTop: 2, textTransform: 'capitalize' }}>{role ?? 'owner'}</div>
+              </div>
+            </div>
+            <div className="topbar-drop__sep" />
+            <Link href="/dashboard/settings" className="topbar-drop__item" onClick={() => setOpen(null)}>
+              {Icon.settings} Configuración
+            </Link>
+            <div className="topbar-drop__sep" />
+            <button className="topbar-drop__item topbar-drop__item--danger" onClick={() => { setOpen(null); logout(); }}>
+              {Icon.logout} Cerrar sesión
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -511,7 +637,7 @@ function MobileNav({ isOwner, hasFinanzas, canSettings, logout }: {
 
 /* ── Inner layout ────────────────────────────────────────────────────────── */
 function DashboardInner({ children }: { children: React.ReactNode }) {
-  const { logout, role, permissions, planSuspended, planBlocked, profileLoading } = useAuth();
+  const { logout, role, permissions, planSuspended, planBlocked, profileLoading, token } = useAuth();
   const { theme, toggle } = useTheme();
   const { business, featureFlags, isOnboarded, loading } = useBusiness();
   const pathname = usePathname();
@@ -558,7 +684,14 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
       />
 
       <div className="dash-main">
-        <DashTopbar crumbs={crumbs} initial={initial} />
+        <DashTopbar
+          crumbs={crumbs}
+          initial={initial}
+          businessName={business?.name ?? ''}
+          role={role}
+          logout={logout}
+          token={token}
+        />
         <MobileSubNav
           hasEquipo={hasEquipo}
           hasFinanzas={hasFinanzas}
