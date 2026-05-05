@@ -69,6 +69,7 @@ const defaultDay = (): DayState => ({ enabled: false, start: '09:00', end: '18:0
 export default function SchedulesPage() {
     const { token } = useAuth();
     const [members, setMembers] = useState<Member[]>([]);
+    const [membersLoading, setMembersLoading] = useState(true);
     const [selectedId, setSelectedId] = useState<number | null>(null);
     const [days, setDays] = useState<DayState[]>(DAYS.map(defaultDay));
     const [loading, setLoading] = useState(false);
@@ -82,7 +83,8 @@ export default function SchedulesPage() {
                 setMembers(res.data);
                 if (res.data.length > 0) setSelectedId(res.data[0].id);
             })
-            .catch(console.error);
+            .catch(console.error)
+            .finally(() => setMembersLoading(false));
     }, [token]);
 
     useEffect(() => {
@@ -161,7 +163,28 @@ export default function SchedulesPage() {
                 </div>
             </div>
 
-            {members.length === 0 ? (
+            {membersLoading ? (
+                <div className="skel-page">
+                    {/* Member pill skeletons */}
+                    <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                        {[80, 110, 90].map((w, i) => (
+                            <span key={i} className="skel" style={{ height: 34, width: w, borderRadius: 10, animationDelay: `${i * 0.06}s` }} />
+                        ))}
+                    </div>
+                    {/* Schedule card skeleton */}
+                    <div className="skel-card" style={{ padding: 0, gap: 0 }}>
+                        <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--line)' }}>
+                            <span className="skel" style={{ height: 13, width: 120 }} />
+                        </div>
+                        {DAYS.map((_, i) => (
+                            <div key={i} style={{ padding: '14px 20px', borderBottom: i < DAYS.length - 1 ? '1px solid var(--line)' : undefined, display: 'flex', alignItems: 'center', gap: 12 }}>
+                                <span className="skel" style={{ width: 40, height: 22, borderRadius: 11, flexShrink: 0, animationDelay: `${i * 0.05}s` }} />
+                                <span className="skel" style={{ height: 13, width: 70 + (i % 3) * 16, animationDelay: `${i * 0.05 + 0.03}s` }} />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            ) : members.length === 0 ? (
                 <div className="empty">
                     No hay empleados todavía.<br />
                     <span style={{ color: 'var(--fg-3)', fontSize: 13 }}>Añade empleados en la sección Equipo.</span>
@@ -195,7 +218,14 @@ export default function SchedulesPage() {
                         </div>
 
                         {loading ? (
-                            <div className="empty">Cargando horario…</div>
+                            <div>
+                                {DAYS.map((_, i) => (
+                                    <div key={i} style={{ padding: '14px 20px', borderBottom: i < DAYS.length - 1 ? '1px solid var(--line)' : undefined, display: 'flex', alignItems: 'center', gap: 12 }}>
+                                        <span className="skel" style={{ width: 40, height: 22, borderRadius: 11, flexShrink: 0, animationDelay: `${i * 0.05}s` }} />
+                                        <span className="skel" style={{ height: 13, width: 70 + (i % 3) * 16, animationDelay: `${i * 0.05 + 0.03}s` }} />
+                                    </div>
+                                ))}
+                            </div>
                         ) : (
                             <div>
                                 {DAYS.map((day, i) => (
