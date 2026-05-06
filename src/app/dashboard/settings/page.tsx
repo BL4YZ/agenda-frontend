@@ -20,6 +20,7 @@ type Business = {
     subscription_status: 'active' | 'pending' | 'paused' | 'cancelled';
     subscription_ends_at?: string | null;
     pending_plan?: 'pro' | 'negocio' | null;
+    feature_flags?: { bookingEnabled?: boolean; [key: string]: unknown };
 };
 
 // ── SVG Icons ─────────────────────────────────────────────────────────────────
@@ -178,6 +179,9 @@ function SettingsContent() {
     const [savingBrand, setSavingBrand] = useState(false);
     const [brandSaved, setBrandSaved] = useState(false);
 
+    const [bookingEnabled, setBookingEnabled] = useState(true);
+    const [savingBooking, setSavingBooking] = useState(false);
+
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deletePassword, setDeletePassword] = useState('');
     const [deleteError, setDeleteError] = useState('');
@@ -201,6 +205,7 @@ function SettingsContent() {
                     setDepositPct(res.data.deposit_percentage || 30);
                     setLogoUrl(res.data.logo_url || '');
                     setBrandColor(res.data.brand_color || '#6366f1');
+                    setBookingEnabled(res.data.feature_flags?.bookingEnabled !== false);
                     localStorage.setItem('business_slug', res.data.slug);
                     localStorage.setItem('business_name', res.data.name);
                     localStorage.setItem('business_id', String(res.data.id));
@@ -279,6 +284,21 @@ function SettingsContent() {
             setTimeout(() => setBrandSaved(false), 2000);
         } catch { console.error('Error al guardar marca propia.'); }
         finally { setSavingBrand(false); }
+    };
+
+    const handleToggleBooking = async (newVal: boolean) => {
+        setBookingEnabled(newVal);
+        setSavingBooking(true);
+        try {
+            await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/me`,
+                { booking_enabled: newVal },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+        } catch {
+            setBookingEnabled(!newVal);
+        } finally {
+            setSavingBooking(false);
+        }
     };
 
     const handleDeleteAccount = async () => {
@@ -517,10 +537,21 @@ function SettingsContent() {
                         <div className="gcard">
                             <div className="gcard__head">
                                 <h3 className="gcard__title">Link público de reservas</h3>
+                                <div style={{ display:'flex', alignItems:'center', gap:8, flexShrink:0 }}>
+                                    <span style={{ fontSize:11, color: bookingEnabled ? 'var(--fg-3)' : 'oklch(0.65 0.22 25)', transition:'color .2s' }}>
+                                        {savingBooking ? 'Guardando…' : bookingEnabled ? 'Activa' : 'Desactivada'}
+                                    </span>
+                                    <Toggle checked={bookingEnabled} onChange={() => handleToggleBooking(!bookingEnabled)} />
+                                </div>
                             </div>
                             <div className="gcard__body">
+                                {!bookingEnabled && (
+                                    <div style={{ padding:'10px 12px', borderRadius:9, background:'rgba(251,191,36,.06)', border:'1px solid rgba(251,191,36,.18)', marginBottom:12 }}>
+                                        <p style={{ fontSize:12, color:'#fbbf24', margin:0 }}>La página pública está desactivada. Tus clientes no podrán reservar online hasta que la reactives.</p>
+                                    </div>
+                                )}
                                 <p style={{ fontSize:12, color:'var(--fg-2)', marginBottom:12 }}>Compartí este link con tus clientes para que puedan reservar online.</p>
-                                <div style={{ display:'flex', gap:6 }}>
+                                <div style={{ display:'flex', gap:6, opacity: bookingEnabled ? 1 : 0.45, pointerEvents: bookingEnabled ? 'auto' : 'none', transition:'opacity .2s' }}>
                                     <input readOnly value={publicUrl}
                                         style={{ flex:1, minWidth:0, background:'var(--glass-bg)', border:'1px solid var(--line)', borderRadius:9, padding:'9px 12px', color:'var(--fg-1)', fontFamily:'var(--font-mono)', fontSize:11 }} />
                                     <button onClick={() => { navigator.clipboard.writeText(publicUrl); setCopied(true); setTimeout(() => setCopied(false), 2000); }}

@@ -55,8 +55,10 @@ function PublicBusinessContent() {
                 const matched = branchList.find(b => b.id === parseInt(branchParam));
                 if (matched) setSelectedBranch(matched);
             }
-        }).catch(() => setError('No se pudo cargar la información del negocio.'))
-            .finally(() => setLoading(false));
+        }).catch((err) => {
+            const isDisabled = axios.isAxiosError(err) && err.response?.status === 404 && err.response?.data?.disabled;
+            setError(isDisabled ? '__disabled__' : 'No se pudo cargar la información del negocio.');
+        }).finally(() => setLoading(false));
     }, [slug, searchParams]);
 
     const hasBranches = branches.length > 0;
@@ -66,6 +68,22 @@ function PublicBusinessContent() {
         const base = `/public/${slug}/book?serviceId=${service.id}&serviceName=${encodeURIComponent(service.name)}&servicePrice=${service.price}`;
         return selectedBranch ? `${base}&branchId=${selectedBranch.id}` : base;
     };
+
+    if (error === '__disabled__') {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#0c0c0f] px-4">
+                <div className="text-center max-w-xs">
+                    <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-white/8 flex items-center justify-center mx-auto mb-5">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" className="text-slate-400 dark:text-slate-500">
+                            <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                    </div>
+                    <p className="text-slate-800 dark:text-slate-200 font-semibold text-base mb-2">Reservas no disponibles</p>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">Este negocio desactivó temporalmente las reservas online. Contactalos directamente para coordinar un turno.</p>
+                </div>
+            </div>
+        );
+    }
 
     if (error) {
         return (
