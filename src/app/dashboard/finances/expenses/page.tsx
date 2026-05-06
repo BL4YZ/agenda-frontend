@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '@/context/AuthContext';
+import { useBusiness } from '@/context/BusinessContext';
 import { Plus, Trash2, X } from 'lucide-react';
 
 type Expense = {
@@ -35,8 +36,31 @@ function thisMonthRange() {
     return { from, to };
 }
 
+function UpgradeGate({ feature }: { feature: string }) {
+    return (
+        <div className="flex flex-col flex-1 items-center justify-center py-24 px-6 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 flex items-center justify-center mb-4">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-indigo-500">
+                    <path d="M12 15v-3m0-3h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+            </div>
+            <h2 className="text-base font-semibold text-slate-900 dark:text-white mb-1">{feature} requiere Plan Pro</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-xs">
+                Actualizá tu plan para acceder a esta función y desbloquear todas las herramientas de gestión.
+            </p>
+            <a
+                href="/dashboard/settings?tab=plan"
+                className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-xl transition-all hover:scale-[1.02] shadow-lg shadow-indigo-500/20"
+            >
+                Ver planes
+            </a>
+        </div>
+    );
+}
+
 export default function ExpensesPage() {
     const { token } = useAuth();
+    const { business } = useBusiness();
     const [expenses, setExpenses] = useState<Expense[]>([]);
     const [loading, setLoading]   = useState(true);
     const [{ from, to }, setRange] = useState(thisMonthRange());
@@ -105,6 +129,9 @@ export default function ExpensesPage() {
         ...cat,
         total: expenses.filter(e => e.category === cat.value).reduce((s, e) => s + Number(e.amount), 0),
     })).filter(c => c.total > 0);
+
+    const isPro = business?.subscription_plan === 'pro' || business?.subscription_plan === 'negocio';
+    if (!isPro) return <UpgradeGate feature="Gastos" />;
 
     return (
         <div className="flex flex-col flex-1 overflow-y-auto">

@@ -242,8 +242,8 @@ export default function TeamPage() {
                     <button
                         className="dbtn dbtn--primary"
                         onClick={() => setShowAddForm(true)}
-                        disabled={atGratis && overLimit}
-                        title={atGratis && overLimit ? 'Límite de empleados alcanzado en el plan Gratis' : undefined}
+                        disabled={overLimit}
+                        title={overLimit ? `Límite de ${employeeLimit} profesional${employeeLimit === 1 ? '' : 'es'} alcanzado en tu plan` : undefined}
                     >
                         <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                             {IcoPlus} Añadir empleado

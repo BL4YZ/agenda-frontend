@@ -63,8 +63,13 @@ export const DEFAULT_FLAGS: FeatureFlags = {
 
 function resolveFlags(business: Business | null): FeatureFlags {
     if (!business) return DEFAULT_FLAGS;
+    const isPro = business.subscription_plan === 'pro' || business.subscription_plan === 'negocio';
     const stored = business.feature_flags ?? {};
-    return { ...DEFAULT_FLAGS, ...stored };
+    const merged = { ...DEFAULT_FLAGS, ...stored };
+    if (!isPro) {
+        return { ...merged, showModalities: false, showExpenses: false, showCommissions: false };
+    }
+    return merged;
 }
 
 /* ── Context ─────────────────────────────────────────────────────────────────── */
