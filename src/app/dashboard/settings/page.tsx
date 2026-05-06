@@ -580,21 +580,26 @@ function SettingsContent() {
                 </div>
             )}
 
-            {/* Zona de peligro */}
+            {/* Eliminar cuenta */}
             {role === 'owner' && (
-                <div style={{ marginTop: 8, paddingTop: 24, borderTop: '1px solid rgba(239,68,68,0.15)' }}>
-                    <p style={{ fontSize: 11, fontWeight: 700, color: '#ef4444', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Zona de peligro</p>
-                    <div className="gcard" style={{ border: '1px solid rgba(239,68,68,0.2)' }}>
-                        <div className="gcard__body" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-                            <div>
-                                <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-0)' }}>Eliminar cuenta</p>
-                                <p style={{ fontSize: 12, color: 'var(--fg-3)', marginTop: 3 }}>Elimina permanentemente tu cuenta, tu negocio y todos tus datos. Esta acción no se puede deshacer.</p>
-                            </div>
-                            <button onClick={() => { setShowDeleteModal(true); setDeletePassword(''); setDeleteError(''); }}
-                                className="dbtn dbtn--danger" style={{ flexShrink: 0 }}>
-                                Eliminar cuenta
-                            </button>
+                <div style={{ marginTop: 8, paddingTop: 28, borderTop: '1px solid var(--line)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+                        <div>
+                            <p style={{ fontSize: 13, color: 'var(--fg-2)' }}>¿Ya no necesitás tu cuenta?</p>
                         </div>
+                        <button
+                            onClick={() => { setShowDeleteModal(true); setDeletePassword(''); setDeleteError(''); }}
+                            style={{
+                                background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+                                fontSize: 13, color: 'var(--fg-3)',
+                                textDecoration: 'underline', textDecorationColor: 'transparent',
+                                transition: 'color .2s, text-decoration-color .2s',
+                            }}
+                            onMouseEnter={e => { (e.target as HTMLButtonElement).style.color = '#ef4444'; (e.target as HTMLButtonElement).style.textDecorationColor = '#ef4444'; }}
+                            onMouseLeave={e => { (e.target as HTMLButtonElement).style.color = 'var(--fg-3)'; (e.target as HTMLButtonElement).style.textDecorationColor = 'transparent'; }}
+                        >
+                            Eliminar cuenta
+                        </button>
                     </div>
                 </div>
             )}
