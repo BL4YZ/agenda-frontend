@@ -76,6 +76,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void 
 // ── BusinessTypeSection ───────────────────────────────────────────────────────
 function BusinessTypeSection() {
     const { business, featureFlags, updateBusiness } = useBusiness();
+    const isPro = (business?.subscription_plan === 'pro' || business?.subscription_plan === 'negocio');
     const [localType, setLocalType]   = useState<BusinessType | ''>(business?.business_type ?? '');
     const [localFlags, setLocalFlags] = useState({ ...featureFlags });
     const [saving, setSaving]         = useState(false);
@@ -91,7 +92,12 @@ function BusinessTypeSection() {
 
     const applyPreset = (type: BusinessType) => {
         setLocalType(type);
-        setLocalFlags({ ...TYPE_PRESETS[type] });
+        // For non-Pro users, only apply free-accessible flags from the preset
+        if (isPro) {
+            setLocalFlags({ ...TYPE_PRESETS[type] });
+        } else {
+            setLocalFlags({ showModalities: false, showExpenses: false, showCommissions: false, showTeamReports: false });
+        }
     };
 
     const handleSave = async () => {
@@ -132,13 +138,30 @@ function BusinessTypeSection() {
 
                 <div style={{ fontFamily:'var(--font-mono)', fontSize:10, letterSpacing:'0.14em', textTransform:'uppercase', color:'var(--fg-3)', marginBottom:12 }}>Funcionalidades activas</div>
                 <div style={{ display:'flex', flexDirection:'column', marginBottom:20 }}>
-                    {FLAG_LABELS.map(({ key, label }, i) => (
-                        <div key={key} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, padding:'10px 0', borderBottom: i < FLAG_LABELS.length - 1 ? '1px solid var(--line)' : '0', fontSize:13 }}>
-                            <span style={{ color:'var(--fg-1)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', minWidth:0 }}>{label}</span>
-                            <Toggle checked={!!localFlags[key as keyof typeof localFlags]} onChange={() => setLocalFlags(f => ({ ...f, [key]: !f[key as keyof typeof f] }))} />
-                        </div>
-                    ))}
+                    {FLAG_LABELS.map(({ key, label }, i) => {
+                        const locked = !isPro;
+                        return (
+                            <div key={key} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, padding:'10px 0', borderBottom: i < FLAG_LABELS.length - 1 ? '1px solid var(--line)' : '0', fontSize:13, opacity: locked ? 0.5 : 1 }}>
+                                <div style={{ display:'flex', alignItems:'center', gap:8, minWidth:0 }}>
+                                    <span style={{ color:'var(--fg-1)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{label}</span>
+                                    {locked && (
+                                        <span style={{ fontSize:9, fontWeight:700, padding:'2px 6px', borderRadius:99, background:'rgba(167,139,250,.12)', color:'#a78bfa', flexShrink:0, letterSpacing:'0.08em' }}>PRO</span>
+                                    )}
+                                </div>
+                                <Toggle
+                                    checked={!locked && !!localFlags[key as keyof typeof localFlags]}
+                                    onChange={() => { if (!locked) setLocalFlags(f => ({ ...f, [key]: !f[key as keyof typeof f] })); }}
+                                />
+                            </div>
+                        );
+                    })}
                 </div>
+
+                {!isPro && (
+                    <p style={{ fontSize:11, color:'var(--fg-3)', marginBottom:14 }}>
+                        Las funciones Pro se activan al mejorar tu plan.
+                    </p>
+                )}
 
                 <button onClick={handleSave} disabled={saving || !localType} className="dbtn dbtn--primary" style={{ width:'100%', justifyContent:'center', padding:12 }}>
                     {saved ? <>{IcoCheck}<span>Guardado</span></> : saving ? 'Guardando…' : <>{IcoRefresh}<span>Guardar tipo y funciones</span></>}

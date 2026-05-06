@@ -67,7 +67,7 @@ function resolveFlags(business: Business | null): FeatureFlags {
     const stored = business.feature_flags ?? {};
     const merged = { ...DEFAULT_FLAGS, ...stored };
     if (!isPro) {
-        return { ...merged, showModalities: false, showExpenses: false, showCommissions: false };
+        return { ...merged, showModalities: false, showExpenses: false, showCommissions: false, showTeamReports: false };
     }
     return merged;
 }
