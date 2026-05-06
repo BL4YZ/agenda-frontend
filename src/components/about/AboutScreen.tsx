@@ -145,8 +145,8 @@ export default function AboutScreen() {
           <p className="about-card__label">Únete</p>
           <h2 className="about-card__title">¿Listo para ordenar tu agenda?</h2>
           <p className="about-card__body" style={{ marginBottom: 24 }}>
-            Probá MiAgenda gratis durante 14 días. Sin tarjeta de crédito, sin contratos,
-            sin letras chicas. Si no te convence, no perdiste nada.
+            Probá MiAgenda con 14 días de Plan Pro incluidos. Sin contratos ni letras chicas.
+            Cancelás antes de que termine la prueba y no te cobramos nada.
           </p>
           <div className="about-cta-row">
             <Link href="/register" className="about-cta-primary">

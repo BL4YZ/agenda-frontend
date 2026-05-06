@@ -141,7 +141,7 @@ export default function SignupScreen() {
                 <br />
                 tu agenda hoy.
               </h1>
-              <p className="auth-card__sub">14 días Pro gratis. Sin tarjeta.</p>
+              <p className="auth-card__sub">14 días de Plan Pro incluidos. Sin permanencia.</p>
             </div>
 
             {success ? (
