@@ -149,7 +149,7 @@ function BusinessTypeSection() {
 
 // ── SettingsContent ───────────────────────────────────────────────────────────
 function SettingsContent() {
-    const { token, role, permissions, profileLoading } = useAuth();
+    const { token, role, permissions, profileLoading, logout } = useAuth();
     const searchParams = useSearchParams();
     const router = useRouter();
 
@@ -177,6 +177,11 @@ function SettingsContent() {
     const [brandColor, setBrandColor] = useState('#6366f1');
     const [savingBrand, setSavingBrand] = useState(false);
     const [brandSaved, setBrandSaved] = useState(false);
+
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deletePassword, setDeletePassword] = useState('');
+    const [deleteError, setDeleteError] = useState('');
+    const [deleting, setDeleting] = useState(false);
 
     useEffect(() => {
         const mp = searchParams.get('mp');
@@ -274,6 +279,23 @@ function SettingsContent() {
             setTimeout(() => setBrandSaved(false), 2000);
         } catch { console.error('Error al guardar marca propia.'); }
         finally { setSavingBrand(false); }
+    };
+
+    const handleDeleteAccount = async () => {
+        setDeleteError('');
+        setDeleting(true);
+        try {
+            await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/users/me`,
+                { data: { password: deletePassword }, headers: { Authorization: `Bearer ${token}` } }
+            );
+            logout();
+            router.replace('/');
+        } catch (err: unknown) {
+            if (axios.isAxiosError(err)) setDeleteError(err.response?.data?.message || 'Error al eliminar la cuenta.');
+            else setDeleteError('Error al eliminar la cuenta.');
+        } finally {
+            setDeleting(false);
+        }
     };
 
     const publicUrl  = business ? `${process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin}/public/${business.slug}` : '';
@@ -558,6 +580,68 @@ function SettingsContent() {
                 </div>
             )}
 
+            {/* Zona de peligro */}
+            {role === 'owner' && (
+                <div style={{ marginTop: 8, paddingTop: 24, borderTop: '1px solid rgba(239,68,68,0.15)' }}>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: '#ef4444', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Zona de peligro</p>
+                    <div className="gcard" style={{ border: '1px solid rgba(239,68,68,0.2)' }}>
+                        <div className="gcard__body" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+                            <div>
+                                <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-0)' }}>Eliminar cuenta</p>
+                                <p style={{ fontSize: 12, color: 'var(--fg-3)', marginTop: 3 }}>Elimina permanentemente tu cuenta, tu negocio y todos tus datos. Esta acción no se puede deshacer.</p>
+                            </div>
+                            <button onClick={() => { setShowDeleteModal(true); setDeletePassword(''); setDeleteError(''); }}
+                                className="dbtn dbtn--danger" style={{ flexShrink: 0 }}>
+                                Eliminar cuenta
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal eliminar cuenta */}
+            {showDeleteModal && (
+                <div className="dash-modal-overlay" onClick={() => { if (!deleting) { setShowDeleteModal(false); setDeletePassword(''); setDeleteError(''); } }}>
+                    <div className="dash-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 400 }}>
+                        <div className="dash-modal__head">
+                            <h2 className="dash-modal__title">Eliminar cuenta</h2>
+                        </div>
+                        <div style={{ padding: '0 20px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                            <p style={{ fontSize: 13, color: 'var(--fg-2)', lineHeight: 1.6 }}>
+                                Esta acción es <strong style={{ color: '#ef4444' }}>permanente e irreversible</strong>. Se eliminarán tu cuenta, tu negocio, todos tus servicios, empleados y citas.
+                            </p>
+                            <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10, padding: '10px 14px' }}>
+                                <p style={{ fontSize: 12, color: '#f87171' }}>• Tu suscripción activa será cancelada inmediatamente.</p>
+                                <p style={{ fontSize: 12, color: '#f87171', marginTop: 4 }}>• Los empleados desvinculados de tu equipo no serán eliminados.</p>
+                            </div>
+                            <div>
+                                <p style={{ fontSize: 12, color: 'var(--fg-3)', marginBottom: 6 }}>Ingresá tu contraseña para confirmar:</p>
+                                <input
+                                    type="password"
+                                    value={deletePassword}
+                                    onChange={e => setDeletePassword(e.target.value)}
+                                    onKeyDown={e => e.key === 'Enter' && deletePassword && !deleting && handleDeleteAccount()}
+                                    placeholder="Contraseña actual"
+                                    className="fg-field__input"
+                                    autoFocus
+                                />
+                            </div>
+                            {deleteError && <p style={{ fontSize: 12, color: '#ef4444' }}>{deleteError}</p>}
+                            <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                                <button onClick={() => { setShowDeleteModal(false); setDeletePassword(''); setDeleteError(''); }}
+                                    className="dbtn" style={{ flex: 1 }} disabled={deleting}>
+                                    Cancelar
+                                </button>
+                                <button onClick={handleDeleteAccount}
+                                    className="dbtn dbtn--danger" style={{ flex: 1 }}
+                                    disabled={deleting || !deletePassword}>
+                                    {deleting ? 'Eliminando…' : 'Confirmar eliminación'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
