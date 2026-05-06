@@ -1473,6 +1473,9 @@
 }
 
 /* ---------- FullCalendar overrides for new theme ---------- */
+.dash-fc-wrap {
+  margin: 0 24px 24px;
+}
 .dash-fc-wrap .fc {
   --fc-border-color: oklch(0.35 0.04 280 / 0.18);
   --fc-today-bg-color: oklch(0.65 0.2 290 / 0.08);
@@ -1752,6 +1755,17 @@
   --fc-page-bg-color: #fff;
   --fc-neutral-bg-color: rgba(0, 0, 0, 0.03);
   --fc-button-hover-bg-color: rgba(0, 0, 0, 0.06);
+}
+[data-theme="light"] .dash-fc-wrap .fc-daygrid-event,
+[data-theme="light"] .dash-fc-wrap .fc-timegrid-event {
+  background-color: rgba(109, 40, 217, 0.12) !important;
+  border-left: 3px solid rgba(109, 40, 217, 0.5) !important;
+}
+[data-theme="light"] .dash-fc-wrap .fc-daygrid-event span,
+[data-theme="light"] .dash-fc-wrap .fc-daygrid-event div,
+[data-theme="light"] .dash-fc-wrap .fc-timegrid-event span,
+[data-theme="light"] .dash-fc-wrap .fc-timegrid-event div {
+  color: #4c1d95 !important;
 }
 [data-theme="light"] .dash-fc-wrap .fc,
 [data-theme="light"] .dash-fc-wrap .fc .fc-header-toolbar {
