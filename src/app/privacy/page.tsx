@@ -92,11 +92,17 @@ export default function PrivacyPage() {
             recordatorios de citas). Solo reciben el destinatario y el contenido del email necesario para cada envío.
           </li>
           <li>
-            <strong>Railway</strong> — infraestructura de hosting donde se ejecutan los servidores de MiAgenda
-            y se aloja la base de datos. Actúa como encargado del tratamiento y está contractualmente obligado
-            a proteger los datos. Política:{' '}
+            <strong>Railway</strong> — infraestructura de hosting donde se ejecutan los servidores de MiAgenda.
+            Actúa como encargado del tratamiento y está contractualmente obligado a proteger los datos. Política:{' '}
             <a href="https://railway.app/legal/privacy" target="_blank" rel="noopener noreferrer">
               railway.app/legal/privacy
+            </a>.
+          </li>
+          <li>
+            <strong>Neon</strong> — base de datos PostgreSQL serverless donde se almacenan los datos de la plataforma.
+            Actúa como encargado del tratamiento con medidas de seguridad adecuadas. Política:{' '}
+            <a href="https://neon.tech/privacy-policy" target="_blank" rel="noopener noreferrer">
+              neon.tech/privacy-policy
             </a>.
           </li>
         </ul>
@@ -109,7 +115,7 @@ export default function PrivacyPage() {
       <div className="legal-section">
         <h2>5. Almacenamiento y seguridad</h2>
         <ul>
-          <li>Tus datos se almacenan en la infraestructura de Railway (servidores en la nube).</li>
+          <li>Los servidores de la aplicación se alojan en Railway. La base de datos se aloja en Neon (PostgreSQL serverless).</li>
           <li>Las contraseñas se almacenan con hash bcrypt (factor de trabajo 10); nunca en texto plano.</li>
           <li>Los tokens OAuth de Mercado Pago se almacenan cifrados con AES-256-GCM.</li>
           <li>Todas las comunicaciones entre tu navegador y nuestros servidores usan HTTPS/TLS.</li>
