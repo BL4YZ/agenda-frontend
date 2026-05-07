@@ -68,17 +68,6 @@ const FLAG_LABELS: { key: string; label: string }[] = [
     { key: 'showTeamReports', label: 'Reportes del equipo' },
 ];
 
-const PUBLIC_SECTIONS = [
-    { key: 'servicios', label: 'Servicios',  req: 'gratis'  as const },
-    { key: 'contacto',  label: 'Contacto',   req: 'gratis'  as const },
-    { key: 'tienda',    label: 'Tienda',     req: 'pro'     as const },
-    { key: 'reviews',   label: 'Reseñas',    req: 'pro'     as const },
-    { key: 'faq',       label: 'FAQs',       req: 'pro'     as const },
-    { key: 'equipo',    label: 'Equipo',     req: 'negocio' as const },
-    { key: 'galeria',   label: 'Galería',    req: 'negocio' as const },
-];
-
-const PLAN_RANK = { gratis: 0, pro: 1, negocio: 2 } as const;
 
 // ── Toggle ────────────────────────────────────────────────────────────────────
 function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void }) {
@@ -209,11 +198,6 @@ function SettingsContent() {
     const [manualToken, setManualToken] = useState('');
     const [savingToken, setSavingToken] = useState(false);
 
-    const [logoUrl, setLogoUrl] = useState('');
-    const [brandColor, setBrandColor] = useState('#6366f1');
-    const [savingBrand, setSavingBrand] = useState(false);
-    const [brandSaved, setBrandSaved] = useState(false);
-
     const [bookingEnabled, setBookingEnabled] = useState(true);
     const [savingBooking, setSavingBooking] = useState(false);
 
@@ -238,8 +222,6 @@ function SettingsContent() {
                     setBusiness(res.data);
                     setPaymentMode(res.data.payment_mode || 'disabled');
                     setDepositPct(res.data.deposit_percentage || 30);
-                    setLogoUrl(res.data.logo_url || '');
-                    setBrandColor(res.data.brand_color || '#6366f1');
                     setBookingEnabled(res.data.feature_flags?.bookingEnabled !== false);
                     localStorage.setItem('business_slug', res.data.slug);
                     localStorage.setItem('business_name', res.data.name);
@@ -307,20 +289,6 @@ function SettingsContent() {
         finally { setSavingPayment(false); }
     };
 
-    const handleSaveBrand = async () => {
-        setSavingBrand(true);
-        try {
-            const res = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/me`,
-                { logo_url: logoUrl || null, brand_color: brandColor },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            setBusiness(prev => prev ? { ...prev, logo_url: res.data.logo_url, brand_color: res.data.brand_color } : prev);
-            setBrandSaved(true);
-            setTimeout(() => setBrandSaved(false), 2000);
-        } catch { console.error('Error al guardar marca propia.'); }
-        finally { setSavingBrand(false); }
-    };
-
     const handleToggleBooking = async (newVal: boolean) => {
         setBookingEnabled(newVal);
         setSavingBooking(true);
@@ -358,8 +326,6 @@ function SettingsContent() {
     const planMeta   = PLAN_META[plan] ?? PLAN_META.gratis;
     const PlanIcon   = planMeta.icon;
     const isPro      = plan === 'pro' || plan === 'negocio';
-    const isNegocio  = plan === 'negocio';
-    const planRank   = PLAN_RANK[plan] ?? 0;
 
     if (loadingBusiness) {
         return (
@@ -602,93 +568,6 @@ function SettingsContent() {
                             </div>
                         </div>
 
-                        {/* Página pública — sections + brand */}
-                        <div className="gcard">
-                            <div className="gcard__head">
-                                <h3 className="gcard__title">Página pública</h3>
-                            </div>
-                            <div className="gcard__body">
-
-                                {/* Sections list */}
-                                <div style={{ fontFamily:'var(--font-mono)', fontSize:10, letterSpacing:'0.14em', textTransform:'uppercase', color:'var(--fg-3)', marginBottom:12 }}>Secciones</div>
-                                <div style={{ display:'flex', flexDirection:'column', marginBottom:24 }}>
-                                    {PUBLIC_SECTIONS.map(({ key, label, req }, i) => {
-                                        const unlocked  = planRank >= PLAN_RANK[req];
-                                        const badge     = unlocked ? null : req === 'pro' ? 'PRO' : 'NEGOCIO';
-                                        const badgeColor = req === 'pro' ? '#a78bfa' : '#c084fc';
-                                        const badgeBg    = req === 'pro' ? 'rgba(167,139,250,.12)' : 'rgba(192,132,252,.12)';
-                                        return (
-                                            <div key={key} style={{
-                                                display:'flex', alignItems:'center', justifyContent:'space-between', gap:8,
-                                                padding:'9px 0', fontSize:13,
-                                                borderBottom: i < PUBLIC_SECTIONS.length - 1 ? '1px solid var(--line)' : '0',
-                                                opacity: unlocked ? 1 : 0.45,
-                                            }}>
-                                                <span style={{ color:'var(--fg-1)' }}>{label}</span>
-                                                {badge
-                                                    ? <span style={{ fontSize:9, fontWeight:700, padding:'2px 6px', borderRadius:99, background:badgeBg, color:badgeColor, flexShrink:0, letterSpacing:'0.08em' }}>{badge}</span>
-                                                    : <span style={{ fontSize:12, color:'#34d399', fontWeight:600 }}>✓</span>
-                                                }
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-
-                                {/* Brand customization */}
-                                <div style={{ fontFamily:'var(--font-mono)', fontSize:10, letterSpacing:'0.14em', textTransform:'uppercase', color:'var(--fg-3)', marginBottom:12 }}>Personalización</div>
-                                <div style={{ position:'relative' }}>
-                                    {!isNegocio && (
-                                        <div style={{
-                                            position:'absolute', inset:0, borderRadius:12,
-                                            backdropFilter:'blur(3px)',
-                                            background:'oklch(0.09 0.03 280 / 0.88)',
-                                            display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:10, zIndex:10,
-                                        }}>
-                                            <div className="kpi__icon" style={{ width:40, height:40, borderRadius:12, margin:0 }}>{IcoLock}</div>
-                                            <div style={{ textAlign:'center', padding:'0 20px' }}>
-                                                <p style={{ fontSize:14, fontWeight:600, color:'var(--fg-0)' }}>Requiere plan Negocio</p>
-                                                <p style={{ fontSize:12, color:'var(--fg-3)', marginTop:4 }}>Personalizá con tu logo y color de marca</p>
-                                            </div>
-                                            <Link href="/dashboard/settings/billing" className="dbtn dbtn--sm" style={{ textDecoration:'none', fontSize:11 }}>
-                                                Ver planes
-                                            </Link>
-                                        </div>
-                                    )}
-                                    <div style={{ display:'flex', flexDirection:'column', gap:14, paddingBottom: !isNegocio ? 56 : 0 }}>
-                                        <div className="fg-field">
-                                            <span className="fg-field__label">URL del logo</span>
-                                            <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                                                {logoUrl && isNegocio && (
-                                                    <img src={logoUrl} alt="Logo" style={{ width:36, height:36, borderRadius:8, objectFit:'contain', background:'rgba(255,255,255,.06)', border:'1px solid var(--line)', flexShrink:0 }}
-                                                        onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                                                )}
-                                                <input value={logoUrl} onChange={e => setLogoUrl(e.target.value)}
-                                                    placeholder="https://tu-dominio.com/logo.png"
-                                                    className="fg-field__input" style={{ flex:1 }} />
-                                            </div>
-                                        </div>
-                                        <div className="fg-field">
-                                            <span className="fg-field__label">Color de marca</span>
-                                            <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                                                <input type="color" value={brandColor} onChange={e => setBrandColor(e.target.value)}
-                                                    style={{ width:36, height:36, borderRadius:8, border:'1px solid var(--line)', cursor:'pointer', background:'transparent', padding:2, flexShrink:0 }} />
-                                                <strong style={{ fontSize:12, fontFamily:'var(--font-mono)', color:'var(--fg-1)' }}>{brandColor}</strong>
-                                                <div style={{ display:'flex', alignItems:'center', gap:5, marginLeft:'auto' }}>
-                                                    {['#6366f1','#10b981','#f59e0b','#ef4444','#8b5cf6','#0ea5e9'].map(c => (
-                                                        <button key={c} onClick={() => setBrandColor(c)}
-                                                            style={{ width:22, height:22, borderRadius:5, border:`2px solid ${brandColor === c ? c : 'transparent'}`, background:c, cursor:'pointer', transition:'transform .15s' }} />
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <button onClick={handleSaveBrand} disabled={savingBrand || !isNegocio} className="dbtn dbtn--primary" style={{ width:'100%', justifyContent:'center', padding:12 }}>
-                                            {brandSaved ? <>{IcoCheck}<span>Guardado</span></> : savingBrand ? 'Guardando…' : <>{IcoRefresh}<span>Guardar personalización</span></>}
-                                        </button>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </div>
                     </div>
                 </div>
             )}

@@ -35,6 +35,20 @@ const THEMES: { value: ShopTheme; label: string; accent: string; bg: string; dot
 const TABS = ['Perfil', 'Tema', 'Horarios', 'FAQs', 'Productos', 'Reseñas', 'Galería', 'Equipo'] as const;
 type Tab = typeof TABS[number];
 
+const PLAN_RANK = { gratis: 0, pro: 1, negocio: 2 } as const;
+type PlanKey = keyof typeof PLAN_RANK;
+
+const TAB_PLAN: Record<Tab, PlanKey> = {
+    'Perfil':    'gratis',
+    'Tema':      'gratis',
+    'Horarios':  'gratis',
+    'FAQs':      'pro',
+    'Productos': 'pro',
+    'Reseñas':   'pro',
+    'Galería':   'negocio',
+    'Equipo':    'negocio',
+};
+
 // ── Inline SVG icons ──────────────────────────────────────────────────────────
 const IcoCheck   = <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5l3.5 3.5 5.5-6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 const IcoPlus    = <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v9M2 6.5h9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>;
@@ -1177,13 +1191,47 @@ function EquipoTab({ token, slug }: { token: string | null; slug: string }) {
     );
 }
 
+// ── LockedTab ─────────────────────────────────────────────────────────────────
+function LockedTab({ required }: { required: 'pro' | 'negocio' }) {
+    const isPro = required === 'pro';
+    const color = isPro ? '#a78bfa' : '#c084fc';
+    const bg    = isPro ? 'rgba(167,139,250,.1)' : 'rgba(192,132,252,.1)';
+    return (
+        <div className="gcard">
+            <div className="gcard__body" style={{ display:'flex', flexDirection:'column', alignItems:'center', textAlign:'center', padding:'52px 24px', gap:16 }}>
+                <div style={{ width:52, height:52, borderRadius:16, background:bg, display:'flex', alignItems:'center', justifyContent:'center', color }}>
+                    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                        <rect x="4" y="10" width="14" height="11" rx="2" stroke="currentColor" strokeWidth="1.5"/>
+                        <path d="M7.5 10V7.5a3.5 3.5 0 0 1 7 0V10" stroke="currentColor" strokeWidth="1.5"/>
+                    </svg>
+                </div>
+                <div>
+                    <p style={{ fontSize:15, fontWeight:700, color:'var(--fg-0)', marginBottom:6 }}>
+                        Requiere plan {isPro ? 'Pro' : 'Negocio'}
+                    </p>
+                    <p style={{ fontSize:13, color:'var(--fg-3)', lineHeight:1.6, maxWidth:320 }}>
+                        {isPro
+                            ? 'Mejorá al plan Pro para gestionar Productos, Reseñas y FAQs en tu página pública.'
+                            : 'Con el plan Negocio podés mostrar tu Equipo y Galería de trabajos en tu página pública.'}
+                    </p>
+                </div>
+                <Link href="/dashboard/settings/billing" className="dbtn dbtn--primary" style={{ textDecoration:'none' }}>
+                    Ver planes y mejorar →
+                </Link>
+            </div>
+        </div>
+    );
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function LandingAdminPage() {
     const { token } = useAuth();
     const { business } = useBusiness();
     const [tab, setTab] = useState<Tab>('Perfil');
 
-    const slug = business?.slug ?? '';
+    const slug    = business?.slug ?? '';
+    const plan    = (business?.subscription_plan ?? 'gratis') as PlanKey;
+    const rank    = PLAN_RANK[plan] ?? 0;
     const publicUrl = slug
         ? `${process.env.NEXT_PUBLIC_APP_URL ?? (typeof window !== 'undefined' ? window.location.origin : '')}/public/${slug}`
         : '';
@@ -1207,32 +1255,57 @@ export default function LandingAdminPage() {
 
             {/* Tabs */}
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 20, borderBottom: '1px solid var(--line)', paddingBottom: 0 }}>
-                {TABS.map(t => (
-                    <button
-                        key={t}
-                        onClick={() => setTab(t)}
-                        style={{
-                            padding: '8px 16px', background: 'none', border: 'none', cursor: 'pointer',
-                            fontSize: 13, fontWeight: tab === t ? 600 : 400,
-                            color: tab === t ? 'var(--fg-0)' : 'var(--fg-3)',
-                            borderBottom: `2px solid ${tab === t ? 'var(--accent)' : 'transparent'}`,
-                            marginBottom: -1, transition: 'all .15s',
-                        }}
-                    >
-                        {t}
-                    </button>
-                ))}
+                {TABS.map(t => {
+                    const required  = TAB_PLAN[t];
+                    const unlocked  = rank >= PLAN_RANK[required];
+                    const badge     = !unlocked ? (required === 'pro' ? 'PRO' : 'NEGOCIO') : null;
+                    const badgeColor = required === 'pro' ? '#a78bfa' : '#c084fc';
+                    const badgeBg   = required === 'pro' ? 'rgba(167,139,250,.15)' : 'rgba(192,132,252,.15)';
+                    return (
+                        <button
+                            key={t}
+                            onClick={() => setTab(t)}
+                            style={{
+                                display: 'flex', alignItems: 'center', gap: 5,
+                                padding: '8px 14px', background: 'none', border: 'none',
+                                cursor: unlocked ? 'pointer' : 'default',
+                                fontSize: 13, fontWeight: tab === t ? 600 : 400,
+                                color: tab === t ? 'var(--fg-0)' : unlocked ? 'var(--fg-3)' : 'var(--fg-3)',
+                                borderBottom: `2px solid ${tab === t ? 'var(--accent)' : 'transparent'}`,
+                                marginBottom: -1, transition: 'all .15s',
+                                opacity: unlocked ? 1 : 0.55,
+                            }}
+                        >
+                            {t}
+                            {badge && (
+                                <span style={{ fontSize: 8, fontWeight: 700, padding: '1px 5px', borderRadius: 99, background: badgeBg, color: badgeColor, letterSpacing: '0.06em' }}>
+                                    {badge}
+                                </span>
+                            )}
+                        </button>
+                    );
+                })}
             </div>
 
             {/* All tabs stay mounted — CSS hides inactive ones so unsaved state is never lost */}
             <div style={{ display: tab === 'Perfil'    ? 'block' : 'none' }}><ProfileTab  token={token} slug={slug} /></div>
             <div style={{ display: tab === 'Tema'      ? 'block' : 'none' }}><ThemeTab    token={token} slug={slug} /></div>
             <div style={{ display: tab === 'Horarios'  ? 'block' : 'none' }}><HoursTab    token={token} slug={slug} /></div>
-            <div style={{ display: tab === 'FAQs'      ? 'block' : 'none' }}><FaqsTab     token={token} slug={slug} /></div>
-            <div style={{ display: tab === 'Productos' ? 'block' : 'none' }}><ProductsTab token={token} slug={slug} /></div>
-            <div style={{ display: tab === 'Reseñas'   ? 'block' : 'none' }}><ReviewsTab  token={token} slug={slug} /></div>
-            <div style={{ display: tab === 'Galería'   ? 'block' : 'none' }}><GaleriaTab  token={token} slug={slug} /></div>
-            <div style={{ display: tab === 'Equipo'    ? 'block' : 'none' }}><EquipoTab   token={token} slug={slug} /></div>
+            <div style={{ display: tab === 'FAQs'      ? 'block' : 'none' }}>
+                {rank >= PLAN_RANK['pro'] ? <FaqsTab token={token} slug={slug} /> : <LockedTab required="pro" />}
+            </div>
+            <div style={{ display: tab === 'Productos' ? 'block' : 'none' }}>
+                {rank >= PLAN_RANK['pro'] ? <ProductsTab token={token} slug={slug} /> : <LockedTab required="pro" />}
+            </div>
+            <div style={{ display: tab === 'Reseñas'   ? 'block' : 'none' }}>
+                {rank >= PLAN_RANK['pro'] ? <ReviewsTab token={token} slug={slug} /> : <LockedTab required="pro" />}
+            </div>
+            <div style={{ display: tab === 'Galería'   ? 'block' : 'none' }}>
+                {rank >= PLAN_RANK['negocio'] ? <GaleriaTab token={token} slug={slug} /> : <LockedTab required="negocio" />}
+            </div>
+            <div style={{ display: tab === 'Equipo'    ? 'block' : 'none' }}>
+                {rank >= PLAN_RANK['negocio'] ? <EquipoTab token={token} slug={slug} /> : <LockedTab required="negocio" />}
+            </div>
         </div>
     );
 }
