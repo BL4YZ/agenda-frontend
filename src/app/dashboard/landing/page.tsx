@@ -43,6 +43,18 @@ const IcoPencil  = <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><
 const IcoEye     = <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1.5 6.5C2.5 4 4.3 2.5 6.5 2.5S10.5 4 11.5 6.5C10.5 9 8.7 10.5 6.5 10.5S2.5 9 1.5 6.5z" stroke="currentColor" strokeWidth="1.2"/><circle cx="6.5" cy="6.5" r="1.5" stroke="currentColor" strokeWidth="1.2"/></svg>;
 const IcoExtLink = <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M9 2h2v2M11 2L6.5 6.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/><path d="M10 7.5V10a1 1 0 01-1 1H3a1 1 0 01-1-1V4a1 1 0 011-1h2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 
+// ── Revalidate public page cache after saves ──────────────────────────────────
+async function revalidatePublicPage(slug: string) {
+    if (!slug) return;
+    try {
+        await fetch('/api/revalidate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path: `/public/${slug}` }),
+        });
+    } catch { /* non-critical */ }
+}
+
 // ── Field helper ──────────────────────────────────────────────────────────────
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
     return (
@@ -77,7 +89,7 @@ function SaveBar({ saving, saved, error, onSave, label = 'Guardar cambios' }: {
 }
 
 // ── ProfileTab ────────────────────────────────────────────────────────────────
-function ProfileTab({ token }: { token: string | null }) {
+function ProfileTab({ token, slug }: { token: string | null; slug: string }) {
     const empty: Profile = {
         tagline: '', lede: '', address: '', phone: '', whatsapp: '',
         instagram_url: '', tiktok_url: '', theme: 'violet', cover_url: '',
@@ -122,6 +134,7 @@ function ProfileTab({ token }: { token: string | null }) {
             });
             setSaved(true);
             setTimeout(() => setSaved(false), 2000);
+            revalidatePublicPage(slug);
         } catch (err) {
             const msg = axios.isAxiosError(err)
                 ? (err.response?.data?.message ?? `Error ${err.response?.status}: no se pudo guardar. ¿Corriste la migración 002 en Neon?`)
@@ -198,7 +211,7 @@ function ProfileTab({ token }: { token: string | null }) {
 }
 
 // ── ThemeTab ──────────────────────────────────────────────────────────────────
-function ThemeTab({ token }: { token: string | null }) {
+function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
     const [selected, setSelected] = useState<ShopTheme>('violet');
     const [loading, setLoading]   = useState(true);
     const [saving, setSaving]     = useState(false);
@@ -222,6 +235,7 @@ function ThemeTab({ token }: { token: string | null }) {
             });
             setSaved(true);
             setTimeout(() => setSaved(false), 2000);
+            revalidatePublicPage(slug);
         } catch (err) {
             const msg = axios.isAxiosError(err)
                 ? (err.response?.data?.message ?? `Error ${err.response?.status}: no se pudo guardar.`)
@@ -317,7 +331,7 @@ const DEFAULT_HOURS: Hour[] = DAY_LABELS.map((_, i) => ({
     is_closed: i === 0,
 }));
 
-function HoursTab({ token }: { token: string | null }) {
+function HoursTab({ token, slug }: { token: string | null; slug: string }) {
     const [hours, setHours] = useState<Hour[]>(DEFAULT_HOURS);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -356,6 +370,7 @@ function HoursTab({ token }: { token: string | null }) {
             });
             setSaved(true);
             setTimeout(() => setSaved(false), 2000);
+            revalidatePublicPage(slug);
         } catch (err) {
             const msg = axios.isAxiosError(err)
                 ? (err.response?.data?.message ?? `Error ${err.response?.status}: no se pudo guardar.`)
@@ -429,7 +444,7 @@ function HoursTab({ token }: { token: string | null }) {
 }
 
 // ── FaqsTab ───────────────────────────────────────────────────────────────────
-function FaqsTab({ token }: { token: string | null }) {
+function FaqsTab({ token, slug }: { token: string | null; slug: string }) {
     const [faqs, setFaqs] = useState<Faq[]>([]);
     const [loading, setLoading] = useState(true);
     const [editId, setEditId]   = useState<number | null>(null);
@@ -460,6 +475,7 @@ function FaqsTab({ token }: { token: string | null }) {
             );
             setFaqs(f => [...f, r.data]);
             setNewQ(''); setNewA(''); setAdding(false);
+            revalidatePublicPage(slug);
         } catch (err) { console.error(err); }
         finally { setSaving(false); }
     };
@@ -473,6 +489,7 @@ function FaqsTab({ token }: { token: string | null }) {
             );
             setFaqs(f => f.map(x => x.id === id ? r.data : x));
             setEditId(null);
+            revalidatePublicPage(slug);
         } catch (err) { console.error(err); }
         finally { setSaving(false); }
     };
@@ -484,6 +501,7 @@ function FaqsTab({ token }: { token: string | null }) {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             setFaqs(f => f.filter(x => x.id !== id));
+            revalidatePublicPage(slug);
         } catch (err) { console.error(err); }
     };
 
@@ -550,7 +568,7 @@ function FaqsTab({ token }: { token: string | null }) {
 // ── ProductsTab ───────────────────────────────────────────────────────────────
 const emptyProduct = { name: '', brand: '', price: '', image_url: '', badge: '', description: '' };
 
-function ProductsTab({ token }: { token: string | null }) {
+function ProductsTab({ token, slug }: { token: string | null; slug: string }) {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading]   = useState(true);
     const [editId, setEditId]     = useState<number | null>(null);
@@ -580,6 +598,7 @@ function ProductsTab({ token }: { token: string | null }) {
             setProducts(p => [...p, r.data]);
             setNewForm({ ...emptyProduct });
             setAdding(false);
+            revalidatePublicPage(slug);
         } catch (err) { console.error(err); }
         finally { setSaving(false); }
     };
@@ -593,6 +612,7 @@ function ProductsTab({ token }: { token: string | null }) {
             );
             setProducts(p => p.map(x => x.id === id ? r.data : x));
             setEditId(null);
+            revalidatePublicPage(slug);
         } catch (err) { console.error(err); }
         finally { setSaving(false); }
     };
@@ -604,6 +624,7 @@ function ProductsTab({ token }: { token: string | null }) {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             setProducts(p => p.map(x => x.id === product.id ? r.data : x));
+            revalidatePublicPage(slug);
         } catch (err) { console.error(err); }
     };
 
@@ -614,6 +635,7 @@ function ProductsTab({ token }: { token: string | null }) {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             setProducts(p => p.filter(x => x.id !== id));
+            revalidatePublicPage(slug);
         } catch (err) { console.error(err); }
     };
 
@@ -716,7 +738,7 @@ function ProductsTab({ token }: { token: string | null }) {
 // ── ReviewsTab ────────────────────────────────────────────────────────────────
 const emptyReview = { author_name: '', stars: '5', text: '', date_label: '' };
 
-function ReviewsTab({ token }: { token: string | null }) {
+function ReviewsTab({ token, slug }: { token: string | null; slug: string }) {
     const [reviews, setReviews] = useState<Review[]>([]);
     const [loading, setLoading] = useState(true);
     const [editId, setEditId]   = useState<number | null>(null);
@@ -745,6 +767,7 @@ function ReviewsTab({ token }: { token: string | null }) {
             );
             setReviews(rv => [r.data, ...rv]);
             setNewForm({ ...emptyReview }); setAdding(false);
+            revalidatePublicPage(slug);
         } catch (err) { console.error(err); }
         finally { setSaving(false); }
     };
@@ -758,6 +781,7 @@ function ReviewsTab({ token }: { token: string | null }) {
             );
             setReviews(rv => rv.map(x => x.id === id ? r.data : x));
             setEditId(null);
+            revalidatePublicPage(slug);
         } catch (err) { console.error(err); }
         finally { setSaving(false); }
     };
@@ -769,6 +793,7 @@ function ReviewsTab({ token }: { token: string | null }) {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             setReviews(rv => rv.map(x => x.id === review.id ? r.data : x));
+            revalidatePublicPage(slug);
         } catch (err) { console.error(err); }
     };
 
@@ -779,6 +804,7 @@ function ReviewsTab({ token }: { token: string | null }) {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             setReviews(rv => rv.filter(x => x.id !== id));
+            revalidatePublicPage(slug);
         } catch (err) { console.error(err); }
     };
 
@@ -878,7 +904,7 @@ function ReviewsTab({ token }: { token: string | null }) {
 // ── GaleríaTab ────────────────────────────────────────────────────────────────
 type GalleryItem = { id: number; image_url: string; caption: string };
 
-function GaleriaTab({ token }: { token: string | null }) {
+function GaleriaTab({ token, slug }: { token: string | null; slug: string }) {
     const [items, setItems]     = useState<GalleryItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [pending, setPending] = useState('');     // URL to add
@@ -905,6 +931,7 @@ function GaleriaTab({ token }: { token: string | null }) {
             );
             setItems(it => [...it, r.data]);
             setPending(''); setAdding(false);
+            revalidatePublicPage(slug);
         } catch (err) { console.error(err); }
         finally { setSaving(false); }
     };
@@ -916,6 +943,7 @@ function GaleriaTab({ token }: { token: string | null }) {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             setItems(it => it.filter(x => x.id !== id));
+            revalidatePublicPage(slug);
         } catch (err) { console.error(err); }
     };
 
@@ -986,7 +1014,7 @@ function GaleriaTab({ token }: { token: string | null }) {
 // ── EquipoTab ─────────────────────────────────────────────────────────────────
 type TeamMemberAdmin = { id: number; name: string; avatar_url: string; bio: string; years_experience: string; instagram_handle: string; is_public: boolean };
 
-function EquipoTab({ token }: { token: string | null }) {
+function EquipoTab({ token, slug }: { token: string | null; slug: string }) {
     const [members, setMembers]   = useState<TeamMemberAdmin[]>([]);
     const [loading, setLoading]   = useState(true);
     const [editId, setEditId]     = useState<number | null>(null);
@@ -1027,6 +1055,7 @@ function EquipoTab({ token }: { token: string | null }) {
             setEditId(null);
             setSaved(id);
             setTimeout(() => setSaved(null), 2000);
+            revalidatePublicPage(slug);
         } catch (err) { console.error(err); }
         finally { setSaving(false); }
     };
@@ -1162,14 +1191,14 @@ export default function LandingAdminPage() {
             </div>
 
             {/* All tabs stay mounted — CSS hides inactive ones so unsaved state is never lost */}
-            <div style={{ display: tab === 'Perfil'    ? 'block' : 'none' }}><ProfileTab  token={token} /></div>
-            <div style={{ display: tab === 'Tema'      ? 'block' : 'none' }}><ThemeTab    token={token} /></div>
-            <div style={{ display: tab === 'Horarios'  ? 'block' : 'none' }}><HoursTab    token={token} /></div>
-            <div style={{ display: tab === 'FAQs'      ? 'block' : 'none' }}><FaqsTab     token={token} /></div>
-            <div style={{ display: tab === 'Productos' ? 'block' : 'none' }}><ProductsTab token={token} /></div>
-            <div style={{ display: tab === 'Reseñas'   ? 'block' : 'none' }}><ReviewsTab  token={token} /></div>
-            <div style={{ display: tab === 'Galería'   ? 'block' : 'none' }}><GaleriaTab  token={token} /></div>
-            <div style={{ display: tab === 'Equipo'    ? 'block' : 'none' }}><EquipoTab   token={token} /></div>
+            <div style={{ display: tab === 'Perfil'    ? 'block' : 'none' }}><ProfileTab  token={token} slug={slug} /></div>
+            <div style={{ display: tab === 'Tema'      ? 'block' : 'none' }}><ThemeTab    token={token} slug={slug} /></div>
+            <div style={{ display: tab === 'Horarios'  ? 'block' : 'none' }}><HoursTab    token={token} slug={slug} /></div>
+            <div style={{ display: tab === 'FAQs'      ? 'block' : 'none' }}><FaqsTab     token={token} slug={slug} /></div>
+            <div style={{ display: tab === 'Productos' ? 'block' : 'none' }}><ProductsTab token={token} slug={slug} /></div>
+            <div style={{ display: tab === 'Reseñas'   ? 'block' : 'none' }}><ReviewsTab  token={token} slug={slug} /></div>
+            <div style={{ display: tab === 'Galería'   ? 'block' : 'none' }}><GaleriaTab  token={token} slug={slug} /></div>
+            <div style={{ display: tab === 'Equipo'    ? 'block' : 'none' }}><EquipoTab   token={token} slug={slug} /></div>
         </div>
     );
 }
