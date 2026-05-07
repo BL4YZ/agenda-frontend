@@ -54,6 +54,12 @@ export interface Faq {
   answer: string;
 }
 
+export interface Branch {
+  id: number;
+  name: string;
+  address?: string | null;
+}
+
 export interface GalleryImage {
   id: number;
   image_url: string;
@@ -94,6 +100,7 @@ export interface Shop {
   hours: BusinessHour[];
   faqs: Faq[];
   gallery: GalleryImage[];
+  branches: Branch[];
 }
 
 export interface ModalBookingState {

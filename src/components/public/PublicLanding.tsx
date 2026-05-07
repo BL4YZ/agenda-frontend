@@ -12,6 +12,7 @@ import PLServices from './PLServices';
 import PLFooter   from './PLFooter';
 
 // Lazy-load below-fold sections
+const PLBranches     = lazy(() => import('./PLBranches'));
 const PLProducts     = lazy(() => import('./PLProducts'));
 const PLTeam         = lazy(() => import('./PLTeam'));
 const PLGallery      = lazy(() => import('./PLGallery'));
@@ -24,7 +25,7 @@ const PLReserveModal = lazy(() => import('./PLReserveModal'));
 const PLAN_SECTIONS: Record<ShopPlan, Set<string>> = {
   gratis:  new Set(['servicios', 'contacto']),
   pro:     new Set(['servicios', 'tienda', 'reviews', 'faq', 'contacto']),
-  negocio: new Set(['servicios', 'tienda', 'equipo', 'galeria', 'reviews', 'faq', 'contacto']),
+  negocio: new Set(['servicios', 'sucursales', 'tienda', 'equipo', 'galeria', 'reviews', 'faq', 'contacto']),
 };
 
 /** JSON-LD LocalBusiness schema */
@@ -96,6 +97,7 @@ export default function PublicLanding({ shop }: Props) {
   // Determine what's accessible for this plan
   const allowed = PLAN_SECTIONS[shop.plan ?? 'gratis'];
 
+  const showBranches  = allowed.has('sucursales') && shop.branches.length > 0;
   const showProducts  = allowed.has('tienda')    && shop.products.length > 0;
   const showTeam      = allowed.has('equipo')     && shop.team.length > 0;
   const showGallery   = allowed.has('galeria')    && (shop.gallery?.length ?? 0) > 0;
@@ -105,8 +107,9 @@ export default function PublicLanding({ shop }: Props) {
 
   // Build nav links only for sections that exist AND are allowed
   const navSections: NavSection[] = [
-    shop.services.length > 0                       && { href: '#servicios', label: 'Servicios' },
-    showProducts                                   && { href: '#tienda',    label: 'Tienda' },
+    shop.services.length > 0                       && { href: '#servicios',  label: 'Servicios' },
+    showBranches                                   && { href: '#sucursales', label: 'Sucursales' },
+    showProducts                                   && { href: '#tienda',     label: 'Tienda' },
     showTeam                                       && { href: '#equipo',    label: 'Equipo' },
     showReviews                                    && { href: '#reviews',   label: 'Reseñas' },
     showLocation                                   && { href: '#contacto',  label: 'Contacto' },
@@ -135,6 +138,7 @@ export default function PublicLanding({ shop }: Props) {
         <PLServices shop={shop} services={shop.services} onReserve={openReserve} />
 
         <Suspense fallback={null}>
+          {showBranches  && <PLBranches shop={shop} branches={shop.branches} />}
           {showProducts  && <PLProducts products={shop.products} />}
           {showTeam      && <PLTeam team={shop.team} />}
           {showGallery   && <PLGallery images={shop.gallery.map(g => ({ url: g.image_url, alt: g.caption ?? undefined }))} />}
