@@ -1,20 +1,22 @@
+import { cache }    from 'react';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import type { Shop } from '@/types/public';
 import PublicLanding from '@/components/public/PublicLanding';
 
-async function getShopData(slug: string): Promise<Shop | null> {
+// cache() deduplicates the two calls (generateMetadata + page) within one render
+const getShopData = cache(async (slug: string): Promise<Shop | null> => {
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/api/public/businesses/${slug}/landing`,
-      { next: { tags: [`shop:${slug}`], revalidate: 3600 } }
+      { cache: 'no-store' }   // always fresh — no ISR, no stale cache
     );
     if (!res.ok) return null;
     return res.json() as Promise<Shop>;
   } catch {
     return null;
   }
-}
+});
 
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }

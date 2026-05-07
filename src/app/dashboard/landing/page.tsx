@@ -211,13 +211,16 @@ function ProfileTab({ token, slug }: { token: string | null; slug: string }) {
 }
 
 // ── ThemeTab ──────────────────────────────────────────────────────────────────
-type ThemePhase = 'idle' | 'saving' | 'applying' | 'done';
-
 function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
-    const [selected, setSelected] = useState<ShopTheme>('violet');
-    const [loading, setLoading]   = useState(true);
-    const [phase, setPhase]       = useState<ThemePhase>('idle');
+    const [selected, setSelected]   = useState<ShopTheme>('violet');
+    const [loading, setLoading]     = useState(true);
+    const [saving, setSaving]       = useState(false);
+    const [saved, setSaved]         = useState(false);
     const [saveError, setSaveError] = useState('');
+
+    const publicUrl = slug
+        ? `${typeof window !== 'undefined' ? window.location.origin : ''}/public/${slug}`
+        : '';
 
     useEffect(() => {
         if (!token) return;
@@ -228,32 +231,20 @@ function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
     }, [token]);
 
     const handleSave = async () => {
-        setPhase('saving');
+        setSaving(true);
         setSaveError('');
         try {
             await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/profile`, { theme: selected }, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            setPhase('applying');
-            await revalidatePublicPage(slug);
-            // Short wait so the revalidated page finishes regenerating server-side
-            await new Promise(r => setTimeout(r, 1200));
-            setPhase('done');
-            setTimeout(() => setPhase('idle'), 3500);
+            setSaved(true);
+            setTimeout(() => setSaved(false), 4000);
         } catch (err) {
             const msg = axios.isAxiosError(err)
                 ? (err.response?.data?.message ?? `Error ${err.response?.status}: no se pudo guardar.`)
                 : 'Error al guardar.';
             setSaveError(msg);
-            setPhase('idle');
-        }
-    };
-
-    const themeButtonLabel = () => {
-        if (phase === 'saving')   return 'Guardando tema…';
-        if (phase === 'applying') return 'Aplicando a tu página pública…';
-        if (phase === 'done')     return '¡Tema aplicado! Podés ver tu página actualizada';
-        return 'Guardar tema';
+        } finally { setSaving(false); }
     };
 
     if (loading) return <div className="skel-page"><span className="skel" style={{ height: 220 }} /></div>;
@@ -272,16 +263,13 @@ function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
                             return (
                                 <button
                                     key={t.value}
-                                    onClick={() => { if (phase === 'idle') setSelected(t.value); }}
-                                    disabled={phase !== 'idle'}
+                                    onClick={() => setSelected(t.value)}
                                     style={{
                                         display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
-                                        padding: '14px 16px', borderRadius: 12, cursor: phase === 'idle' ? 'pointer' : 'default',
+                                        padding: '14px 16px', borderRadius: 12, cursor: 'pointer',
                                         border: `2px solid ${active ? t.accent : 'var(--line)'}`,
                                         background: active ? `${t.bg}` : 'var(--glass-bg)',
-                                        gap: 10, transition: 'all .15s',
-                                        outline: 'none',
-                                        opacity: phase !== 'idle' && !active ? 0.5 : 1,
+                                        gap: 10, transition: 'all .15s', outline: 'none',
                                     }}
                                 >
                                     <div style={{ display: 'flex', gap: 5 }}>
@@ -329,29 +317,23 @@ function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
                         );
                     })()}
 
-                    {/* Phase status banner */}
-                    {(phase === 'applying' || phase === 'done') && (
+                    {/* Success banner with link to public page */}
+                    {saved && publicUrl && (
                         <div style={{
-                            display: 'flex', alignItems: 'center', gap: 10,
+                            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
                             padding: '12px 16px', borderRadius: 10, marginBottom: 12,
-                            background: phase === 'done' ? 'rgba(52,211,153,.08)' : 'rgba(139,92,246,.08)',
-                            border: `1px solid ${phase === 'done' ? 'rgba(52,211,153,.2)' : 'rgba(139,92,246,.2)'}`,
+                            background: 'rgba(52,211,153,.08)', border: '1px solid rgba(52,211,153,.2)',
                         }}>
-                            {phase === 'applying' ? (
-                                <>
-                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
-                                        <circle cx="8" cy="8" r="6" stroke="rgb(139,92,246)" strokeWidth="1.5" strokeDasharray="3 3">
-                                            <animateTransform attributeName="transform" type="rotate" from="0 8 8" to="360 8 8" dur="1s" repeatCount="indefinite"/>
-                                        </circle>
-                                    </svg>
-                                    <span style={{ fontSize: 12, color: 'rgb(167,139,250)' }}>Aplicando tu tema a la página pública…</span>
-                                </>
-                            ) : (
-                                <>
-                                    {IcoCheck}
-                                    <span style={{ fontSize: 12, color: 'rgb(52,211,153)' }}>¡Listo! Tu página pública está actualizada con el nuevo tema.</span>
-                                </>
-                            )}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                {IcoCheck}
+                                <span style={{ fontSize: 12, color: 'rgb(52,211,153)' }}>Tema guardado correctamente.</span>
+                            </div>
+                            <a
+                                href={publicUrl} target="_blank" rel="noopener noreferrer"
+                                style={{ fontSize: 12, color: 'rgb(52,211,153)', textDecoration: 'underline', whiteSpace: 'nowrap', flexShrink: 0 }}
+                            >
+                                Ver página pública {IcoExtLink}
+                            </a>
                         </div>
                     )}
 
@@ -363,11 +345,11 @@ function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
 
                     <button
                         onClick={handleSave}
-                        disabled={phase !== 'idle'}
+                        disabled={saving}
                         className="dbtn dbtn--primary"
                         style={{ width: '100%', justifyContent: 'center', padding: 12 }}
                     >
-                        {phase === 'done' ? <>{IcoCheck}<span>{themeButtonLabel()}</span></> : themeButtonLabel()}
+                        {saved ? <>{IcoCheck}<span>Guardado</span></> : saving ? 'Guardando…' : 'Guardar tema'}
                     </button>
                 </div>
             </div>
