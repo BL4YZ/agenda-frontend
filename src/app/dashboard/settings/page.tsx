@@ -68,6 +68,18 @@ const FLAG_LABELS: { key: string; label: string }[] = [
     { key: 'showTeamReports', label: 'Reportes del equipo' },
 ];
 
+const PUBLIC_SECTIONS = [
+    { key: 'servicios', label: 'Servicios',  req: 'gratis'  as const },
+    { key: 'contacto',  label: 'Contacto',   req: 'gratis'  as const },
+    { key: 'tienda',    label: 'Tienda',     req: 'pro'     as const },
+    { key: 'reviews',   label: 'Reseñas',    req: 'pro'     as const },
+    { key: 'faq',       label: 'FAQs',       req: 'pro'     as const },
+    { key: 'equipo',    label: 'Equipo',     req: 'negocio' as const },
+    { key: 'galeria',   label: 'Galería',    req: 'negocio' as const },
+];
+
+const PLAN_RANK = { gratis: 0, pro: 1, negocio: 2 } as const;
+
 // ── Toggle ────────────────────────────────────────────────────────────────────
 function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void }) {
     return <button className={`dtoggle${checked ? ' is-on' : ''}`} onClick={onChange} />;
@@ -346,6 +358,8 @@ function SettingsContent() {
     const planMeta   = PLAN_META[plan] ?? PLAN_META.gratis;
     const PlanIcon   = planMeta.icon;
     const isPro      = plan === 'pro' || plan === 'negocio';
+    const isNegocio  = plan === 'negocio';
+    const planRank   = PLAN_RANK[plan] ?? 0;
 
     if (loadingBusiness) {
         return (
@@ -588,20 +602,64 @@ function SettingsContent() {
                             </div>
                         </div>
 
-                        {/* Brand settings — negocio only */}
-                        {business.subscription_plan === 'negocio' && (
-                            <div className="gcard">
-                                <div className="gcard__head">
-                                    <h3 className="gcard__title">Marca propia</h3>
-                                    <span style={{ fontSize:10, fontWeight:700, padding:'2px 8px', borderRadius:99, background:'rgba(192,132,252,.12)', color:'#c084fc' }}>Negocio</span>
+                        {/* Página pública — sections + brand */}
+                        <div className="gcard">
+                            <div className="gcard__head">
+                                <h3 className="gcard__title">Página pública</h3>
+                            </div>
+                            <div className="gcard__body">
+
+                                {/* Sections list */}
+                                <div style={{ fontFamily:'var(--font-mono)', fontSize:10, letterSpacing:'0.14em', textTransform:'uppercase', color:'var(--fg-3)', marginBottom:12 }}>Secciones</div>
+                                <div style={{ display:'flex', flexDirection:'column', marginBottom:24 }}>
+                                    {PUBLIC_SECTIONS.map(({ key, label, req }, i) => {
+                                        const unlocked  = planRank >= PLAN_RANK[req];
+                                        const badge     = unlocked ? null : req === 'pro' ? 'PRO' : 'NEGOCIO';
+                                        const badgeColor = req === 'pro' ? '#a78bfa' : '#c084fc';
+                                        const badgeBg    = req === 'pro' ? 'rgba(167,139,250,.12)' : 'rgba(192,132,252,.12)';
+                                        return (
+                                            <div key={key} style={{
+                                                display:'flex', alignItems:'center', justifyContent:'space-between', gap:8,
+                                                padding:'9px 0', fontSize:13,
+                                                borderBottom: i < PUBLIC_SECTIONS.length - 1 ? '1px solid var(--line)' : '0',
+                                                opacity: unlocked ? 1 : 0.45,
+                                            }}>
+                                                <span style={{ color:'var(--fg-1)' }}>{label}</span>
+                                                {badge
+                                                    ? <span style={{ fontSize:9, fontWeight:700, padding:'2px 6px', borderRadius:99, background:badgeBg, color:badgeColor, flexShrink:0, letterSpacing:'0.08em' }}>{badge}</span>
+                                                    : <span style={{ fontSize:12, color:'#34d399', fontWeight:600 }}>✓</span>
+                                                }
+                                            </div>
+                                        );
+                                    })}
                                 </div>
-                                <div className="gcard__body">
-                                    <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+
+                                {/* Brand customization */}
+                                <div style={{ fontFamily:'var(--font-mono)', fontSize:10, letterSpacing:'0.14em', textTransform:'uppercase', color:'var(--fg-3)', marginBottom:12 }}>Personalización</div>
+                                <div style={{ position:'relative' }}>
+                                    {!isNegocio && (
+                                        <div style={{
+                                            position:'absolute', inset:0, borderRadius:12,
+                                            backdropFilter:'blur(3px)',
+                                            background:'oklch(0.09 0.03 280 / 0.88)',
+                                            display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:10, zIndex:10,
+                                        }}>
+                                            <div className="kpi__icon" style={{ width:40, height:40, borderRadius:12, margin:0 }}>{IcoLock}</div>
+                                            <div style={{ textAlign:'center', padding:'0 20px' }}>
+                                                <p style={{ fontSize:14, fontWeight:600, color:'var(--fg-0)' }}>Requiere plan Negocio</p>
+                                                <p style={{ fontSize:12, color:'var(--fg-3)', marginTop:4 }}>Personalizá con tu logo y color de marca</p>
+                                            </div>
+                                            <Link href="/dashboard/settings/billing" className="dbtn dbtn--sm" style={{ textDecoration:'none', fontSize:11 }}>
+                                                Ver planes
+                                            </Link>
+                                        </div>
+                                    )}
+                                    <div style={{ display:'flex', flexDirection:'column', gap:14, paddingBottom: !isNegocio ? 56 : 0 }}>
                                         <div className="fg-field">
                                             <span className="fg-field__label">URL del logo</span>
                                             <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                                                {logoUrl && (
-                                                    <img src={logoUrl} alt="Logo preview" style={{ width:36, height:36, borderRadius:8, objectFit:'contain', background:'rgba(255,255,255,.06)', border:'1px solid var(--line)', flexShrink:0 }}
+                                                {logoUrl && isNegocio && (
+                                                    <img src={logoUrl} alt="Logo" style={{ width:36, height:36, borderRadius:8, objectFit:'contain', background:'rgba(255,255,255,.06)', border:'1px solid var(--line)', flexShrink:0 }}
                                                         onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                                                 )}
                                                 <input value={logoUrl} onChange={e => setLogoUrl(e.target.value)}
@@ -623,13 +681,14 @@ function SettingsContent() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <button onClick={handleSaveBrand} disabled={savingBrand} className="dbtn dbtn--primary" style={{ width:'100%', justifyContent:'center', padding:12 }}>
-                                            {brandSaved ? '✓ Guardado' : savingBrand ? 'Guardando…' : 'Guardar marca propia'}
+                                        <button onClick={handleSaveBrand} disabled={savingBrand || !isNegocio} className="dbtn dbtn--primary" style={{ width:'100%', justifyContent:'center', padding:12 }}>
+                                            {brandSaved ? <>{IcoCheck}<span>Guardado</span></> : savingBrand ? 'Guardando…' : <>{IcoRefresh}<span>Guardar personalización</span></>}
                                         </button>
                                     </div>
                                 </div>
+
                             </div>
-                        )}
+                        </div>
                     </div>
                 </div>
             )}

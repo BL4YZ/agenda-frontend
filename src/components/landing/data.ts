@@ -22,6 +22,7 @@ const TOOLTIPS = {
   commissions: 'Vista consolidada de cuánto le corresponde cobrar a cada integrante en el período, basada en su modalidad y la facturación generada.',
   teamReports: 'Rendimiento detallado de cada profesional: cantidad de citas atendidas, ingresos generados, ticket promedio y monto a pagar.',
   brand: 'Personalizá la página pública de reservas con tu propio logo y color de marca. Tus clientes verán tu identidad, no la nuestra.',
+  publicPage: 'Tu negocio tiene una página pública donde los clientes reservan online. El plan define las secciones disponibles: Gratis incluye Servicios y Contacto; Pro suma Tienda, Reseñas y FAQs; Negocio agrega Equipo y Galería.',
 };
 
 export const PLANS: Plan[] = [
@@ -39,6 +40,7 @@ export const PLANS: Plan[] = [
       { label: 'Link personalizado de reservas',        available: true  },
       { label: 'Gestión de servicios y horarios',       available: true  },
       { label: 'Personalización por tipo de negocio',   available: true,  tooltip: TOOLTIPS.bizType },
+      { label: 'Página pública (Servicios + Contacto)', available: true,  tooltip: TOOLTIPS.publicPage },
       { label: 'Citas ilimitadas',                      available: false },
       { label: 'Cobro de señas con MercadoPago',        available: false },
       { label: 'Pago completo en reserva',              available: false },
@@ -77,6 +79,7 @@ export const PLANS: Plan[] = [
       { label: 'Reportes por integrante',               available: true,  tooltip: TOOLTIPS.teamReports },
       { label: 'Exportación CSV',                       available: true  },
       { label: 'Soporte prioritario',                   available: true  },
+      { label: 'Página pública + Tienda, Reseñas y FAQs', available: true, tooltip: TOOLTIPS.publicPage },
       { label: 'Múltiples sucursales',                  available: false },
       { label: 'Marca propia (logo y color)',           available: false, tooltip: TOOLTIPS.brand },
       { label: 'Exportación Excel y PDF',               available: false },
@@ -105,6 +108,7 @@ export const PLANS: Plan[] = [
       { label: 'Reportes por integrante',               available: true,  tooltip: TOOLTIPS.teamReports },
       { label: 'Exportación CSV',                       available: true  },
       { label: 'Soporte prioritario',                   available: true  },
+      { label: 'Página pública completa + Equipo y Galería', available: true, tooltip: TOOLTIPS.publicPage },
       { label: 'Múltiples sucursales',                  available: true  },
       { label: 'Marca propia (logo y color)',           available: true,  tooltip: TOOLTIPS.brand },
       { label: 'Exportación Excel y PDF',               available: true  },
