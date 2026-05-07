@@ -918,12 +918,13 @@ export default function LandingAdminPage() {
                 ))}
             </div>
 
-            {tab === 'Perfil'    && <ProfileTab  token={token} />}
-            {tab === 'Tema'      && <ThemeTab    token={token} />}
-            {tab === 'Horarios'  && <HoursTab    token={token} />}
-            {tab === 'FAQs'      && <FaqsTab     token={token} />}
-            {tab === 'Productos' && <ProductsTab token={token} />}
-            {tab === 'Reseñas'   && <ReviewsTab  token={token} />}
+            {/* All tabs stay mounted — CSS hides inactive ones so unsaved state is never lost */}
+            <div style={{ display: tab === 'Perfil'    ? 'block' : 'none' }}><ProfileTab  token={token} /></div>
+            <div style={{ display: tab === 'Tema'      ? 'block' : 'none' }}><ThemeTab    token={token} /></div>
+            <div style={{ display: tab === 'Horarios'  ? 'block' : 'none' }}><HoursTab    token={token} /></div>
+            <div style={{ display: tab === 'FAQs'      ? 'block' : 'none' }}><FaqsTab     token={token} /></div>
+            <div style={{ display: tab === 'Productos' ? 'block' : 'none' }}><ProductsTab token={token} /></div>
+            <div style={{ display: tab === 'Reseñas'   ? 'block' : 'none' }}><ReviewsTab  token={token} /></div>
         </div>
     );
 }
