@@ -53,6 +53,12 @@ export interface Faq {
   answer: string;
 }
 
+export interface GalleryImage {
+  id: number;
+  image_url: string;
+  caption?: string;
+}
+
 export interface Shop {
   id: number;
   name: string;
@@ -69,6 +75,7 @@ export interface Shop {
   review_count?: number;
   logo_url?: string | null;
   cover_url?: string | null;
+  about_image_url?: string | null;
   about_quote?: string;
   theme: ShopTheme;
   brand_color?: string | null;
@@ -84,6 +91,7 @@ export interface Shop {
   reviews: Review[];
   hours: BusinessHour[];
   faqs: Faq[];
+  gallery: GalleryImage[];
 }
 
 export interface ModalBookingState {

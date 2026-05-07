@@ -13,7 +13,7 @@ type ShopTheme = 'violet' | 'rose' | 'green' | 'cyan' | 'amber';
 type Profile = {
     tagline: string; lede: string; address: string; phone: string; whatsapp: string;
     instagram_url: string; tiktok_url: string; theme: ShopTheme; cover_url: string;
-    about_quote: string; founded_year: string;
+    about_image_url: string; about_quote: string; founded_year: string;
 };
 
 type Hour = { day_of_week: number; open_time: string; close_time: string; is_closed: boolean };
@@ -32,7 +32,7 @@ const THEMES: { value: ShopTheme; label: string; accent: string; bg: string; dot
     { value: 'amber',  label: 'Ámbar',    accent: '#b45309', bg: 'oklch(0.14 0.04 60)',   dot: '#fcd34d' },
 ];
 
-const TABS = ['Perfil', 'Tema', 'Horarios', 'FAQs', 'Productos', 'Reseñas'] as const;
+const TABS = ['Perfil', 'Tema', 'Horarios', 'FAQs', 'Productos', 'Reseñas', 'Galería', 'Equipo'] as const;
 type Tab = typeof TABS[number];
 
 // ── Inline SVG icons ──────────────────────────────────────────────────────────
@@ -81,7 +81,7 @@ function ProfileTab({ token }: { token: string | null }) {
     const empty: Profile = {
         tagline: '', lede: '', address: '', phone: '', whatsapp: '',
         instagram_url: '', tiktok_url: '', theme: 'violet', cover_url: '',
-        about_quote: '', founded_year: '',
+        about_image_url: '', about_quote: '', founded_year: '',
     };
     const [form, setForm] = useState<Profile>(empty);
     const [loading, setLoading] = useState(true);
@@ -102,6 +102,7 @@ function ProfileTab({ token }: { token: string | null }) {
                 tiktok_url: r.data.tiktok_url ?? '',
                 theme: r.data.theme ?? 'violet',
                 cover_url: r.data.cover_url ?? '',
+                about_image_url: r.data.about_image_url ?? '',
                 about_quote: r.data.about_quote ?? '',
                 founded_year: r.data.founded_year ? String(r.data.founded_year) : '',
             }))
@@ -176,15 +177,18 @@ function ProfileTab({ token }: { token: string | null }) {
                 </div>
             </div>
 
-            <div className="gcard">
-                <div className="gcard__head"><h3 className="gcard__title">Imagen de portada</h3></div>
-                <div className="gcard__body">
-                    <ImageUpload
-                        value={form.cover_url}
-                        onChange={url => setForm(f => ({ ...f, cover_url: url }))}
-                        placeholder="https://…"
-                        previewHeight={180}
-                    />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                <div className="gcard">
+                    <div className="gcard__head"><h3 className="gcard__title">Foto de portada</h3></div>
+                    <div className="gcard__body">
+                        <ImageUpload value={form.cover_url} onChange={url => setForm(f => ({ ...f, cover_url: url }))} previewHeight={160} />
+                    </div>
+                </div>
+                <div className="gcard">
+                    <div className="gcard__head"><h3 className="gcard__title">Foto "Sobre nosotros"</h3></div>
+                    <div className="gcard__body">
+                        <ImageUpload value={form.about_image_url} onChange={url => setForm(f => ({ ...f, about_image_url: url }))} previewHeight={160} />
+                    </div>
                 </div>
             </div>
 
@@ -871,6 +875,245 @@ function ReviewsTab({ token }: { token: string | null }) {
     );
 }
 
+// ── GaleríaTab ────────────────────────────────────────────────────────────────
+type GalleryItem = { id: number; image_url: string; caption: string };
+
+function GaleriaTab({ token }: { token: string | null }) {
+    const [items, setItems]     = useState<GalleryItem[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [pending, setPending] = useState('');     // URL to add
+    const [adding, setAdding]   = useState(false);
+    const [saving, setSaving]   = useState(false);
+
+    const load = useCallback(() => {
+        if (!token) return;
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/gallery`, { headers: { Authorization: `Bearer ${token}` } })
+            .then(r => setItems(r.data))
+            .catch(console.error)
+            .finally(() => setLoading(false));
+    }, [token]);
+
+    useEffect(() => { load(); }, [load]);
+
+    const handleAdd = async () => {
+        if (!pending.trim()) return;
+        setSaving(true);
+        try {
+            const r = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/gallery`,
+                { image_url: pending.trim() },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setItems(it => [...it, r.data]);
+            setPending(''); setAdding(false);
+        } catch (err) { console.error(err); }
+        finally { setSaving(false); }
+    };
+
+    const handleDelete = async (id: number) => {
+        if (!confirm('¿Eliminar esta foto?')) return;
+        try {
+            await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/gallery/${id}`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setItems(it => it.filter(x => x.id !== id));
+        } catch (err) { console.error(err); }
+    };
+
+    if (loading) return <div className="skel-page"><span className="skel" style={{ height: 200 }} /></div>;
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div className="gcard">
+                <div className="gcard__head">
+                    <h3 className="gcard__title">Galería de trabajos</h3>
+                    <button className="dbtn dbtn--primary dbtn--sm" onClick={() => setAdding(true)}>{IcoPlus}<span>Agregar foto</span></button>
+                </div>
+                <div className="gcard__body">
+                    {adding && (
+                        <div style={{ marginBottom: 16, padding: 14, borderRadius: 10, background: 'var(--glass-bg)', border: '1px solid var(--line)' }}>
+                            <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-2)', marginBottom: 8 }}>Nueva foto</p>
+                            <ImageUpload
+                                value={pending}
+                                onChange={url => setPending(url)}
+                                previewHeight={140}
+                                placeholder="URL de la imagen"
+                            />
+                            <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                                <button className="dbtn dbtn--primary dbtn--sm" onClick={handleAdd} disabled={saving || !pending.trim()}>
+                                    {saving ? '…' : 'Agregar a la galería'}
+                                </button>
+                                <button className="dbtn dbtn--sm" onClick={() => { setAdding(false); setPending(''); }}>Cancelar</button>
+                            </div>
+                        </div>
+                    )}
+
+                    {items.length === 0 && !adding ? (
+                        <p style={{ fontSize: 13, color: 'var(--fg-3)', textAlign: 'center', padding: '20px 0' }}>
+                            Sin fotos todavía. Agregá tus mejores trabajos.
+                        </p>
+                    ) : (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10 }}>
+                            {items.map(item => (
+                                <div key={item.id} style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', aspectRatio: '1', background: 'var(--glass-bg)', border: '1px solid var(--line)' }}>
+                                    <img
+                                        src={item.image_url} alt={item.caption || 'Foto'}
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        onError={e => { (e.target as HTMLImageElement).style.opacity = '0.3'; }}
+                                    />
+                                    <button
+                                        onClick={() => handleDelete(item.id)}
+                                        style={{
+                                            position: 'absolute', top: 6, right: 6,
+                                            width: 26, height: 26, borderRadius: '50%',
+                                            background: 'rgba(239,68,68,.85)', border: 'none',
+                                            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            color: '#fff',
+                                        }}
+                                        title="Eliminar"
+                                    >
+                                        {IcoTrash}
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ── EquipoTab ─────────────────────────────────────────────────────────────────
+type TeamMemberAdmin = { id: number; name: string; avatar_url: string; bio: string; years_experience: string; instagram_handle: string; is_public: boolean };
+
+function EquipoTab({ token }: { token: string | null }) {
+    const [members, setMembers]   = useState<TeamMemberAdmin[]>([]);
+    const [loading, setLoading]   = useState(true);
+    const [editId, setEditId]     = useState<number | null>(null);
+    const [editForm, setEditForm] = useState<Omit<TeamMemberAdmin, 'id' | 'name'>>({ avatar_url: '', bio: '', years_experience: '', instagram_handle: '', is_public: true });
+    const [saving, setSaving]     = useState(false);
+    const [saved, setSaved]       = useState<number | null>(null);
+
+    useEffect(() => {
+        if (!token) return;
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/team`, { headers: { Authorization: `Bearer ${token}` } })
+            .then(r => setMembers(r.data.map((m: Record<string, unknown>) => ({
+                ...m,
+                avatar_url: (m.avatar_url as string) ?? '',
+                bio: (m.bio as string) ?? '',
+                years_experience: m.years_experience != null ? String(m.years_experience) : '',
+                instagram_handle: (m.instagram_handle as string) ?? '',
+                is_public: m.is_public !== false,
+            }))))
+            .catch(console.error)
+            .finally(() => setLoading(false));
+    }, [token]);
+
+    const handleSave = async (id: number) => {
+        setSaving(true);
+        try {
+            const r = await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/team/${id}`,
+                { ...editForm, years_experience: editForm.years_experience ? Number(editForm.years_experience) : null },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setMembers(ms => ms.map(m => m.id === id ? {
+                ...r.data,
+                avatar_url: r.data.avatar_url ?? '',
+                bio: r.data.bio ?? '',
+                years_experience: r.data.years_experience != null ? String(r.data.years_experience) : '',
+                instagram_handle: r.data.instagram_handle ?? '',
+                is_public: r.data.is_public !== false,
+            } : m));
+            setEditId(null);
+            setSaved(id);
+            setTimeout(() => setSaved(null), 2000);
+        } catch (err) { console.error(err); }
+        finally { setSaving(false); }
+    };
+
+    if (loading) return <div className="skel-page"><span className="skel" style={{ height: 200 }} /></div>;
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div className="gcard">
+                <div className="gcard__head">
+                    <h3 className="gcard__title">Equipo</h3>
+                    <span style={{ fontSize: 11, color: 'var(--fg-3)' }}>Fotos y bios visibles en la página pública</span>
+                </div>
+                <div className="gcard__body">
+                    {members.length === 0 && (
+                        <p style={{ fontSize: 13, color: 'var(--fg-3)', textAlign: 'center', padding: '20px 0' }}>
+                            No hay integrantes de equipo todavía.
+                        </p>
+                    )}
+                    {members.map(m => (
+                        <div key={m.id} style={{ borderBottom: '1px solid var(--line)', padding: '16px 0' }}>
+                            {editId === m.id ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-0)' }}>{m.name}</span>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--fg-3)', marginLeft: 'auto', cursor: 'pointer' }}>
+                                            <input type="checkbox" checked={editForm.is_public} onChange={e => setEditForm(f => ({ ...f, is_public: e.target.checked }))}
+                                                style={{ accentColor: 'var(--accent)', width: 14, height: 14 }} />
+                                            Visible en página pública
+                                        </label>
+                                    </div>
+                                    <ImageUpload
+                                        label="Foto de perfil"
+                                        value={editForm.avatar_url}
+                                        onChange={url => setEditForm(f => ({ ...f, avatar_url: url }))}
+                                        previewHeight={120}
+                                    />
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                                        <Field label="Años de experiencia">
+                                            <input className="fg-field__input" type="number" min={0} max={60} value={editForm.years_experience} onChange={e => setEditForm(f => ({ ...f, years_experience: e.target.value }))} placeholder="Ej: 8" />
+                                        </Field>
+                                        <Field label="Instagram (sin @)">
+                                            <input className="fg-field__input" value={editForm.instagram_handle} onChange={e => setEditForm(f => ({ ...f, instagram_handle: e.target.value }))} placeholder="mi_usuario" />
+                                        </Field>
+                                    </div>
+                                    <Field label="Bio">
+                                        <textarea className="fg-field__input" rows={2} style={{ resize: 'vertical' }} value={editForm.bio} onChange={e => setEditForm(f => ({ ...f, bio: e.target.value }))} placeholder="Contá un poco sobre este profesional…" />
+                                    </Field>
+                                    <div style={{ display: 'flex', gap: 8 }}>
+                                        <button className="dbtn dbtn--primary dbtn--sm" onClick={() => handleSave(m.id)} disabled={saving}>{saving ? '…' : IcoCheck}<span>{saving ? 'Guardando…' : 'Guardar'}</span></button>
+                                        <button className="dbtn dbtn--sm" onClick={() => setEditId(null)}>Cancelar</button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                    {m.avatar_url ? (
+                                        <img src={m.avatar_url} alt={m.name} style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--line)', flexShrink: 0 }}
+                                            onError={e => { (e.target as HTMLImageElement).style.opacity = '0.3'; }} />
+                                    ) : (
+                                        <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--glass-bg)', border: '2px solid var(--line)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700, color: 'var(--fg-3)', flexShrink: 0 }}>
+                                            {m.name.charAt(0).toUpperCase()}
+                                        </div>
+                                    )}
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-0)' }}>{m.name}</p>
+                                        <p style={{ fontSize: 11, color: 'var(--fg-3)', marginTop: 2 }}>
+                                            {m.bio ? m.bio.slice(0, 60) + (m.bio.length > 60 ? '…' : '') : 'Sin bio'}
+                                            {!m.is_public && <span style={{ marginLeft: 6, color: '#f87171' }}>· Oculto</span>}
+                                        </p>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' }}>
+                                        {saved === m.id && <span style={{ fontSize: 11, color: '#34d399' }}>{IcoCheck}</span>}
+                                        <button className="dbtn dbtn--sm" onClick={() => {
+                                            setEditId(m.id);
+                                            setEditForm({ avatar_url: m.avatar_url, bio: m.bio, years_experience: m.years_experience, instagram_handle: m.instagram_handle, is_public: m.is_public });
+                                        }}>{IcoPencil}</button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function LandingAdminPage() {
     const { token } = useAuth();
@@ -925,6 +1168,8 @@ export default function LandingAdminPage() {
             <div style={{ display: tab === 'FAQs'      ? 'block' : 'none' }}><FaqsTab     token={token} /></div>
             <div style={{ display: tab === 'Productos' ? 'block' : 'none' }}><ProductsTab token={token} /></div>
             <div style={{ display: tab === 'Reseñas'   ? 'block' : 'none' }}><ReviewsTab  token={token} /></div>
+            <div style={{ display: tab === 'Galería'   ? 'block' : 'none' }}><GaleriaTab  token={token} /></div>
+            <div style={{ display: tab === 'Equipo'    ? 'block' : 'none' }}><EquipoTab   token={token} /></div>
         </div>
     );
 }

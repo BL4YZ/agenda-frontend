@@ -111,7 +111,7 @@ export default function PublicLanding({ shop }: Props) {
         <Suspense fallback={null}>
           <PLProducts products={shop.products} />
           <PLTeam team={shop.team} />
-          <PLGallery />
+          <PLGallery images={shop.gallery?.map(g => ({ url: g.image_url, alt: g.caption ?? undefined }))} />
           <PLReviews shop={shop} reviews={shop.reviews} />
           <PLLocation shop={shop} hours={shop.hours} />
           <PLFaq faqs={shop.faqs} />
