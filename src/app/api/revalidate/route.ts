@@ -1,4 +1,4 @@
-import { revalidatePath, revalidateTag } from 'next/cache';
+import { revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -6,9 +6,7 @@ export async function POST(request: NextRequest) {
     if (typeof slug !== 'string' || !slug) {
         return NextResponse.json({ error: 'invalid slug' }, { status: 400 });
     }
-    // Invalidate the data cache entry for this shop (precise, synchronous)
-    revalidateTag(`shop:${slug}`);
-    // Also purge the full route cache
-    revalidatePath(`/public/${slug}`);
+    // 'page' type purges both the full route cache and the data cache for this path
+    revalidatePath(`/public/${slug}`, 'page');
     return NextResponse.json({ revalidated: true, slug });
 }
