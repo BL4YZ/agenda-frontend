@@ -29,6 +29,7 @@ const Icon = {
   moon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>,
   logout: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>,
   lock: <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>,
+  globe: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>,
 };
 
 /* ── Breadcrumbs map ─────────────────────────────────────────────────────── */
@@ -46,6 +47,7 @@ const CRUMBS: Record<string, string[]> = {
   '/dashboard/settings':             ['Inicio', 'Configuración', 'Negocio'],
   '/dashboard/settings/billing':     ['Inicio', 'Configuración', 'Planes'],
   '/dashboard/branches':             ['Inicio', 'Configuración', 'Sucursales'],
+  '/dashboard/landing':              ['Inicio', 'Página pública'],
 };
 
 /* ── Backdrop ────────────────────────────────────────────────────────────── */
@@ -141,6 +143,14 @@ function DashSidebar({
           <span className="dash-nav-item__icon">{Icon.cal}</span>
           <span>Calendario</span>
         </Link>
+
+        {/* Página pública */}
+        {isOwner && (
+          <Link href="/dashboard/landing" className={navItemCls('/dashboard/landing')}>
+            <span className="dash-nav-item__icon">{Icon.globe}</span>
+            <span>Página pública</span>
+          </Link>
+        )}
 
         {/* Agenda */}
         <div className="dash-nav-group">
