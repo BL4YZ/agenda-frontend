@@ -54,16 +54,25 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 // ── SaveBar ───────────────────────────────────────────────────────────────────
-function SaveBar({ saving, saved, onSave, label = 'Guardar cambios' }: { saving: boolean; saved: boolean; onSave: () => void; label?: string }) {
+function SaveBar({ saving, saved, error, onSave, label = 'Guardar cambios' }: {
+    saving: boolean; saved: boolean; error?: string; onSave: () => void; label?: string;
+}) {
     return (
-        <button
-            onClick={onSave}
-            disabled={saving}
-            className="dbtn dbtn--primary"
-            style={{ width: '100%', justifyContent: 'center', padding: 12, marginTop: 4 }}
-        >
-            {saved ? <>{IcoCheck}<span>Guardado</span></> : saving ? 'Guardando…' : label}
-        </button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 4 }}>
+            {error && (
+                <p style={{ fontSize: 12, color: '#f87171', padding: '8px 12px', borderRadius: 8, background: 'rgba(239,68,68,.08)', border: '1px solid rgba(239,68,68,.2)', margin: 0 }}>
+                    {error}
+                </p>
+            )}
+            <button
+                onClick={onSave}
+                disabled={saving}
+                className="dbtn dbtn--primary"
+                style={{ width: '100%', justifyContent: 'center', padding: 12 }}
+            >
+                {saved ? <>{IcoCheck}<span>Guardado</span></> : saving ? 'Guardando…' : label}
+            </button>
+        </div>
     );
 }
 
@@ -78,6 +87,7 @@ function ProfileTab({ token }: { token: string | null }) {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
+    const [saveError, setSaveError] = useState('');
 
     useEffect(() => {
         if (!token) return;
@@ -104,14 +114,19 @@ function ProfileTab({ token }: { token: string | null }) {
 
     const handleSave = async () => {
         setSaving(true);
+        setSaveError('');
         try {
             await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/profile`, form, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setSaved(true);
             setTimeout(() => setSaved(false), 2000);
-        } catch (err) { console.error(err); }
-        finally { setSaving(false); }
+        } catch (err) {
+            const msg = axios.isAxiosError(err)
+                ? (err.response?.data?.message ?? `Error ${err.response?.status}: no se pudo guardar. ¿Corriste la migración 002 en Neon?`)
+                : 'Error al guardar.';
+            setSaveError(msg);
+        } finally { setSaving(false); }
     };
 
     if (loading) return <div className="skel-page"><div className="skel-card"><span className="skel" style={{ height: 360 }} /></div></div>;
@@ -173,7 +188,7 @@ function ProfileTab({ token }: { token: string | null }) {
                 </div>
             </div>
 
-            <SaveBar saving={saving} saved={saved} onSave={handleSave} />
+            <SaveBar saving={saving} saved={saved} error={saveError} onSave={handleSave} />
         </div>
     );
 }
@@ -184,6 +199,7 @@ function ThemeTab({ token }: { token: string | null }) {
     const [loading, setLoading]   = useState(true);
     const [saving, setSaving]     = useState(false);
     const [saved, setSaved]       = useState(false);
+    const [saveError, setSaveError] = useState('');
 
     useEffect(() => {
         if (!token) return;
@@ -195,14 +211,19 @@ function ThemeTab({ token }: { token: string | null }) {
 
     const handleSave = async () => {
         setSaving(true);
+        setSaveError('');
         try {
             await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/profile`, { theme: selected }, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setSaved(true);
             setTimeout(() => setSaved(false), 2000);
-        } catch (err) { console.error(err); }
-        finally { setSaving(false); }
+        } catch (err) {
+            const msg = axios.isAxiosError(err)
+                ? (err.response?.data?.message ?? `Error ${err.response?.status}: no se pudo guardar.`)
+                : 'Error al guardar.';
+            setSaveError(msg);
+        } finally { setSaving(false); }
     };
 
     if (loading) return <div className="skel-page"><span className="skel" style={{ height: 220 }} /></div>;
@@ -277,7 +298,7 @@ function ThemeTab({ token }: { token: string | null }) {
                         );
                     })()}
 
-                    <SaveBar saving={saving} saved={saved} onSave={handleSave} label="Guardar tema" />
+                    <SaveBar saving={saving} saved={saved} error={saveError} onSave={handleSave} label="Guardar tema" />
                 </div>
             </div>
         </div>
@@ -297,6 +318,7 @@ function HoursTab({ token }: { token: string | null }) {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
+    const [saveError, setSaveError] = useState('');
 
     useEffect(() => {
         if (!token) return;
@@ -323,14 +345,19 @@ function HoursTab({ token }: { token: string | null }) {
 
     const handleSave = async () => {
         setSaving(true);
+        setSaveError('');
         try {
             await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/hours`, { hours }, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setSaved(true);
             setTimeout(() => setSaved(false), 2000);
-        } catch (err) { console.error(err); }
-        finally { setSaving(false); }
+        } catch (err) {
+            const msg = axios.isAxiosError(err)
+                ? (err.response?.data?.message ?? `Error ${err.response?.status}: no se pudo guardar.`)
+                : 'Error al guardar.';
+            setSaveError(msg);
+        } finally { setSaving(false); }
     };
 
     if (loading) return <div className="skel-page"><div className="skel-card"><span className="skel" style={{ height: 320 }} /></div></div>;
@@ -389,7 +416,7 @@ function HoursTab({ token }: { token: string | null }) {
                         ))}
                     </div>
                     <div style={{ marginTop: 16 }}>
-                        <SaveBar saving={saving} saved={saved} onSave={handleSave} label="Guardar horarios" />
+                        <SaveBar saving={saving} saved={saved} error={saveError} onSave={handleSave} label="Guardar horarios" />
                     </div>
                 </div>
             </div>
