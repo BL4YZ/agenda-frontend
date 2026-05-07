@@ -240,6 +240,11 @@ function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
     const [savingBrand, setSavingBrand] = useState(false);
     const [savedBrand, setSavedBrand]   = useState(false);
     const [brandError, setBrandError]   = useState('');
+    const [logoUrl, setLogoUrl]         = useState('');
+    const [savedLogoUrl, setSavedLogoUrl] = useState('');
+    const [savingLogo, setSavingLogo]   = useState(false);
+    const [savedLogo, setSavedLogo]     = useState(false);
+    const [logoError, setLogoError]     = useState('');
 
     const publicUrl = slug
         ? `${typeof window !== 'undefined' ? window.location.origin : ''}/public/${slug}`
@@ -255,6 +260,9 @@ function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
             const bc: string | null = bizRes.data?.brand_color ?? null;
             setBrandColor(bc);
             if (bc) setBrandInput(bc);
+            const lu: string = bizRes.data?.logo_url ?? '';
+            setLogoUrl(lu);
+            setSavedLogoUrl(lu);
         }).catch(console.error)
           .finally(() => setLoading(false));
     }, [token]);
@@ -315,6 +323,26 @@ function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
                 : 'Error al guardar.';
             setBrandError(msg);
         } finally { setSavingBrand(false); }
+    };
+
+    const handleSaveLogo = async () => {
+        setSavingLogo(true);
+        setLogoError('');
+        try {
+            await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/me`,
+                { logo_url: logoUrl || null },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setSavedLogoUrl(logoUrl);
+            setSavedLogo(true);
+            setTimeout(() => setSavedLogo(false), 3000);
+            revalidatePublicPage(slug);
+        } catch (err) {
+            const msg = axios.isAxiosError(err)
+                ? (err.response?.data?.message ?? `Error ${err.response?.status}: no se pudo guardar.`)
+                : 'Error al guardar.';
+            setLogoError(msg);
+        } finally { setSavingLogo(false); }
     };
 
     if (loading) return <div className="skel-page"><span className="skel" style={{ height: 220 }} /></div>;
@@ -506,6 +534,76 @@ function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
                         style={{ width: '100%', justifyContent: 'center', padding: 12 }}
                     >
                         {savedBrand ? <>{IcoCheck}<span>Guardado</span></> : savingBrand ? 'Guardando…' : 'Guardar color de marca'}
+                    </button>
+                </div>
+            </div>
+
+            {/* Logo card — Negocio only */}
+            <div className="gcard" style={{ position: 'relative', overflow: 'hidden' }}>
+                {!isNegocio && (
+                    <div style={{
+                        position: 'absolute', inset: 0, zIndex: 10,
+                        backdropFilter: 'blur(4px)',
+                        background: 'rgba(10,8,16,.6)',
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                        gap: 10, borderRadius: 'inherit',
+                    }}>
+                        <div style={{ width: 42, height: 42, borderRadius: 12, background: 'rgba(192,132,252,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c084fc' }}>
+                            <svg width="19" height="19" viewBox="0 0 22 22" fill="none">
+                                <rect x="4" y="10" width="14" height="11" rx="2" stroke="currentColor" strokeWidth="1.5"/>
+                                <path d="M7.5 10V7.5a3.5 3.5 0 0 1 7 0V10" stroke="currentColor" strokeWidth="1.5"/>
+                            </svg>
+                        </div>
+                        <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-0)', margin: 0 }}>Requiere plan Negocio</p>
+                        <Link href="/dashboard/settings/billing" className="dbtn dbtn--primary dbtn--sm" style={{ textDecoration: 'none' }}>
+                            Ver planes →
+                        </Link>
+                    </div>
+                )}
+                <div className="gcard__head">
+                    <h3 className="gcard__title">Logo del negocio</h3>
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 99, background: 'rgba(192,132,252,.15)', color: '#c084fc', letterSpacing: '0.06em' }}>NEGOCIO</span>
+                </div>
+                <div className="gcard__body" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    <p style={{ fontSize: 12, color: 'var(--fg-2)', lineHeight: 1.65, margin: 0 }}>
+                        Aparece como ícono circular en el nav de tu página pública. Usá una imagen cuadrada (mínimo 128×128 px).
+                    </p>
+                    {/* Circular nav preview */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div style={{
+                            width: 48, height: 48, borderRadius: '50%', flexShrink: 0,
+                            overflow: 'hidden', border: '2px solid var(--line)',
+                            background: 'linear-gradient(135deg,#8b5cf6,#6366f1)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: 'white', fontWeight: 700, fontSize: 18,
+                        }}>
+                            {logoUrl
+                                ? <img src={logoUrl} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                : <span style={{ pointerEvents: 'none' }}>?</span>
+                            }
+                        </div>
+                        <span style={{ fontSize: 11, color: 'var(--fg-3)', lineHeight: 1.5 }}>
+                            Vista previa del ícono en el nav
+                            {savedLogoUrl !== logoUrl && <><br/><em style={{ color: '#fbbf24' }}>Cambios sin guardar</em></>}
+                        </span>
+                    </div>
+                    <ImageUpload
+                        value={logoUrl}
+                        onChange={setLogoUrl}
+                        previewHeight={100}
+                    />
+                    {logoError && (
+                        <p style={{ fontSize: 12, color: '#f87171', padding: '8px 12px', borderRadius: 8, background: 'rgba(239,68,68,.08)', border: '1px solid rgba(239,68,68,.2)', margin: 0 }}>
+                            {logoError}
+                        </p>
+                    )}
+                    <button
+                        className="dbtn dbtn--primary"
+                        onClick={handleSaveLogo}
+                        disabled={savingLogo}
+                        style={{ width: '100%', justifyContent: 'center', padding: 12 }}
+                    >
+                        {savedLogo ? <>{IcoCheck}<span>Guardado</span></> : savingLogo ? 'Guardando…' : 'Guardar logo'}
                     </button>
                 </div>
             </div>

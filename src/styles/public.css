@@ -288,6 +288,7 @@
   transition:all 0.25s var(--pl-ease-out); font-family:inherit;
 }
 .pl-btn:hover { background:var(--pl-glass-strong); transform:translateY(-1px); }
+.pl-btn--primary:hover { background:linear-gradient(180deg,var(--pl-accent),var(--pl-accent-2)); opacity:0.88; }
 .pl-btn--primary {
   background:linear-gradient(180deg,var(--pl-accent),var(--pl-accent-2));
   border:none; color:white;
