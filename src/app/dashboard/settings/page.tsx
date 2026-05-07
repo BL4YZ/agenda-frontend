@@ -187,7 +187,6 @@ function SettingsContent() {
     const [name, setName] = useState('');
     const [error, setError] = useState('');
     const [submitting, setSubmitting] = useState(false);
-    const [copied, setCopied] = useState(false);
     const [loadingBusiness, setLoadingBusiness] = useState(true);
     const [mpStatus, setMpStatus] = useState<'idle' | 'connected' | 'error'>('idle');
 
@@ -197,9 +196,6 @@ function SettingsContent() {
     const [paymentSaved, setPaymentSaved] = useState(false);
     const [manualToken, setManualToken] = useState('');
     const [savingToken, setSavingToken] = useState(false);
-
-    const [bookingEnabled, setBookingEnabled] = useState(true);
-    const [savingBooking, setSavingBooking] = useState(false);
 
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deletePassword, setDeletePassword] = useState('');
@@ -222,7 +218,6 @@ function SettingsContent() {
                     setBusiness(res.data);
                     setPaymentMode(res.data.payment_mode || 'disabled');
                     setDepositPct(res.data.deposit_percentage || 30);
-                    setBookingEnabled(res.data.feature_flags?.bookingEnabled !== false);
                     localStorage.setItem('business_slug', res.data.slug);
                     localStorage.setItem('business_name', res.data.name);
                     localStorage.setItem('business_id', String(res.data.id));
@@ -289,21 +284,6 @@ function SettingsContent() {
         finally { setSavingPayment(false); }
     };
 
-    const handleToggleBooking = async (newVal: boolean) => {
-        setBookingEnabled(newVal);
-        setSavingBooking(true);
-        try {
-            await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/me`,
-                { booking_enabled: newVal },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-        } catch {
-            setBookingEnabled(!newVal);
-        } finally {
-            setSavingBooking(false);
-        }
-    };
-
     const handleDeleteAccount = async () => {
         setDeleteError('');
         setDeleting(true);
@@ -321,10 +301,8 @@ function SettingsContent() {
         }
     };
 
-    const publicUrl  = business ? `${process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin}/public/${business.slug}` : '';
     const plan       = business?.subscription_plan ?? 'gratis';
     const planMeta   = PLAN_META[plan] ?? PLAN_META.gratis;
-    const PlanIcon   = planMeta.icon;
     const isPro      = plan === 'pro' || plan === 'negocio';
 
     if (loadingBusiness) {
@@ -407,11 +385,8 @@ function SettingsContent() {
                     </div>
                 </div>
             ) : (
-                <div className="col-2-1" style={{ alignItems:'start' }}>
-
-                    {/* Left column: business type + payments */}
-                    <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
-                        <BusinessTypeSection />
+                <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+                    <BusinessTypeSection />
 
                         {/* Payments */}
                         <div className="gcard" style={{ position:'relative' }}>
@@ -511,64 +486,6 @@ function SettingsContent() {
                                 </button>
                             </div>
                         </div>
-                    </div>
-
-                    {/* Right column: plan + link + brand */}
-                    <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
-
-                        {/* Plan card — compact summary, full management on /settings/billing */}
-                        <div className="gcard">
-                            <div className="gcard__head">
-                                <h3 className="gcard__title">Plan y suscripción</h3>
-                                <span style={{ display:'inline-flex', alignItems:'center', gap:5, fontSize:11, fontWeight:700, padding:'3px 10px', borderRadius:99, background:planMeta.accent, color:planMeta.color, flexShrink:0 }}>
-                                    <PlanIcon size={10} /> {planMeta.label}
-                                </span>
-                            </div>
-                            <div className="gcard__body">
-                                <p style={{ fontSize:12, color:'var(--fg-3)', marginBottom:14 }}>
-                                    {plan === 'gratis'  && 'Plan gratuito · 1 profesional · 50 citas/mes'}
-                                    {plan === 'pro'     && 'Plan Pro · 5 profesionales · Citas ilimitadas · Pagos online'}
-                                    {plan === 'negocio' && 'Plan Negocio · Ilimitado · Marca propia · Sucursales'}
-                                </p>
-                                <Link href="/dashboard/settings/billing" className="dbtn dbtn--primary" style={{ textDecoration:'none', justifyContent:'center', padding:'10px 16px', display:'flex' }}>
-                                    {plan === 'gratis' ? 'Ver planes y mejorar →' : 'Administrar suscripción →'}
-                                </Link>
-                            </div>
-                        </div>
-
-                        {/* Public link */}
-                        <div className="gcard">
-                            <div className="gcard__head">
-                                <h3 className="gcard__title">Link público de reservas</h3>
-                                <div style={{ display:'flex', alignItems:'center', gap:8, flexShrink:0 }}>
-                                    <span style={{ fontSize:11, color: bookingEnabled ? 'var(--fg-3)' : 'oklch(0.65 0.22 25)', transition:'color .2s' }}>
-                                        {savingBooking ? 'Guardando…' : bookingEnabled ? 'Activa' : 'Desactivada'}
-                                    </span>
-                                    <Toggle checked={bookingEnabled} onChange={() => handleToggleBooking(!bookingEnabled)} />
-                                </div>
-                            </div>
-                            <div className="gcard__body">
-                                {!bookingEnabled && (
-                                    <div style={{ padding:'10px 12px', borderRadius:9, background:'rgba(251,191,36,.06)', border:'1px solid rgba(251,191,36,.18)', marginBottom:12 }}>
-                                        <p style={{ fontSize:12, color:'#fbbf24', margin:0 }}>La página pública está desactivada. Tus clientes no podrán reservar online hasta que la reactives.</p>
-                                    </div>
-                                )}
-                                <p style={{ fontSize:12, color:'var(--fg-2)', marginBottom:12 }}>Compartí este link con tus clientes para que puedan reservar online.</p>
-                                <div style={{ display:'flex', gap:6, opacity: bookingEnabled ? 1 : 0.45, pointerEvents: bookingEnabled ? 'auto' : 'none', transition:'opacity .2s' }}>
-                                    <input readOnly value={publicUrl}
-                                        style={{ flex:1, minWidth:0, background:'var(--glass-bg)', border:'1px solid var(--line)', borderRadius:9, padding:'9px 12px', color:'var(--fg-1)', fontFamily:'var(--font-mono)', fontSize:11 }} />
-                                    <button onClick={() => { navigator.clipboard.writeText(publicUrl); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-                                        className="dbtn dbtn--primary dbtn--sm">
-                                        {copied ? <>{IcoCheck}<span>Copiado</span></> : <>{IcoCopy}<span>Copiar</span></>}
-                                    </button>
-                                    <a href={publicUrl} target="_blank" rel="noopener noreferrer" className="dbtn dbtn--sm" style={{ textDecoration:'none' }}>
-                                        {IcoExtLink}<span>Ver</span>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
                 </div>
             )}
 
