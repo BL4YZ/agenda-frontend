@@ -24,12 +24,12 @@ type Review  = { id: number; author_name: string; author_initial: string; stars:
 
 const DAY_LABELS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
-const THEMES: { value: ShopTheme; label: string; accent: string; bg: string; dot: string }[] = [
-    { value: 'violet', label: 'Violeta',  accent: '#7c3aed', bg: 'oklch(0.13 0.03 280)',  dot: '#c4b5fd' },
-    { value: 'rose',   label: 'Rosa',     accent: '#be185d', bg: 'oklch(0.13 0.03 350)',  dot: '#fda4af' },
-    { value: 'green',  label: 'Verde',    accent: '#047857', bg: 'oklch(0.13 0.03 160)',  dot: '#6ee7b7' },
-    { value: 'cyan',   label: 'Cian',     accent: '#0e7490', bg: 'oklch(0.13 0.03 210)',  dot: '#67e8f9' },
-    { value: 'amber',  label: 'Ámbar',    accent: '#b45309', bg: 'oklch(0.14 0.04 60)',   dot: '#fcd34d' },
+const THEMES: { value: ShopTheme; label: string; accent: string; bg: string; dot: string; dark: boolean }[] = [
+    { value: 'violet', label: 'Violeta', accent: '#8b5cf6', bg: '#0a0810', dot: '#c4b5fd', dark: true  },
+    { value: 'rose',   label: 'Rosa',    accent: '#db2777', bg: '#0d0810', dot: '#f472b6', dark: true  },
+    { value: 'green',  label: 'Verde',   accent: '#6e8267', bg: '#faf6f0', dot: '#86a98a', dark: false },
+    { value: 'cyan',   label: 'Cian',    accent: '#2563eb', bg: '#f6f8fc', dot: '#06b6d4', dark: false },
+    { value: 'amber',  label: 'Ámbar',   accent: '#d97706', bg: '#0d0b07', dot: '#fcd34d', dark: true  },
 ];
 
 const TABS = ['Perfil', 'Tema', 'Horarios', 'FAQs', 'Productos', 'Reseñas', 'Galería', 'Equipo'] as const;
@@ -307,23 +307,24 @@ function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
                     {/* Mini preview */}
                     {(() => {
                         const t = THEMES.find(x => x.value === selected)!;
+                        const tb = t.dark ? 'rgba(255,255,255,' : 'rgba(0,0,0,';
                         return (
                             <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid var(--line)', marginBottom: 20 }}>
                                 <div style={{ background: t.bg, padding: '20px 20px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
                                     <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                                         <span style={{ width: 30, height: 8, borderRadius: 4, background: t.dot, opacity: 0.9 }} />
-                                        <span style={{ width: 60, height: 8, borderRadius: 4, background: 'rgba(255,255,255,.15)' }} />
+                                        <span style={{ width: 60, height: 8, borderRadius: 4, background: `${tb}.12)` }} />
                                     </div>
-                                    <div style={{ height: 18, width: '55%', borderRadius: 4, background: 'rgba(255,255,255,.8)', marginTop: 4 }} />
-                                    <div style={{ height: 11, width: '75%', borderRadius: 4, background: 'rgba(255,255,255,.3)' }} />
-                                    <div style={{ height: 11, width: '60%', borderRadius: 4, background: 'rgba(255,255,255,.2)' }} />
+                                    <div style={{ height: 18, width: '55%', borderRadius: 4, background: `${tb}.75)`, marginTop: 4 }} />
+                                    <div style={{ height: 11, width: '75%', borderRadius: 4, background: `${tb}.25)` }} />
+                                    <div style={{ height: 11, width: '60%', borderRadius: 4, background: `${tb}.16)` }} />
                                     <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
                                         <span style={{ padding: '7px 18px', borderRadius: 8, background: t.accent, fontSize: 11, color: '#fff', fontWeight: 600, display: 'inline-block' }}>
                                             Reservar turno
                                         </span>
                                     </div>
                                 </div>
-                                <div style={{ padding: '8px 20px', background: 'rgba(255,255,255,.03)', borderTop: '1px solid rgba(255,255,255,.06)', fontSize: 11, color: 'var(--fg-3)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <div style={{ padding: '8px 20px', background: `${tb}.03)`, borderTop: `1px solid ${tb}.08)`, fontSize: 11, color: 'var(--fg-3)', display: 'flex', alignItems: 'center', gap: 6 }}>
                                     <span style={{ width: 8, height: 8, borderRadius: '50%', background: t.dot, display: 'inline-block' }} />
                                     Vista previa · Tema {t.label}
                                 </div>

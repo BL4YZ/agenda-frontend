@@ -137,7 +137,9 @@ export default function PLReserveModal({ open, onClose, shop, initialServiceId }
   }, [svc, employeeId, shop.slug]);
 
   const today = new Date(); today.setHours(0, 0, 0, 0);
-  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(today, i + weekOffset * 7));
+  const dow = today.getDay(); // 0=Sun
+  const monday = addDays(today, dow === 0 ? -6 : 1 - dow);
+  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(monday, i + weekOffset * 7));
 
   const handleSubmit = async () => {
     if (!svc || !selectedDate || !slot || !clientName || !clientPhone) return;
