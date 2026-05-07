@@ -50,7 +50,7 @@ async function revalidatePublicPage(slug: string) {
         await fetch('/api/revalidate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ path: `/public/${slug}` }),
+            body: JSON.stringify({ slug }),
         });
     } catch { /* non-critical */ }
 }
@@ -211,11 +211,12 @@ function ProfileTab({ token, slug }: { token: string | null; slug: string }) {
 }
 
 // ── ThemeTab ──────────────────────────────────────────────────────────────────
+type ThemePhase = 'idle' | 'saving' | 'applying' | 'done';
+
 function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
     const [selected, setSelected] = useState<ShopTheme>('violet');
     const [loading, setLoading]   = useState(true);
-    const [saving, setSaving]     = useState(false);
-    const [saved, setSaved]       = useState(false);
+    const [phase, setPhase]       = useState<ThemePhase>('idle');
     const [saveError, setSaveError] = useState('');
 
     useEffect(() => {
@@ -227,21 +228,32 @@ function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
     }, [token]);
 
     const handleSave = async () => {
-        setSaving(true);
+        setPhase('saving');
         setSaveError('');
         try {
             await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/profile`, { theme: selected }, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            setSaved(true);
-            setTimeout(() => setSaved(false), 2000);
-            revalidatePublicPage(slug);
+            setPhase('applying');
+            await revalidatePublicPage(slug);
+            // Short wait so the revalidated page finishes regenerating server-side
+            await new Promise(r => setTimeout(r, 1200));
+            setPhase('done');
+            setTimeout(() => setPhase('idle'), 3500);
         } catch (err) {
             const msg = axios.isAxiosError(err)
                 ? (err.response?.data?.message ?? `Error ${err.response?.status}: no se pudo guardar.`)
                 : 'Error al guardar.';
             setSaveError(msg);
-        } finally { setSaving(false); }
+            setPhase('idle');
+        }
+    };
+
+    const themeButtonLabel = () => {
+        if (phase === 'saving')   return 'Guardando tema…';
+        if (phase === 'applying') return 'Aplicando a tu página pública…';
+        if (phase === 'done')     return '¡Tema aplicado! Podés ver tu página actualizada';
+        return 'Guardar tema';
     };
 
     if (loading) return <div className="skel-page"><span className="skel" style={{ height: 220 }} /></div>;
@@ -260,17 +272,18 @@ function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
                             return (
                                 <button
                                     key={t.value}
-                                    onClick={() => setSelected(t.value)}
+                                    onClick={() => { if (phase === 'idle') setSelected(t.value); }}
+                                    disabled={phase !== 'idle'}
                                     style={{
                                         display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
-                                        padding: '14px 16px', borderRadius: 12, cursor: 'pointer',
+                                        padding: '14px 16px', borderRadius: 12, cursor: phase === 'idle' ? 'pointer' : 'default',
                                         border: `2px solid ${active ? t.accent : 'var(--line)'}`,
                                         background: active ? `${t.bg}` : 'var(--glass-bg)',
                                         gap: 10, transition: 'all .15s',
                                         outline: 'none',
+                                        opacity: phase !== 'idle' && !active ? 0.5 : 1,
                                     }}
                                 >
-                                    {/* Color swatch row */}
                                     <div style={{ display: 'flex', gap: 5 }}>
                                         <span style={{ width: 28, height: 28, borderRadius: 8, background: t.bg, border: '1px solid rgba(255,255,255,.08)', display: 'block' }} />
                                         <span style={{ width: 28, height: 28, borderRadius: 8, background: t.accent, display: 'block' }} />
@@ -316,7 +329,46 @@ function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
                         );
                     })()}
 
-                    <SaveBar saving={saving} saved={saved} error={saveError} onSave={handleSave} label="Guardar tema" />
+                    {/* Phase status banner */}
+                    {(phase === 'applying' || phase === 'done') && (
+                        <div style={{
+                            display: 'flex', alignItems: 'center', gap: 10,
+                            padding: '12px 16px', borderRadius: 10, marginBottom: 12,
+                            background: phase === 'done' ? 'rgba(52,211,153,.08)' : 'rgba(139,92,246,.08)',
+                            border: `1px solid ${phase === 'done' ? 'rgba(52,211,153,.2)' : 'rgba(139,92,246,.2)'}`,
+                        }}>
+                            {phase === 'applying' ? (
+                                <>
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
+                                        <circle cx="8" cy="8" r="6" stroke="rgb(139,92,246)" strokeWidth="1.5" strokeDasharray="3 3">
+                                            <animateTransform attributeName="transform" type="rotate" from="0 8 8" to="360 8 8" dur="1s" repeatCount="indefinite"/>
+                                        </circle>
+                                    </svg>
+                                    <span style={{ fontSize: 12, color: 'rgb(167,139,250)' }}>Aplicando tu tema a la página pública…</span>
+                                </>
+                            ) : (
+                                <>
+                                    {IcoCheck}
+                                    <span style={{ fontSize: 12, color: 'rgb(52,211,153)' }}>¡Listo! Tu página pública está actualizada con el nuevo tema.</span>
+                                </>
+                            )}
+                        </div>
+                    )}
+
+                    {saveError && (
+                        <p style={{ fontSize: 12, color: '#f87171', padding: '8px 12px', borderRadius: 8, background: 'rgba(239,68,68,.08)', border: '1px solid rgba(239,68,68,.2)', marginBottom: 12 }}>
+                            {saveError}
+                        </p>
+                    )}
+
+                    <button
+                        onClick={handleSave}
+                        disabled={phase !== 'idle'}
+                        className="dbtn dbtn--primary"
+                        style={{ width: '100%', justifyContent: 'center', padding: 12 }}
+                    >
+                        {phase === 'done' ? <>{IcoCheck}<span>{themeButtonLabel()}</span></> : themeButtonLabel()}
+                    </button>
                 </div>
             </div>
         </div>

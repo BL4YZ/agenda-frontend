@@ -7,7 +7,7 @@ async function getShopData(slug: string): Promise<Shop | null> {
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/api/public/businesses/${slug}/landing`,
-      { next: { revalidate: 120 } }
+      { next: { tags: [`shop:${slug}`], revalidate: 3600 } }
     );
     if (!res.ok) return null;
     return res.json() as Promise<Shop>;
