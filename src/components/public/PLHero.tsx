@@ -1,4 +1,20 @@
-import type { Shop } from '@/types/public';
+import type { Shop, BusinessHour } from '@/types/public';
+
+function getOpenStatus(hours: BusinessHour[]): { open: boolean; label: string } {
+  const today = hours.find(h => h.is_today);
+  if (!today || today.is_closed || !today.open_time || !today.close_time) {
+    return { open: false, label: 'Cerrado hoy' };
+  }
+  const now = new Date();
+  const cur = now.getHours() * 60 + now.getMinutes();
+  const [oh, om] = today.open_time.split(':').map(Number);
+  const [ch, cm] = today.close_time.split(':').map(Number);
+  const open = oh * 60 + om;
+  const close = ch * 60 + cm;
+  if (cur < open)  return { open: false, label: `Abre a las ${today.open_time}` };
+  if (cur >= close) return { open: false, label: `Cerró a las ${today.close_time}` };
+  return { open: true, label: `Abierto · cierra ${today.close_time}` };
+}
 
 const CalIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
@@ -17,11 +33,12 @@ const ArrowIcon = () => (
 );
 
 interface Props {
-  shop: Pick<Shop, 'name' | 'slug' | 'tagline' | 'eyebrow' | 'lede' | 'phone' | 'rating' | 'review_count' | 'cover_url' | 'services'>;
+  shop: Pick<Shop, 'name' | 'slug' | 'tagline' | 'eyebrow' | 'lede' | 'phone' | 'rating' | 'review_count' | 'cover_url' | 'services' | 'hours'>;
   onReserve: () => void;
 }
 
 export default function PLHero({ shop, onReserve }: Props) {
+  const status = getOpenStatus(shop.hours);
   const titleWords = shop.tagline ? shop.tagline.split(' ') : [shop.name];
   const titleHead = titleWords.slice(0, -1).join(' ');
   const titleTail = titleWords.slice(-1)[0];
@@ -70,7 +87,13 @@ export default function PLHero({ shop, onReserve }: Props) {
               )}
               <div className="pl-hero__meta-item">
                 <span className="pl-hero__meta-label">Estado</span>
-                <span className="pl-hero__meta-val pl-hero__meta-val--green" aria-label="Abierto ahora">● Abierto</span>
+                <span
+                  className={`pl-hero__meta-val${status.open ? ' pl-hero__meta-val--green' : ''}`}
+                  style={status.open ? undefined : { color: 'var(--pl-fg-mute)', fontSize: '14px' }}
+                  aria-label={status.label}
+                >
+                  {status.open ? '● ' : '○ '}{status.label}
+                </span>
               </div>
             </div>
           </div>
