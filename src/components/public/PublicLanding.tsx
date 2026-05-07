@@ -90,7 +90,7 @@ export default function PublicLanding({ shop }: Props) {
   };
 
   const accentOverride = shop.brand_color
-    ? ({ '--pl-accent': shop.brand_color, '--pl-accent-2': shop.brand_color } as React.CSSProperties)
+    ? ({ '--pl-accent': shop.brand_color } as React.CSSProperties)
     : undefined;
 
   // Determine what's accessible for this plan
