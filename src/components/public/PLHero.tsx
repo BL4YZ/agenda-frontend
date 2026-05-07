@@ -11,13 +11,13 @@ const PhoneIcon = () => (
   </svg>
 );
 const ArrowIcon = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M5 12h14M12 5l7 7-7 7"/>
   </svg>
 );
 
 interface Props {
-  shop: Pick<Shop, 'name' | 'slug' | 'tagline' | 'eyebrow' | 'lede' | 'phone' | 'rating' | 'review_count' | 'cover_url'>;
+  shop: Pick<Shop, 'name' | 'slug' | 'tagline' | 'eyebrow' | 'lede' | 'phone' | 'rating' | 'review_count' | 'cover_url' | 'services'>;
   onReserve: () => void;
 }
 
@@ -75,8 +75,8 @@ export default function PLHero({ shop, onReserve }: Props) {
             </div>
           </div>
 
-          {/* Right: visual */}
-          <div className="pl-hero__visual" aria-hidden="true">
+          {/* Right: visual card */}
+          <div className="pl-hero__visual">
             <div
               className="pl-hero__photo"
               style={shop.cover_url
@@ -84,21 +84,39 @@ export default function PLHero({ shop, onReserve }: Props) {
                 : { background: 'linear-gradient(135deg, oklch(0.4 0.15 290), oklch(0.25 0.1 280))' }
               }
             />
-            <div className="pl-hero__photo-overlay"/>
-            <div className="pl-hero__chip pl-hero__chip--a">
-              <span className="pl-hero__chip-dot"/> Disponible hoy
+            <div className="pl-hero__photo-overlay" />
+
+            {/* Floating chips — decorative */}
+            <div className="pl-hero__chip pl-hero__chip--a" aria-hidden="true">
+              <span className="pl-hero__chip-dot" /> Disponible hoy
             </div>
-            <div className="pl-hero__chip pl-hero__chip--b">
-              {shop.rating ? `★ ${shop.rating}` : '★ Excelente'}
+            <div className="pl-hero__chip pl-hero__chip--b" aria-hidden="true">
+              <span className="pl-hero__chip-star">★</span>
+              {shop.rating
+                ? <>{shop.rating}{shop.review_count ? <span className="pl-hero__chip-mute"> · {shop.review_count}</span> : null}</>
+                : <>Excelente</>
+              }
             </div>
-            <div className="pl-hero__visual-card">
+            {shop.services.length > 0 && (
+              <div className="pl-hero__chip pl-hero__chip--c" aria-hidden="true">
+                <span className="pl-hero__chip-dot" />
+                {shop.services.length} servicios
+              </div>
+            )}
+
+            {/* Booking CTA — clickable */}
+            <button
+              className="pl-hero__visual-card"
+              onClick={onReserve}
+              aria-label="Abrir reserva de turno"
+            >
               <div className="pl-hero__visual-card-icon"><CalIcon /></div>
               <div className="pl-hero__visual-card-text">
                 <div className="pl-hero__visual-card-title">Reservá en 3 clics</div>
                 <div className="pl-hero__visual-card-sub">Confirmación inmediata · Sin llamadas</div>
               </div>
-              <ArrowIcon />
-            </div>
+              <div className="pl-hero__visual-card-arrow"><ArrowIcon /></div>
+            </button>
           </div>
 
         </div>
