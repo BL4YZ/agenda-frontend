@@ -5,6 +5,7 @@ import axios from 'axios';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useBusiness } from '@/context/BusinessContext';
+import ImageUpload from '@/components/ImageUpload';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type ShopTheme = 'violet' | 'rose' | 'green' | 'cyan' | 'amber';
@@ -162,16 +163,13 @@ function ProfileTab({ token }: { token: string | null }) {
 
             <div className="gcard">
                 <div className="gcard__head"><h3 className="gcard__title">Imagen de portada</h3></div>
-                <div className="gcard__body" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    {form.cover_url && (
-                        <img src={form.cover_url} alt="Cover preview"
-                            style={{ width: '100%', height: 160, objectFit: 'cover', borderRadius: 10, border: '1px solid var(--line)' }}
-                            onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                    )}
-                    <Field label="URL de la imagen de portada">
-                        <input className="fg-field__input" value={form.cover_url} onChange={set('cover_url')} placeholder="https://tu-dominio.com/portada.jpg" />
-                    </Field>
-                    <p style={{ fontSize: 11, color: 'var(--fg-3)' }}>Podés subir la imagen a cualquier servicio (Cloudinary, Imgur, etc.) y pegar el link acá.</p>
+                <div className="gcard__body">
+                    <ImageUpload
+                        value={form.cover_url}
+                        onChange={url => setForm(f => ({ ...f, cover_url: url }))}
+                        placeholder="https://…"
+                        previewHeight={180}
+                    />
                 </div>
             </div>
 
@@ -596,7 +594,12 @@ function ProductsTab({ token }: { token: string | null }) {
                 <input className="fg-field__input" type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} placeholder="Precio" min={0} />
                 <input className="fg-field__input" value={form.badge} onChange={e => setForm({ ...form, badge: e.target.value })} placeholder="Badge (Ej: Nuevo)" />
             </div>
-            <input className="fg-field__input" value={form.image_url} onChange={e => setForm({ ...form, image_url: e.target.value })} placeholder="URL de imagen" />
+            <ImageUpload
+                value={form.image_url}
+                onChange={url => setForm({ ...form, image_url: url })}
+                previewHeight={100}
+                placeholder="URL de imagen"
+            />
             <textarea className="fg-field__input" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={2} style={{ resize: 'vertical' }} placeholder="Descripción corta" />
         </div>
     );
