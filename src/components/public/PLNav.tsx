@@ -6,12 +6,18 @@ const CalIcon = () => (
   </svg>
 );
 
+export interface NavSection {
+  href: string;
+  label: string;
+}
+
 interface Props {
   shop: Pick<Shop, 'name' | 'slug' | 'logo_url'>;
+  sections: NavSection[];
   onReserve: () => void;
 }
 
-export default function PLNav({ shop, onReserve }: Props) {
+export default function PLNav({ shop, sections, onReserve }: Props) {
   return (
     <nav className="pl-nav" role="navigation" aria-label="Navegación principal">
       <a className="pl-nav__brand" href={`/public/${shop.slug}`} aria-label={`Inicio de ${shop.name}`}>
@@ -22,17 +28,13 @@ export default function PLNav({ shop, onReserve }: Props) {
         </div>
         <span>{shop.name}</span>
       </a>
-      <div className="pl-nav__links" role="list">
-        {[
-          { href: '#servicios', label: 'Servicios' },
-          { href: '#tienda',    label: 'Tienda' },
-          { href: '#equipo',    label: 'Equipo' },
-          { href: '#reviews',   label: 'Reseñas' },
-          { href: '#contacto',  label: 'Contacto' },
-        ].map(({ href, label }) => (
-          <a key={href} className="pl-nav__link" href={href} role="listitem">{label}</a>
-        ))}
-      </div>
+      {sections.length > 0 && (
+        <div className="pl-nav__links" role="list">
+          {sections.map(({ href, label }) => (
+            <a key={href} className="pl-nav__link" href={href} role="listitem">{label}</a>
+          ))}
+        </div>
+      )}
       <button className="pl-nav__cta" onClick={onReserve} aria-label="Abrir formulario de reserva">
         <CalIcon /> Reservar turno
       </button>

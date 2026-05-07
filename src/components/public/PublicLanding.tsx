@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, lazy, Suspense } from 'react';
-import type { Shop } from '@/types/public';
+import type { Shop, ShopPlan } from '@/types/public';
+import type { NavSection } from './PLNav';
 import '@/styles/public.css';
 
 import PLNav      from './PLNav';
@@ -18,6 +19,13 @@ const PLReviews      = lazy(() => import('./PLReviews'));
 const PLLocation     = lazy(() => import('./PLLocation'));
 const PLFaq          = lazy(() => import('./PLFaq'));
 const PLReserveModal = lazy(() => import('./PLReserveModal'));
+
+// Sections available per plan level
+const PLAN_SECTIONS: Record<ShopPlan, Set<string>> = {
+  gratis:  new Set(['servicios', 'contacto']),
+  pro:     new Set(['servicios', 'tienda', 'reviews', 'faq', 'contacto']),
+  negocio: new Set(['servicios', 'tienda', 'equipo', 'galeria', 'reviews', 'faq', 'contacto']),
+};
 
 /** JSON-LD LocalBusiness schema */
 function JsonLd({ shop }: { shop: Shop }) {
@@ -81,10 +89,28 @@ export default function PublicLanding({ shop }: Props) {
     setModalOpen(true);
   };
 
-  // If brand_color is set, override --pl-accent for this business
   const accentOverride = shop.brand_color
     ? ({ '--pl-accent': shop.brand_color, '--pl-accent-2': shop.brand_color } as React.CSSProperties)
     : undefined;
+
+  // Determine what's accessible for this plan
+  const allowed = PLAN_SECTIONS[shop.plan ?? 'gratis'];
+
+  const showProducts  = allowed.has('tienda')    && shop.products.length > 0;
+  const showTeam      = allowed.has('equipo')     && shop.team.length > 0;
+  const showGallery   = allowed.has('galeria')    && (shop.gallery?.length ?? 0) > 0;
+  const showReviews   = allowed.has('reviews')    && shop.reviews.length > 0;
+  const showLocation  = allowed.has('contacto')   && !!(shop.address || shop.lat || shop.phone);
+  const showFaq       = allowed.has('faq')        && shop.faqs.length > 0;
+
+  // Build nav links only for sections that exist AND are allowed
+  const navSections: NavSection[] = [
+    shop.services.length > 0                       && { href: '#servicios', label: 'Servicios' },
+    showProducts                                   && { href: '#tienda',    label: 'Tienda' },
+    showTeam                                       && { href: '#equipo',    label: 'Equipo' },
+    showReviews                                    && { href: '#reviews',   label: 'Reseñas' },
+    showLocation                                   && { href: '#contacto',  label: 'Contacto' },
+  ].filter(Boolean) as NavSection[];
 
   return (
     <>
@@ -103,18 +129,18 @@ export default function PublicLanding({ shop }: Props) {
           <div className="pl-bg__noise"/>
         </div>
 
-        <PLNav shop={shop} onReserve={() => openReserve()} />
+        <PLNav shop={shop} sections={navSections} onReserve={() => openReserve()} />
         <PLHero shop={shop} onReserve={() => openReserve()} />
         <PLAbout shop={shop} />
         <PLServices shop={shop} services={shop.services} onReserve={openReserve} />
 
         <Suspense fallback={null}>
-          <PLProducts products={shop.products} />
-          <PLTeam team={shop.team} />
-          <PLGallery images={shop.gallery?.map(g => ({ url: g.image_url, alt: g.caption ?? undefined }))} />
-          <PLReviews shop={shop} reviews={shop.reviews} />
-          <PLLocation shop={shop} hours={shop.hours} />
-          <PLFaq faqs={shop.faqs} />
+          {showProducts  && <PLProducts products={shop.products} />}
+          {showTeam      && <PLTeam team={shop.team} />}
+          {showGallery   && <PLGallery images={shop.gallery.map(g => ({ url: g.image_url, alt: g.caption ?? undefined }))} />}
+          {showReviews   && <PLReviews shop={shop} reviews={shop.reviews} />}
+          {showLocation  && <PLLocation shop={shop} hours={shop.hours} />}
+          {showFaq       && <PLFaq faqs={shop.faqs} />}
         </Suspense>
 
         <PLFooter shop={shop} />

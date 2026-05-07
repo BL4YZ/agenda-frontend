@@ -131,6 +131,7 @@
   font-family: var(--pl-font-body);
   isolation: isolate;
   overflow-x: hidden;
+  padding-top: 74px;
 }
 .pl-page * { box-sizing: border-box; }
 
@@ -169,7 +170,7 @@
 
 /* ── Nav ────────────────────────────────────────────────── */
 .pl-nav {
-  position:sticky; top:0; z-index:50;
+  position:fixed; top:0; left:0; right:0; z-index:50;
   display:flex; align-items:center; gap:16px;
   padding:18px 32px;
   background:var(--pl-glass);

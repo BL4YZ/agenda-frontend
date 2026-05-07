@@ -1,4 +1,5 @@
 export type ShopTheme = 'violet' | 'rose' | 'green' | 'cyan' | 'amber';
+export type ShopPlan  = 'gratis' | 'pro' | 'negocio';
 
 export interface Service {
   id: number;
@@ -78,6 +79,7 @@ export interface Shop {
   about_image_url?: string | null;
   about_quote?: string;
   theme: ShopTheme;
+  plan: ShopPlan;
   brand_color?: string | null;
   lat?: number | null;
   lng?: number | null;

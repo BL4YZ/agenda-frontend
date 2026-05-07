@@ -1,7 +1,7 @@
 import type { Shop } from '@/types/public';
 
 interface Props {
-  shop: Pick<Shop, 'name' | 'lede' | 'address' | 'about_quote' | 'founded_year' | 'cover_url'>;
+  shop: Pick<Shop, 'name' | 'lede' | 'address' | 'about_quote' | 'founded_year' | 'about_image_url'>;
 }
 
 export default function PLAbout({ shop }: Props) {
@@ -24,12 +24,12 @@ export default function PLAbout({ shop }: Props) {
             className="pl-about__photo"
             role="img"
             aria-label={`Foto de ${shop.name}`}
-            style={shop.cover_url
-              ? { backgroundImage: `url(${shop.cover_url})` }
+            style={shop.about_image_url
+              ? { backgroundImage: `url(${shop.about_image_url})` }
               : { background: 'linear-gradient(135deg, oklch(0.5 0.18 290 / 0.7), oklch(0.3 0.1 280 / 0.5))' }
             }
           >
-            {!shop.cover_url && (
+            {!shop.about_image_url && (
               <div style={{
                 position: 'absolute', inset: '50%', display: 'grid', placeItems: 'center',
                 fontFamily: 'var(--pl-font-display)', fontStyle: 'italic', fontSize: 120,
