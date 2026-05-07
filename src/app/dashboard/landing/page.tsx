@@ -226,11 +226,20 @@ function ProfileTab({ token, slug }: { token: string | null; slug: string }) {
 
 // ── ThemeTab ──────────────────────────────────────────────────────────────────
 function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
-    const [selected, setSelected]   = useState<ShopTheme>('violet');
-    const [loading, setLoading]     = useState(true);
-    const [saving, setSaving]       = useState(false);
-    const [saved, setSaved]         = useState(false);
-    const [saveError, setSaveError] = useState('');
+    const { business } = useBusiness();
+    const plan      = (business?.subscription_plan ?? 'gratis') as PlanKey;
+    const isNegocio = (PLAN_RANK[plan] ?? 0) >= PLAN_RANK['negocio'];
+
+    const [selected, setSelected]       = useState<ShopTheme>('violet');
+    const [brandColor, setBrandColor]   = useState<string | null>(null);  // saved value
+    const [brandInput, setBrandInput]   = useState('#6366f1');            // live input
+    const [loading, setLoading]         = useState(true);
+    const [saving, setSaving]           = useState(false);
+    const [saved, setSaved]             = useState(false);
+    const [saveError, setSaveError]     = useState('');
+    const [savingBrand, setSavingBrand] = useState(false);
+    const [savedBrand, setSavedBrand]   = useState(false);
+    const [brandError, setBrandError]   = useState('');
 
     const publicUrl = slug
         ? `${typeof window !== 'undefined' ? window.location.origin : ''}/public/${slug}`
@@ -238,10 +247,16 @@ function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
 
     useEffect(() => {
         if (!token) return;
-        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/profile`, { headers: { Authorization: `Bearer ${token}` } })
-            .then(r => setSelected(r.data.theme ?? 'violet'))
-            .catch(console.error)
-            .finally(() => setLoading(false));
+        Promise.all([
+            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/profile`,  { headers: { Authorization: `Bearer ${token}` } }),
+            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/me`,    { headers: { Authorization: `Bearer ${token}` } }),
+        ]).then(([profileRes, bizRes]) => {
+            setSelected(profileRes.data.theme ?? 'violet');
+            const bc: string | null = bizRes.data?.brand_color ?? null;
+            setBrandColor(bc);
+            if (bc) setBrandInput(bc);
+        }).catch(console.error)
+          .finally(() => setLoading(false));
     }, [token]);
 
     const handleSave = async () => {
@@ -261,7 +276,52 @@ function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
         } finally { setSaving(false); }
     };
 
+    const handleSaveBrand = async () => {
+        setSavingBrand(true);
+        setBrandError('');
+        try {
+            await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/me`,
+                { brand_color: brandInput },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setBrandColor(brandInput);
+            setSavedBrand(true);
+            setTimeout(() => setSavedBrand(false), 3000);
+            revalidatePublicPage(slug);
+        } catch (err) {
+            const msg = axios.isAxiosError(err)
+                ? (err.response?.data?.message ?? `Error ${err.response?.status}: no se pudo guardar.`)
+                : 'Error al guardar.';
+            setBrandError(msg);
+        } finally { setSavingBrand(false); }
+    };
+
+    const handleClearBrand = async () => {
+        setSavingBrand(true);
+        setBrandError('');
+        try {
+            await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/me`,
+                { brand_color: null },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setBrandColor(null);
+            setBrandInput('#6366f1');
+            setSavedBrand(true);
+            setTimeout(() => setSavedBrand(false), 3000);
+            revalidatePublicPage(slug);
+        } catch (err) {
+            const msg = axios.isAxiosError(err)
+                ? (err.response?.data?.message ?? `Error ${err.response?.status}: no se pudo guardar.`)
+                : 'Error al guardar.';
+            setBrandError(msg);
+        } finally { setSavingBrand(false); }
+    };
+
     if (loading) return <div className="skel-page"><span className="skel" style={{ height: 220 }} /></div>;
+
+    // mini-preview accent: if Negocio and brand color is saved, show live brandInput
+    const t = THEMES.find(x => x.value === selected)!;
+    const previewAccent = (isNegocio && brandColor !== null) ? brandInput : t.accent;
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -272,29 +332,29 @@ function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
                 </div>
                 <div className="gcard__body">
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 10, marginBottom: 20 }}>
-                        {THEMES.map(t => {
-                            const active = selected === t.value;
+                        {THEMES.map(th => {
+                            const active = selected === th.value;
                             return (
                                 <button
-                                    key={t.value}
-                                    onClick={() => setSelected(t.value)}
+                                    key={th.value}
+                                    onClick={() => setSelected(th.value)}
                                     style={{
                                         display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
                                         padding: '14px 16px', borderRadius: 12, cursor: 'pointer',
-                                        border: `2px solid ${active ? t.accent : 'var(--line)'}`,
-                                        background: active ? `${t.bg}` : 'var(--glass-bg)',
+                                        border: `2px solid ${active ? th.accent : 'var(--line)'}`,
+                                        background: active ? `${th.bg}` : 'var(--glass-bg)',
                                         gap: 10, transition: 'all .15s', outline: 'none',
                                     }}
                                 >
                                     <div style={{ display: 'flex', gap: 5 }}>
-                                        <span style={{ width: 28, height: 28, borderRadius: 8, background: t.bg, border: '1px solid rgba(255,255,255,.08)', display: 'block' }} />
-                                        <span style={{ width: 28, height: 28, borderRadius: 8, background: t.accent, display: 'block' }} />
-                                        <span style={{ width: 28, height: 28, borderRadius: 8, background: t.dot, display: 'block' }} />
+                                        <span style={{ width: 28, height: 28, borderRadius: 8, background: th.bg, border: '1px solid rgba(255,255,255,.08)', display: 'block' }} />
+                                        <span style={{ width: 28, height: 28, borderRadius: 8, background: th.accent, display: 'block' }} />
+                                        <span style={{ width: 28, height: 28, borderRadius: 8, background: th.dot, display: 'block' }} />
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                                        <span style={{ fontSize: 13, fontWeight: 600, color: active ? t.dot : 'var(--fg-1)' }}>{t.label}</span>
+                                        <span style={{ fontSize: 13, fontWeight: 600, color: active ? th.dot : 'var(--fg-1)' }}>{th.label}</span>
                                         {active && (
-                                            <span style={{ width: 18, height: 18, borderRadius: '50%', background: t.accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <span style={{ width: 18, height: 18, borderRadius: '50%', background: th.accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5 3.5-4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                                             </span>
                                         )}
@@ -306,7 +366,6 @@ function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
 
                     {/* Mini preview */}
                     {(() => {
-                        const t = THEMES.find(x => x.value === selected)!;
                         const tb = t.dark ? 'rgba(255,255,255,' : 'rgba(0,0,0,';
                         return (
                             <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid var(--line)', marginBottom: 20 }}>
@@ -319,7 +378,7 @@ function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
                                     <div style={{ height: 11, width: '75%', borderRadius: 4, background: `${tb}.25)` }} />
                                     <div style={{ height: 11, width: '60%', borderRadius: 4, background: `${tb}.16)` }} />
                                     <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
-                                        <span style={{ padding: '7px 18px', borderRadius: 8, background: t.accent, fontSize: 11, color: '#fff', fontWeight: 600, display: 'inline-block' }}>
+                                        <span style={{ padding: '7px 18px', borderRadius: 8, background: previewAccent, fontSize: 11, color: '#fff', fontWeight: 600, display: 'inline-block' }}>
                                             Reservar turno
                                         </span>
                                     </div>
@@ -327,6 +386,12 @@ function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
                                 <div style={{ padding: '8px 20px', background: `${tb}.03)`, borderTop: `1px solid ${tb}.08)`, fontSize: 11, color: 'var(--fg-3)', display: 'flex', alignItems: 'center', gap: 6 }}>
                                     <span style={{ width: 8, height: 8, borderRadius: '50%', background: t.dot, display: 'inline-block' }} />
                                     Vista previa · Tema {t.label}
+                                    {isNegocio && brandColor && (
+                                        <span style={{ marginLeft: 4, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                            · Color de marca
+                                            <span style={{ width: 8, height: 8, borderRadius: '50%', background: brandInput, display: 'inline-block', border: '1px solid rgba(255,255,255,.2)' }} />
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                         );
@@ -365,6 +430,82 @@ function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
                         style={{ width: '100%', justifyContent: 'center', padding: 12 }}
                     >
                         {saved ? <>{IcoCheck}<span>Guardado</span></> : saving ? 'Guardando…' : 'Guardar tema'}
+                    </button>
+                </div>
+            </div>
+
+            {/* Brand color card — Negocio only */}
+            <div className="gcard" style={{ position: 'relative', overflow: 'hidden' }}>
+                {!isNegocio && (
+                    <div style={{
+                        position: 'absolute', inset: 0, zIndex: 10,
+                        backdropFilter: 'blur(4px)',
+                        background: 'rgba(10,8,16,.6)',
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                        gap: 10, borderRadius: 'inherit',
+                    }}>
+                        <div style={{ width: 42, height: 42, borderRadius: 12, background: 'rgba(192,132,252,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c084fc' }}>
+                            <svg width="19" height="19" viewBox="0 0 22 22" fill="none">
+                                <rect x="4" y="10" width="14" height="11" rx="2" stroke="currentColor" strokeWidth="1.5"/>
+                                <path d="M7.5 10V7.5a3.5 3.5 0 0 1 7 0V10" stroke="currentColor" strokeWidth="1.5"/>
+                            </svg>
+                        </div>
+                        <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-0)', margin: 0 }}>Requiere plan Negocio</p>
+                        <Link href="/dashboard/settings/billing" className="dbtn dbtn--primary dbtn--sm" style={{ textDecoration: 'none' }}>
+                            Ver planes →
+                        </Link>
+                    </div>
+                )}
+                <div className="gcard__head">
+                    <h3 className="gcard__title">Color de marca</h3>
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 99, background: 'rgba(192,132,252,.15)', color: '#c084fc', letterSpacing: '0.06em' }}>NEGOCIO</span>
+                </div>
+                <div className="gcard__body" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    <p style={{ fontSize: 12, color: 'var(--fg-2)', lineHeight: 1.65, margin: 0 }}>
+                        Reemplaza el color de acento del tema elegido en tu página pública. Afecta el botón <em>Reservar turno</em>, el degradado del título del Hero y las etiquetas de acento de los servicios.
+                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        {/* Color swatch / native picker trigger */}
+                        <div style={{ position: 'relative', width: 44, height: 44, borderRadius: 10, overflow: 'hidden', border: '2px solid var(--line)', flexShrink: 0 }}>
+                            <input
+                                type="color"
+                                value={brandInput}
+                                onChange={e => setBrandInput(e.target.value)}
+                                style={{ position: 'absolute', inset: '-8px', width: 'calc(100% + 16px)', height: 'calc(100% + 16px)', cursor: 'pointer', border: 'none', padding: 0, background: 'none' }}
+                            />
+                        </div>
+                        {/* Hex input */}
+                        <input
+                            className="fg-field__input"
+                            value={brandInput}
+                            onChange={e => setBrandInput(e.target.value)}
+                            placeholder="#6366f1"
+                            style={{ fontFamily: 'var(--font-mono)', letterSpacing: '0.05em', flex: 1 }}
+                            maxLength={7}
+                        />
+                        {brandColor && (
+                            <button
+                                className="dbtn dbtn--sm"
+                                onClick={handleClearBrand}
+                                disabled={savingBrand}
+                                title="Quitar color de marca y volver al color del tema"
+                            >
+                                Quitar
+                            </button>
+                        )}
+                    </div>
+                    {brandError && (
+                        <p style={{ fontSize: 12, color: '#f87171', padding: '8px 12px', borderRadius: 8, background: 'rgba(239,68,68,.08)', border: '1px solid rgba(239,68,68,.2)', margin: 0 }}>
+                            {brandError}
+                        </p>
+                    )}
+                    <button
+                        className="dbtn dbtn--primary"
+                        onClick={handleSaveBrand}
+                        disabled={savingBrand}
+                        style={{ width: '100%', justifyContent: 'center', padding: 12 }}
+                    >
+                        {savedBrand ? <>{IcoCheck}<span>Guardado</span></> : savingBrand ? 'Guardando…' : 'Guardar color de marca'}
                     </button>
                 </div>
             </div>
