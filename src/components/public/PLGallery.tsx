@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 
 const PLACEHOLDER_ITEMS = [
   { lg: true, n: '01' }, { n: '02' }, { n: '03' },
@@ -46,7 +47,7 @@ export default function PLGallery({ images }: Props) {
                   onKeyDown={e => e.key === 'Enter' && hasImage && setLightbox((it as GalleryImage).url)}
                 >
                   {hasImage
-                    ? <img src={(it as GalleryImage).url} alt={(it as GalleryImage).alt ?? `Foto ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
+                    ? <Image src={(it as GalleryImage).url} alt={(it as GalleryImage).alt ?? `Foto ${i + 1}`} fill style={{ objectFit: 'cover' }} sizes="(max-width:768px) 50vw, 25vw" />
                     : <>
                         <div className="pl-gallery__item-ph" aria-hidden="true">{i + 1}</div>
                         <div className="pl-gallery__item-num" aria-hidden="true">FOTO {('n' in it ? (it as { n: string }).n : String(i + 1).padStart(2, '0'))}</div>
@@ -72,6 +73,7 @@ export default function PLGallery({ images }: Props) {
           onClick={() => setLightbox(null)}
           onKeyDown={e => e.key === 'Escape' && setLightbox(null)}
         >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={lightbox} alt="Imagen ampliada"
             style={{ maxWidth: '90vw', maxHeight: '90vh', borderRadius: 16, objectFit: 'contain' }}
