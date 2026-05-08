@@ -13,7 +13,7 @@ type ShopFont  = 'editorial' | 'elegant' | 'modern';
 
 type Profile = {
     tagline: string; lede: string; address: string; phone: string; whatsapp: string;
-    instagram_url: string; tiktok_url: string; theme: ShopTheme; font: ShopFont | null; cover_url: string;
+    instagram_url: string; tiktok_url: string; theme: ShopTheme; cover_url: string;
     about_image_url: string; about_quote: string; founded_year: string;
 };
 
@@ -114,7 +114,7 @@ function SaveBar({ saving, saved, error, onSave, label = 'Guardar cambios' }: {
 function ProfileTab({ token, slug }: { token: string | null; slug: string }) {
     const empty: Profile = {
         tagline: '', lede: '', address: '', phone: '', whatsapp: '',
-        instagram_url: '', tiktok_url: '', theme: 'violet', font: null, cover_url: '',
+        instagram_url: '', tiktok_url: '', theme: 'violet', cover_url: '',
         about_image_url: '', about_quote: '', founded_year: '',
     };
     const [form, setForm] = useState<Profile>(empty);
@@ -135,7 +135,6 @@ function ProfileTab({ token, slug }: { token: string | null; slug: string }) {
                 instagram_url: r.data.instagram_url ?? '',
                 tiktok_url: r.data.tiktok_url ?? '',
                 theme: r.data.theme ?? 'violet',
-                font: r.data.font ?? null,
                 cover_url: r.data.cover_url ?? '',
                 about_image_url: r.data.about_image_url ?? '',
                 about_quote: r.data.about_quote ?? '',
