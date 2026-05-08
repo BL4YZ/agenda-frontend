@@ -30,6 +30,8 @@ interface Props {
   shop: Shop;
   /** Pre-select a service when the modal opens */
   initialServiceId?: number | null;
+  /** Filter employees by branch */
+  initialBranchId?: number | null;
 }
 
 const STEP_TITLES: Record<Step, string> = {
@@ -45,7 +47,7 @@ const STEP_SUBS: Record<Step, string> = {
   3: 'Te enviamos los detalles',
 };
 
-export default function PLReserveModal({ open, onClose, shop, initialServiceId }: Props) {
+export default function PLReserveModal({ open, onClose, shop, initialServiceId, initialBranchId }: Props) {
   const [step, setStep] = useState<Step>(0);
   const [svc, setSvc] = useState<Service | null>(null);
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -115,13 +117,16 @@ export default function PLReserveModal({ open, onClose, shop, initialServiceId }
     return () => { document.body.style.overflow = ''; };
   }, [open]);
 
-  /* fetch employees when service is chosen */
+  /* fetch employees when service is chosen, filtered by branch if provided */
   useEffect(() => {
     if (!svc) return;
-    axios.get(`${API}/api/public/services/${svc.id}/employees`)
+    const url = initialBranchId
+      ? `${API}/api/public/services/${svc.id}/employees?branchId=${initialBranchId}`
+      : `${API}/api/public/services/${svc.id}/employees`;
+    axios.get(url)
       .then(r => setEmployees(r.data))
       .catch(() => setEmployees([]));
-  }, [svc]);
+  }, [svc, initialBranchId]);
 
   /* fetch availability */
   const fetchSlots = useCallback(async (date: string) => {

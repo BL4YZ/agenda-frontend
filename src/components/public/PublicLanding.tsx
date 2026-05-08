@@ -84,9 +84,11 @@ interface Props {
 export default function PublicLanding({ shop }: Props) {
   const [modalOpen, setModalOpen] = useState(false);
   const [preselectedServiceId, setPreselectedServiceId] = useState<number | null>(null);
+  const [preselectedBranchId, setPreselectedBranchId] = useState<number | null>(null);
 
-  const openReserve = (serviceId?: number) => {
+  const openReserve = (serviceId?: number, branchId?: number) => {
     setPreselectedServiceId(serviceId ?? null);
+    setPreselectedBranchId(branchId ?? null);
     setModalOpen(true);
   };
 
@@ -139,7 +141,7 @@ export default function PublicLanding({ shop }: Props) {
         <PLServices shop={shop} services={shop.services} onReserve={openReserve} />
 
         <Suspense fallback={null}>
-          {showBranches  && <PLBranches shop={shop} branches={shop.branches} />}
+          {showBranches  && <PLBranches shop={shop} branches={shop.branches} onReserve={(branchId) => openReserve(undefined, branchId)} />}
           {showProducts  && <PLProducts products={shop.products} shop={shop} />}
           {showTeam      && <PLTeam team={shop.team} />}
           {showGallery   && <PLGallery images={shop.gallery.map(g => ({ url: g.image_url, alt: g.caption ?? undefined }))} />}
@@ -157,6 +159,7 @@ export default function PublicLanding({ shop }: Props) {
               onClose={() => setModalOpen(false)}
               shop={shop}
               initialServiceId={preselectedServiceId}
+              initialBranchId={preselectedBranchId}
             />
           )}
         </Suspense>

@@ -661,32 +661,47 @@ html:has(.pl-page) { scroll-behavior: smooth; }
 .pl-review__author-meta { font-family:var(--pl-font-mono); font-size:10px; color:var(--pl-fg-mute); letter-spacing:0.08em; }
 
 /* ── Branches ───────────────────────────────────────────── */
-.pl-branches { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
+.pl-branches { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; }
 .pl-branch-card {
-  display:flex; flex-direction:column; gap:14px;
-  padding:24px;
+  display:flex; flex-direction:column; gap:0;
   background:var(--pl-glass); border:1px solid var(--pl-line-strong);
-  border-radius:var(--pl-radius-md); backdrop-filter:blur(12px);
-  transition:border-color .2s, transform .22s var(--pl-ease-out);
+  border-radius:var(--pl-radius-lg); backdrop-filter:blur(12px); overflow:hidden;
+  transition:border-color .2s, transform .22s var(--pl-ease-out), box-shadow .22s;
 }
-.pl-branch-card:hover { border-color:var(--pl-accent); transform:translateY(-3px); }
+.pl-branch-card:hover {
+  border-color:var(--pl-accent);
+  transform:translateY(-4px);
+  box-shadow:0 16px 40px oklch(0 0 0 / 0.3), 0 0 0 1px var(--pl-accent) inset;
+}
+.pl-branch-card__header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:20px 20px 16px;
+}
+.pl-branch-card__pin {
+  width:44px; height:44px; border-radius:14px; flex-shrink:0;
+  background:linear-gradient(135deg, var(--pl-accent), var(--pl-accent-2));
+  display:grid; place-items:center; color:white;
+  box-shadow:0 4px 14px oklch(0 0 0 / 0.25);
+}
 .pl-branch-card__num {
-  font-family:var(--pl-font-mono); font-size:11px;
-  color:var(--pl-accent); opacity:0.65; letter-spacing:0.1em;
+  font-family:var(--pl-font-mono); font-size:13px; font-weight:700;
+  color:var(--pl-accent); opacity:0.5; letter-spacing:0.06em;
 }
-.pl-branch-card__body { flex:1; display:flex; flex-direction:column; gap:8px; }
+.pl-branch-card__body {
+  flex:1; display:flex; flex-direction:column; gap:6px;
+  padding:0 20px 20px;
+}
 .pl-branch-card__name {
-  font-family:var(--pl-font-display); font-size:21px; font-weight:500;
-  color:var(--pl-fg); margin:0; letter-spacing:-0.01em;
+  font-family:var(--pl-font-display); font-size:22px; font-weight:600;
+  color:var(--pl-fg); margin:0; letter-spacing:-0.02em; line-height:1.2;
 }
 .pl-branch-card__address {
-  display:flex; align-items:flex-start; gap:6px;
   font-size:13px; color:var(--pl-fg-soft); margin:0; line-height:1.55;
 }
-.pl-branch-card__address svg { flex-shrink:0; margin-top:2px; }
 .pl-branch-card__foot {
   display:flex; align-items:center; justify-content:space-between; gap:10px;
-  padding-top:14px; border-top:1px solid var(--pl-line);
+  padding:14px 20px; border-top:1px solid var(--pl-line);
+  background:oklch(1 0 0 / 0.02);
 }
 .pl-branch-card__maps {
   display:inline-flex; align-items:center; gap:5px;
@@ -694,7 +709,10 @@ html:has(.pl-page) { scroll-behavior: smooth; }
   transition:color .2s;
 }
 .pl-branch-card__maps:hover { color:var(--pl-accent); }
-.pl-branch-card__cta { font-size:12px !important; padding:8px 16px !important; }
+.pl-branch-card__cta {
+  display:inline-flex; align-items:center; gap:6px;
+  font-size:12px !important; padding:9px 18px !important;
+}
 
 /* ── Location ───────────────────────────────────────────── */
 .pl-location { display:grid; grid-template-columns:1fr 1.4fr; gap:28px; align-items:stretch; }
