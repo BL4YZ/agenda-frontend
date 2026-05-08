@@ -108,7 +108,7 @@ export function BusinessProvider({ children }: { children: React.ReactNode }) {
         <BusinessContext.Provider value={{
             business,
             featureFlags: resolveFlags(business),
-            isOnboarded: !!business?.has_seen_onboarding,
+            isOnboarded: !!(business?.has_seen_onboarding || business?.business_type),
             loading,
             refetch: fetch,
             updateBusiness,
