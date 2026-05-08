@@ -10,6 +10,7 @@ type Business = {
     subscription_plan: 'gratis' | 'pro' | 'negocio';
     subscription_status: 'active' | 'pending' | 'paused' | 'cancelled';
     subscription_ends_at?: string | null;
+    trial_ends_at?: string | null;
     pending_plan?: 'pro' | 'negocio' | null;
 };
 
@@ -227,6 +228,10 @@ export default function BillingPage() {
     const pendingPlan   = business?.pending_plan ?? null;
     const statusMeta    = STATUS_META[currentStatus] ?? STATUS_META.active;
     const endsAt        = business?.subscription_ends_at;
+    const trialEndsAt   = business?.trial_ends_at;
+    const trialDaysLeft = trialEndsAt
+        ? Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+        : null;
 
     return (
         <div className="dash-page">
@@ -275,6 +280,58 @@ export default function BillingPage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 10, background: 'rgba(251,191,36,.08)', border: '1px solid rgba(251,191,36,.2)', marginBottom: 28, fontSize: 12, color: '#fbbf24' }}>
                     <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#fbbf24', flexShrink: 0, display: 'inline-block' }} />
                     Suscripción a <strong style={{ marginLeft: 3 }}>{pendingPlan === 'pro' ? 'Pro' : 'Negocio'}</strong>&nbsp;pendiente de confirmación en MercadoPago.
+                </div>
+            )}
+
+            {/* Cancellation notice */}
+            {business && currentStatus === 'cancelled' && endsAt && (
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, padding: '16px 20px', borderRadius: 12, background: 'rgba(239,68,68,.06)', border: '1px solid rgba(239,68,68,.2)', marginBottom: 28 }}>
+                    <div style={{ color: '#f87171', flexShrink: 0, marginTop: 2 }}>{IcoWarn}</div>
+                    <div style={{ flex: 1 }}>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: '#f87171', margin: '0 0 5px' }}>
+                            Suscripción cancelada
+                        </p>
+                        <p style={{ fontSize: 12, color: 'var(--fg-3)', margin: 0, lineHeight: 1.7 }}>
+                            Tu acceso al plan{' '}
+                            <strong style={{ color: 'var(--fg-1)' }}>
+                                {PLANS.find(p => p.id === currentPlan)?.label}
+                            </strong>{' '}
+                            continúa hasta el{' '}
+                            <strong style={{ color: 'var(--fg-1)' }}>
+                                {new Date(endsAt).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                            </strong>.
+                            {' '}A partir de esa fecha pasarás automáticamente al plan <strong style={{ color: 'var(--fg-1)' }}>Gratis</strong>.
+                        </p>
+                    </div>
+                    <button
+                        className="dbtn dbtn--primary dbtn--sm"
+                        onClick={() => handleSubscribe(currentPlan as 'pro' | 'negocio')}
+                        disabled={!!subscribing}
+                        style={{ flexShrink: 0, alignSelf: 'center' }}
+                    >
+                        {subscribing === currentPlan ? 'Redirigiendo…' : 'Reactivar'}
+                    </button>
+                </div>
+            )}
+
+            {/* Trial notice */}
+            {business && currentStatus === 'active' && trialEndsAt && trialDaysLeft !== null && trialDaysLeft > 0 && currentPlan !== 'gratis' && (
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, padding: '16px 20px', borderRadius: 12, background: 'rgba(251,191,36,.06)', border: '1px solid rgba(251,191,36,.2)', marginBottom: 28 }}>
+                    <div style={{ color: '#fbbf24', flexShrink: 0, marginTop: 2 }}>{IcoWarn}</div>
+                    <div>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: '#fbbf24', margin: '0 0 5px' }}>
+                            Período de prueba — {trialDaysLeft} {trialDaysLeft === 1 ? 'día' : 'días'} restantes
+                        </p>
+                        <p style={{ fontSize: 12, color: 'var(--fg-3)', margin: 0, lineHeight: 1.7 }}>
+                            Tu prueba gratuita del plan{' '}
+                            <strong style={{ color: 'var(--fg-1)' }}>{PLANS.find(p => p.id === currentPlan)?.label}</strong>{' '}
+                            vence el{' '}
+                            <strong style={{ color: 'var(--fg-1)' }}>
+                                {new Date(trialEndsAt).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                            </strong>.
+                            {' '}A partir de ahí se facturará el costo mensual.
+                        </p>
+                    </div>
                 </div>
             )}
 

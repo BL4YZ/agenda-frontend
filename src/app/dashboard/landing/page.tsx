@@ -76,21 +76,22 @@ const FONT_GROUPS: FontGroup[] = [
     },
 ];
 
-const TABS = ['Perfil', 'Tema', 'Horarios', 'FAQs', 'Productos', 'Reseñas', 'Galería', 'Equipo'] as const;
+const TABS = ['Perfil', 'Tema', 'Horarios', 'FAQs', 'Productos', 'Reseñas', 'Sucursales', 'Galería', 'Equipo'] as const;
 type Tab = typeof TABS[number];
 
 const PLAN_RANK = { gratis: 0, pro: 1, negocio: 2 } as const;
 type PlanKey = keyof typeof PLAN_RANK;
 
 const TAB_PLAN: Record<Tab, PlanKey> = {
-    'Perfil':    'gratis',
-    'Tema':      'gratis',
-    'Horarios':  'gratis',
-    'FAQs':      'pro',
-    'Productos': 'pro',
-    'Reseñas':   'pro',
-    'Galería':   'negocio',
-    'Equipo':    'negocio',
+    'Perfil':      'gratis',
+    'Tema':        'gratis',
+    'Horarios':    'gratis',
+    'FAQs':        'pro',
+    'Productos':   'pro',
+    'Reseñas':     'pro',
+    'Sucursales':  'negocio',
+    'Galería':     'negocio',
+    'Equipo':      'negocio',
 };
 
 // ── Inline SVG icons ──────────────────────────────────────────────────────────
@@ -1562,6 +1563,179 @@ function EquipoTab({ token, slug }: { token: string | null; slug: string }) {
     );
 }
 
+// ── BranchesTab ───────────────────────────────────────────────────────────────
+type BranchItem    = { id: number; name: string; address: string | null; employee_count: number };
+type BranchMember  = { id: number; name: string | null; email: string; branch_id: number | null };
+
+const IcoBranchPin = <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>;
+const IcoCopyLink  = <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>;
+const IcoXSmall    = <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>;
+const IcoXModal    = <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>;
+
+function BranchesTab({ token, slug }: { token: string | null; slug: string }) {
+    const [branches, setBranches]   = useState<BranchItem[]>([]);
+    const [employees, setEmployees] = useState<BranchMember[]>([]);
+    const [loading, setLoading]     = useState(true);
+    const [showForm, setShowForm]   = useState(false);
+    const [editBranch, setEditBranch] = useState<BranchItem | null>(null);
+    const [formName, setFormName]     = useState('');
+    const [formAddr, setFormAddr]     = useState('');
+    const [submitting, setSubmitting] = useState(false);
+    const [deletingId, setDeletingId] = useState<number | null>(null);
+    const [copiedId, setCopiedId]     = useState<number | null>(null);
+
+    useEffect(() => {
+        if (!token) return;
+        const h = { Authorization: `Bearer ${token}` };
+        Promise.all([
+            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/branches`, { headers: h }),
+            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/team`,     { headers: h }),
+        ]).then(([bRes, tRes]) => {
+            setBranches(bRes.data);
+            setEmployees(tRes.data);
+        }).catch(console.error).finally(() => setLoading(false));
+    }, [token]);
+
+    const openCreate = () => { setEditBranch(null); setFormName(''); setFormAddr(''); setShowForm(true); };
+    const openEdit   = (b: BranchItem) => { setEditBranch(b); setFormName(b.name); setFormAddr(b.address || ''); setShowForm(true); };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSubmitting(true);
+        const h = { Authorization: `Bearer ${token}` };
+        try {
+            if (editBranch) {
+                const res = await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/branches/${editBranch.id}`,
+                    { name: formName, address: formAddr || null }, { headers: h });
+                setBranches(prev => prev.map(b => b.id === editBranch.id ? { ...b, ...res.data } : b));
+            } else {
+                const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/branches`,
+                    { name: formName, address: formAddr || null }, { headers: h });
+                setBranches(prev => [...prev, res.data]);
+            }
+            setShowForm(false);
+        } catch (err) { console.error(err); }
+        finally { setSubmitting(false); }
+    };
+
+    const handleDelete = async (id: number) => {
+        setDeletingId(id);
+        try {
+            await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/branches/${id}`,
+                { headers: { Authorization: `Bearer ${token}` } });
+            setBranches(prev => prev.filter(b => b.id !== id));
+            setEmployees(prev => prev.map(e => e.branch_id === id ? { ...e, branch_id: null } : e));
+        } catch (err) { console.error(err); }
+        finally { setDeletingId(null); }
+    };
+
+    const handleAssign = async (empId: number, branchId: number | null) => {
+        try {
+            await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/branches/employees/${empId}`,
+                { branchId }, { headers: { Authorization: `Bearer ${token}` } });
+            setEmployees(prev => prev.map(e => e.id === empId ? { ...e, branch_id: branchId } : e));
+        } catch (err) { console.error(err); }
+    };
+
+    const copyUrl = (branchId: number) => {
+        const base = process.env.NEXT_PUBLIC_APP_URL ?? (typeof window !== 'undefined' ? window.location.origin : '');
+        navigator.clipboard.writeText(`${base}/public/${slug}?branch=${branchId}`);
+        setCopiedId(branchId);
+        setTimeout(() => setCopiedId(null), 2000);
+    };
+
+    if (loading) return <div className="empty">Cargando sucursales…</div>;
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <button className="dbtn dbtn--primary" onClick={openCreate}>
+                    {IcoPlus}<span>Nueva sucursal</span>
+                </button>
+            </div>
+
+            {branches.length === 0 ? (
+                <div className="empty">
+                    No hay sucursales todavía.<br />
+                    <span style={{ color: 'var(--fg-3)', fontSize: 13 }}>Creá tu primera sucursal para organizar tu equipo por ubicación.</span>
+                </div>
+            ) : branches.map(branch => {
+                const branchEmps  = employees.filter(e => e.branch_id === branch.id);
+                const unassigned  = employees.filter(e => !e.branch_id);
+                return (
+                    <div key={branch.id} className="gcard suc">
+                        <div className="suc__head">
+                            <div className="suc__pin">{IcoBranchPin}</div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                                <div className="suc__title">{branch.name}</div>
+                                {branch.address && <div style={{ fontSize: 12, color: 'var(--fg-3)', marginTop: 2 }}>{branch.address}</div>}
+                            </div>
+                            <div className="suc__actions">
+                                <button className="dbtn dbtn--sm" onClick={() => copyUrl(branch.id)}>
+                                    {copiedId === branch.id ? IcoCheck : IcoCopyLink}
+                                    <span>{copiedId === branch.id ? 'Copiado' : 'Link'}</span>
+                                </button>
+                                <button className="dash-iconbtn" onClick={() => openEdit(branch)} style={{ width: 32, height: 32 }}>{IcoPencil}</button>
+                                <button className="dash-iconbtn" onClick={() => handleDelete(branch.id)} disabled={deletingId === branch.id} style={{ width: 32, height: 32 }}>{IcoTrash}</button>
+                            </div>
+                        </div>
+                        <div className="suc__pros">Profesionales ({branchEmps.length})</div>
+                        <div className="suc__chips">
+                            {branchEmps.map(emp => (
+                                <span key={emp.id} className="suc__chip">
+                                    {emp.name || emp.email}
+                                    <button onClick={() => handleAssign(emp.id, null)}
+                                        style={{ display: 'flex', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--fg-3)', padding: 0 }}>
+                                        {IcoXSmall}
+                                    </button>
+                                </span>
+                            ))}
+                            {unassigned.map(emp => (
+                                <button key={emp.id} onClick={() => handleAssign(emp.id, branch.id)}
+                                    style={{ padding: '4px 10px', background: 'none', border: '1px dashed var(--line)', borderRadius: 999, fontSize: 12, color: 'var(--fg-3)', cursor: 'pointer', transition: 'border-color 0.15s, color 0.15s' }}
+                                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--accent)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--accent)'; }}
+                                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--line)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--fg-3)'; }}
+                                >
+                                    + {emp.name || emp.email}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                );
+            })}
+
+            {showForm && (
+                <div className="dash-modal-overlay">
+                    <div className="dash-modal">
+                        <div className="dash-modal__head">
+                            <h2 className="dash-modal__title">{editBranch ? 'Editar sucursal' : 'Nueva sucursal'}</h2>
+                            <button className="dash-iconbtn" onClick={() => setShowForm(false)}>{IcoXModal}</button>
+                        </div>
+                        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                            <div>
+                                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--fg-2)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Nombre</label>
+                                <input className="dash-input" value={formName} onChange={e => setFormName(e.target.value)} placeholder="Ej: Sucursal Centro" required />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--fg-2)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                                    Dirección <span style={{ fontWeight: 400, opacity: 0.6 }}>(opcional)</span>
+                                </label>
+                                <input className="dash-input" value={formAddr} onChange={e => setFormAddr(e.target.value)} placeholder="Ej: 18 de Julio 1234, Montevideo" />
+                            </div>
+                            <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+                                <button type="button" className="dbtn" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setShowForm(false)}>Cancelar</button>
+                                <button type="submit" className="dbtn dbtn--primary" style={{ flex: 1, justifyContent: 'center' }} disabled={submitting}>
+                                    {submitting ? 'Guardando…' : editBranch ? 'Guardar' : 'Crear sucursal'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
 // ── LockedTab ─────────────────────────────────────────────────────────────────
 function LockedTab({ required }: { required: 'pro' | 'negocio' }) {
     const isPro = required === 'pro';
@@ -1671,6 +1845,9 @@ export default function LandingAdminPage() {
             </div>
             <div style={{ display: tab === 'Reseñas'   ? 'block' : 'none' }}>
                 {rank >= PLAN_RANK['pro'] ? <ReviewsTab token={token} slug={slug} /> : <LockedTab required="pro" />}
+            </div>
+            <div style={{ display: tab === 'Sucursales' ? 'block' : 'none' }}>
+                {rank >= PLAN_RANK['negocio'] ? <BranchesTab token={token} slug={slug} /> : <LockedTab required="negocio" />}
             </div>
             <div style={{ display: tab === 'Galería'   ? 'block' : 'none' }}>
                 {rank >= PLAN_RANK['negocio'] ? <GaleriaTab token={token} slug={slug} /> : <LockedTab required="negocio" />}
