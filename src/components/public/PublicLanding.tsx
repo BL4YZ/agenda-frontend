@@ -140,7 +140,7 @@ export default function PublicLanding({ shop }: Props) {
 
         <Suspense fallback={null}>
           {showBranches  && <PLBranches shop={shop} branches={shop.branches} />}
-          {showProducts  && <PLProducts products={shop.products} />}
+          {showProducts  && <PLProducts products={shop.products} shop={shop} />}
           {showTeam      && <PLTeam team={shop.team} />}
           {showGallery   && <PLGallery images={shop.gallery.map(g => ({ url: g.image_url, alt: g.caption ?? undefined }))} />}
           {showReviews   && <PLReviews shop={shop} reviews={shop.reviews} />}

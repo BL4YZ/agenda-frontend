@@ -940,6 +940,26 @@ function FaqsTab({ token, slug }: { token: string | null; slug: string }) {
 // ── ProductsTab ───────────────────────────────────────────────────────────────
 const emptyProduct = { name: '', brand: '', price: '', image_url: '', badge: '', description: '' };
 
+function ProductForm({ form, setForm }: { form: typeof emptyProduct; setForm: (f: typeof emptyProduct) => void }) {
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <input className="fg-field__input" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Nombre *" />
+                <input className="fg-field__input" value={form.brand} onChange={e => setForm({ ...form, brand: e.target.value })} placeholder="Marca" />
+                <input className="fg-field__input" type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} placeholder="Precio" min={0} />
+                <input className="fg-field__input" value={form.badge} onChange={e => setForm({ ...form, badge: e.target.value })} placeholder="Badge (Ej: Nuevo)" />
+            </div>
+            <ImageUpload
+                value={form.image_url}
+                onChange={url => setForm({ ...form, image_url: url })}
+                previewHeight={100}
+                placeholder="URL de imagen"
+            />
+            <textarea className="fg-field__input" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={2} style={{ resize: 'vertical' }} placeholder="Descripción corta" />
+        </div>
+    );
+}
+
 function ProductsTab({ token, slug }: { token: string | null; slug: string }) {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading]   = useState(true);
@@ -1010,24 +1030,6 @@ function ProductsTab({ token, slug }: { token: string | null; slug: string }) {
             revalidatePublicPage(slug);
         } catch (err) { console.error(err); }
     };
-
-    const ProductForm = ({ form, setForm }: { form: typeof emptyProduct; setForm: (f: typeof emptyProduct) => void }) => (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                <input className="fg-field__input" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Nombre *" />
-                <input className="fg-field__input" value={form.brand} onChange={e => setForm({ ...form, brand: e.target.value })} placeholder="Marca" />
-                <input className="fg-field__input" type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} placeholder="Precio" min={0} />
-                <input className="fg-field__input" value={form.badge} onChange={e => setForm({ ...form, badge: e.target.value })} placeholder="Badge (Ej: Nuevo)" />
-            </div>
-            <ImageUpload
-                value={form.image_url}
-                onChange={url => setForm({ ...form, image_url: url })}
-                previewHeight={100}
-                placeholder="URL de imagen"
-            />
-            <textarea className="fg-field__input" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={2} style={{ resize: 'vertical' }} placeholder="Descripción corta" />
-        </div>
-    );
 
     if (loading) return <div className="skel-page"><span className="skel" style={{ height: 200 }} /></div>;
 
