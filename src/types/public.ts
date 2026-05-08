@@ -95,6 +95,9 @@ export interface Shop {
   payment_mode: 'disabled' | 'deposit' | 'full';
   deposit_percentage?: number;
   mp_connected: boolean;
+  allow_cash?: boolean;
+  allow_transfer?: boolean;
+  transfer_info?: string | null;
   services: Service[];
   products: Product[];
   team: TeamMember[];

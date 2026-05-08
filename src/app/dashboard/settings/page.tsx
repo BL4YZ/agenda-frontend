@@ -14,6 +14,9 @@ type Business = {
     deposit_percentage: number;
     mp_connected: boolean;
     mp_currency: string;
+    allow_cash: boolean;
+    allow_transfer: boolean;
+    transfer_info?: string | null;
     logo_url?: string | null;
     brand_color?: string | null;
     subscription_plan: 'gratis' | 'pro' | 'negocio';
@@ -192,6 +195,9 @@ function SettingsContent() {
 
     const [paymentMode, setPaymentMode] = useState<'disabled' | 'deposit' | 'full'>('disabled');
     const [depositPct, setDepositPct] = useState(30);
+    const [allowCash, setAllowCash] = useState(false);
+    const [allowTransfer, setAllowTransfer] = useState(false);
+    const [transferInfo, setTransferInfo] = useState('');
     const [savingPayment, setSavingPayment] = useState(false);
     const [paymentSaved, setPaymentSaved] = useState(false);
     const [manualToken, setManualToken] = useState('');
@@ -218,6 +224,9 @@ function SettingsContent() {
                     setBusiness(res.data);
                     setPaymentMode(res.data.payment_mode || 'disabled');
                     setDepositPct(res.data.deposit_percentage || 30);
+                    setAllowCash(!!res.data.allow_cash);
+                    setAllowTransfer(!!res.data.allow_transfer);
+                    setTransferInfo(res.data.transfer_info || '');
                     localStorage.setItem('business_slug', res.data.slug);
                     localStorage.setItem('business_name', res.data.name);
                     localStorage.setItem('business_id', String(res.data.id));
@@ -274,12 +283,12 @@ function SettingsContent() {
         setSavingPayment(true);
         try {
             await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/settings`,
-                { payment_mode: paymentMode, deposit_percentage: depositPct },
+                { payment_mode: paymentMode, deposit_percentage: depositPct, allow_cash: allowCash, allow_transfer: allowTransfer, transfer_info: transferInfo },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             setPaymentSaved(true);
             setTimeout(() => setPaymentSaved(false), 2000);
-            if (business) setBusiness({ ...business, payment_mode: paymentMode, deposit_percentage: depositPct });
+            if (business) setBusiness({ ...business, payment_mode: paymentMode, deposit_percentage: depositPct, allow_cash: allowCash, allow_transfer: allowTransfer, transfer_info: transferInfo });
         } catch { console.error('Error al guardar configuración de pago'); }
         finally { setSavingPayment(false); }
     };
@@ -480,6 +489,40 @@ function SettingsContent() {
                                         </div>
                                     </div>
                                 )}
+
+                                {/* Alternative payment methods */}
+                                <div style={{ borderTop: '1px solid var(--line)', paddingTop: 16, marginBottom: 16 }}>
+                                    <p style={{ fontSize: 11, fontFamily: 'var(--font-mono)', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--fg-3)', marginBottom: 12 }}>Métodos de pago adicionales</p>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                                            <div>
+                                                <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-1)' }}>Efectivo en el local</p>
+                                                <p style={{ fontSize: 11, color: 'var(--fg-3)', marginTop: 2 }}>El cliente paga el día del turno</p>
+                                            </div>
+                                            <Toggle checked={allowCash} onChange={() => setAllowCash(v => !v)} />
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                                            <div>
+                                                <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-1)' }}>Transferencia bancaria</p>
+                                                <p style={{ fontSize: 11, color: 'var(--fg-3)', marginTop: 2 }}>El cliente transfiere antes del turno</p>
+                                            </div>
+                                            <Toggle checked={allowTransfer} onChange={() => setAllowTransfer(v => !v)} />
+                                        </div>
+                                        {allowTransfer && (
+                                            <div>
+                                                <p style={{ fontSize: 11, color: 'var(--fg-3)', marginBottom: 6, fontWeight: 500 }}>Datos de cuenta para transferir</p>
+                                                <textarea
+                                                    value={transferInfo}
+                                                    onChange={e => setTransferInfo(e.target.value)}
+                                                    placeholder={'Banco: BROU\nCuenta: 123456789\nAlias: mi.negocio\nTitular: Juan Pérez'}
+                                                    rows={4}
+                                                    className="fg-field__input"
+                                                    style={{ fontSize: 12, resize: 'vertical', fontFamily: 'var(--font-mono)', lineHeight: 1.6 }}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
 
                                 <button onClick={handleSavePayment} disabled={savingPayment} className="dbtn dbtn--primary" style={{ width:'100%', justifyContent:'center', padding:12 }}>
                                     {paymentSaved ? '✓ Guardado' : savingPayment ? 'Guardando…' : 'Guardar configuración de pagos'}

@@ -16,6 +16,7 @@ type Appointment = {
     client_name?: string;
     client_email?: string;
     payment_status?: string;
+    payment_method?: string;
     price?: string;
     amount_paid?: string;
     employee_name?: string;
@@ -405,12 +406,19 @@ export default function AppointmentsPage() {
                                     )}
 
                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 10, borderTop: '1px solid var(--line)' }}>
-                                        <StatusDropdown
-                                            appt={appt}
-                                            open={openRowStatus === appt.id}
-                                            onToggle={() => setOpenRowStatus(openRowStatus === appt.id ? null : appt.id)}
-                                            onSelect={s => handleStatusChange(appt.id, s)}
-                                        />
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                            <StatusDropdown
+                                                appt={appt}
+                                                open={openRowStatus === appt.id}
+                                                onToggle={() => setOpenRowStatus(openRowStatus === appt.id ? null : appt.id)}
+                                                onSelect={s => handleStatusChange(appt.id, s)}
+                                            />
+                                            {appt.payment_method && (
+                                                <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 99, letterSpacing: '0.04em', background: 'rgba(255,255,255,0.06)', color: 'var(--fg-3)', border: '1px solid var(--line)', alignSelf: 'flex-start' }}>
+                                                    {{ mercadopago: 'MercadoPago', cash: 'Efectivo', transfer: 'Transferencia' }[appt.payment_method] ?? appt.payment_method}
+                                                </span>
+                                            )}
+                                        </div>
                                         {amount && (
                                             <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--fg-0)' }}>{amount}</span>
                                         )}
@@ -473,6 +481,11 @@ export default function AppointmentsPage() {
                                                     onToggle={() => setOpenRowStatus(openRowStatus === appt.id ? null : appt.id)}
                                                     onSelect={s => handleStatusChange(appt.id, s)}
                                                 />
+                                                {appt.payment_method && (
+                                                    <span style={{ display: 'inline-block', marginTop: 4, fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 99, letterSpacing: '0.04em', background: 'rgba(255,255,255,0.06)', color: 'var(--fg-3)', border: '1px solid var(--line)' }}>
+                                                        {{ mercadopago: 'MercadoPago', cash: 'Efectivo', transfer: 'Transferencia' }[appt.payment_method] ?? appt.payment_method}
+                                                    </span>
+                                                )}
                                             </td>
                                             <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
                                                 {amount

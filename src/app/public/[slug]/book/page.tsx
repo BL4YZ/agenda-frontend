@@ -14,6 +14,9 @@ type Business = {
     payment_mode: 'disabled' | 'deposit' | 'full';
     deposit_percentage: number;
     mp_connected: boolean;
+    allow_cash?: boolean;
+    allow_transfer?: boolean;
+    transfer_info?: string | null;
 };
 type Step = 'employee' | 'datetime' | 'info' | 'payment' | 'done';
 
@@ -42,6 +45,7 @@ function BookingContent() {
     const [error, setError] = useState('');
     const [business, setBusiness] = useState<Business | null>(null);
     const [unavailableDates, setUnavailableDates] = useState<Set<string>>(new Set());
+    const [paymentMethod, setPaymentMethod] = useState<'mercadopago' | 'cash' | 'transfer' | ''>('');
 
     const brandColor = business?.brand_color || '#6366f1';
 
@@ -49,9 +53,16 @@ function BookingContent() {
     today.setHours(0, 0, 0, 0);
     const weekDays = Array.from({ length: 7 }, (_, i) => addDays(today, i + weekOffset * 7));
 
-    const needsPayment = business && business.payment_mode !== 'disabled' && business.mp_connected;
-    const stepLabels = needsPayment ? [...BASE_STEP_LABELS, 'Pago'] : BASE_STEP_LABELS;
-    const stepKeys: Step[] = needsPayment ? ['employee', 'datetime', 'info', 'payment'] : ['employee', 'datetime', 'info'];
+    const mpEnabled = business && business.payment_mode !== 'disabled' && business.mp_connected;
+    const altMethods = business ? [
+        ...(business.allow_cash ? [{ value: 'cash' as const, label: 'Efectivo', desc: 'Pagás el día del turno' }] : []),
+        ...(business.allow_transfer ? [{ value: 'transfer' as const, label: 'Transferencia', desc: 'Transferís antes del turno' }] : []),
+    ] : [];
+    const hasMultiplePaymentMethods = (mpEnabled ? 1 : 0) + altMethods.length > 1;
+    const needsMpPayment = mpEnabled && (!hasMultiplePaymentMethods || paymentMethod === 'mercadopago');
+    const needsPayment = needsMpPayment;
+    const stepLabels = needsMpPayment ? [...BASE_STEP_LABELS, 'Pago'] : BASE_STEP_LABELS;
+    const stepKeys: Step[] = needsMpPayment ? ['employee', 'datetime', 'info', 'payment'] : ['employee', 'datetime', 'info'];
     const stepIndex = stepKeys.indexOf(step);
     const progress = stepLabels.length <= 1 ? 100 : (stepIndex / (stepLabels.length - 1)) * 100;
 
@@ -87,8 +98,10 @@ function BookingContent() {
 
     const handleSubmitFree = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (hasMultiplePaymentMethods && !paymentMethod) { setError('Seleccioná un método de pago.'); return; }
         setError('');
         setSubmitting(true);
+        const method = hasMultiplePaymentMethods ? paymentMethod : (mpEnabled ? 'mercadopago' : altMethods[0]?.value);
         try {
             await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/public/businesses/${slug}/appointments`, {
                 serviceId: parseInt(serviceId!),
@@ -96,6 +109,7 @@ function BookingContent() {
                 startTime: `${selectedDate}T${selectedSlot}:00`,
                 clientName,
                 clientEmail,
+                paymentMethod: method || undefined,
             });
             setStep('done');
         } catch {
@@ -354,7 +368,7 @@ function BookingContent() {
                                 {format(parseISO(selectedDate), "EEEE d 'de' MMMM", { locale: es })} · {selectedSlot} · {selectedEmployee?.name}
                             </p>
 
-                            <form onSubmit={needsPayment ? (e) => { e.preventDefault(); setStep('payment'); } : handleSubmitFree} className="space-y-4">
+                            <form onSubmit={needsMpPayment && paymentMethod !== 'cash' && paymentMethod !== 'transfer' ? (e) => { e.preventDefault(); setStep('payment'); } : handleSubmitFree} className="space-y-4">
                                 <div>
                                     <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Nombre completo</label>
                                     <input type="text" value={clientName} onChange={e => setClientName(e.target.value)}
@@ -368,6 +382,50 @@ function BookingContent() {
                                         placeholder="tu@email.com" required />
                                 </div>
 
+                                {/* Payment method selector */}
+                                {hasMultiplePaymentMethods && (
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Método de pago</label>
+                                        <div className="space-y-2">
+                                            {mpEnabled && (
+                                                <button type="button" onClick={() => setPaymentMethod('mercadopago')}
+                                                    className={`w-full flex items-center justify-between p-3.5 rounded-xl border text-left transition-all ${paymentMethod === 'mercadopago' ? 'border-[--bc] bg-[--bc]/10' : 'border-slate-200 dark:border-white/10'}`}
+                                                    style={{ '--bc': brandColor } as React.CSSProperties}>
+                                                    <div>
+                                                        <p className="text-sm font-semibold text-slate-800 dark:text-white">MercadoPago</p>
+                                                        <p className="text-xs text-slate-400 dark:text-slate-500">Pago online seguro</p>
+                                                    </div>
+                                                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'mercadopago' ? 'border-[--bc]' : 'border-slate-300 dark:border-white/20'}`}
+                                                        style={{ '--bc': brandColor } as React.CSSProperties}>
+                                                        {paymentMethod === 'mercadopago' && <div className="w-2 h-2 rounded-full" style={{ background: brandColor }} />}
+                                                    </div>
+                                                </button>
+                                            )}
+                                            {altMethods.map(m => (
+                                                <div key={m.value}>
+                                                    <button type="button" onClick={() => setPaymentMethod(m.value)}
+                                                        className={`w-full flex items-center justify-between p-3.5 rounded-xl border text-left transition-all ${paymentMethod === m.value ? 'border-[--bc] bg-[--bc]/10' : 'border-slate-200 dark:border-white/10'}`}
+                                                        style={{ '--bc': brandColor } as React.CSSProperties}>
+                                                        <div>
+                                                            <p className="text-sm font-semibold text-slate-800 dark:text-white">{m.label}</p>
+                                                            <p className="text-xs text-slate-400 dark:text-slate-500">{m.desc}</p>
+                                                        </div>
+                                                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${paymentMethod === m.value ? 'border-[--bc]' : 'border-slate-300 dark:border-white/20'}`}
+                                                            style={{ '--bc': brandColor } as React.CSSProperties}>
+                                                            {paymentMethod === m.value && <div className="w-2 h-2 rounded-full" style={{ background: brandColor }} />}
+                                                        </div>
+                                                    </button>
+                                                    {paymentMethod === 'transfer' && m.value === 'transfer' && business?.transfer_info && (
+                                                        <div className="mt-2 p-3.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-600 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">
+                                                            {business.transfer_info}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
                                 {error && <p className="text-sm text-red-500 dark:text-red-400">{error}</p>}
 
                                 <div className="flex gap-3 pt-2">
@@ -378,7 +436,7 @@ function BookingContent() {
                                     <button type="submit" disabled={submitting}
                                         className="flex-1 py-3 text-white rounded-xl text-sm font-bold disabled:opacity-40 transition-all hover:opacity-90 active:scale-[0.98] shadow-lg"
                                         style={{ background: brandColor, boxShadow: `0 4px 20px ${brandColor}45` }}>
-                                        {submitting ? 'Reservando...' : needsPayment ? 'Continuar al pago' : 'Confirmar reserva'}
+                                        {submitting ? 'Reservando...' : (needsMpPayment && paymentMethod !== 'cash' && paymentMethod !== 'transfer') ? 'Continuar al pago' : 'Confirmar reserva'}
                                     </button>
                                 </div>
                             </form>

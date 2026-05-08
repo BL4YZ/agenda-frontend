@@ -47,6 +47,19 @@ const STEP_SUBS: Record<Step, string> = {
   3: 'Te enviamos los detalles',
 };
 
+type PaymentMethodOption = { value: 'mercadopago' | 'cash' | 'transfer'; label: string; desc: string };
+
+function getAvailableMethods(shop: Shop): PaymentMethodOption[] {
+  const methods: PaymentMethodOption[] = [];
+  if (shop.mp_connected && shop.payment_mode !== 'disabled')
+    methods.push({ value: 'mercadopago', label: 'MercadoPago', desc: 'Pago online seguro' });
+  if (shop.allow_cash)
+    methods.push({ value: 'cash', label: 'Efectivo', desc: 'Pagás el día del turno' });
+  if (shop.allow_transfer)
+    methods.push({ value: 'transfer', label: 'Transferencia', desc: 'Transferís antes del turno' });
+  return methods;
+}
+
 export default function PLReserveModal({ open, onClose, shop, initialServiceId, initialBranchId }: Props) {
   const [step, setStep] = useState<Step>(0);
   const [svc, setSvc] = useState<Service | null>(null);
@@ -62,6 +75,7 @@ export default function PLReserveModal({ open, onClose, shop, initialServiceId, 
   const [clientEmail, setClientEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<'mercadopago' | 'cash' | 'transfer' | ''>('');
 
   const overlayRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -79,7 +93,7 @@ export default function PLReserveModal({ open, onClose, shop, initialServiceId, 
       setStep(0); setSvc(null); setEmployees([]); setEmployeeId('');
       setWeekOffset(0); setSelectedDate(''); setSlots([]); setSlot('');
       setClientName(''); setClientPhone(''); setClientEmail('');
-      setSubmitting(false); setError('');
+      setSubmitting(false); setError(''); setPaymentMethod('');
     }
   }, [open, initialServiceId, shop.services]);
 
@@ -148,9 +162,15 @@ export default function PLReserveModal({ open, onClose, shop, initialServiceId, 
 
   const handleSubmit = async () => {
     if (!svc || !selectedDate || !slot || !clientName || !clientPhone) return;
+    const availableMethods = getAvailableMethods(shop);
+    if (availableMethods.length > 1 && !paymentMethod) {
+      setError('Seleccioná un método de pago.');
+      return;
+    }
     setError(''); setSubmitting(true);
     try {
       const resolvedEmployeeId = employeeId || employees[0]?.id;
+      const method = availableMethods.length === 1 ? availableMethods[0].value : paymentMethod;
       await axios.post(`${API}/api/public/businesses/${shop.slug}/appointments`, {
         serviceId: svc.id,
         employeeId: resolvedEmployeeId,
@@ -158,6 +178,7 @@ export default function PLReserveModal({ open, onClose, shop, initialServiceId, 
         clientName,
         clientPhone,
         clientEmail: clientEmail || undefined,
+        paymentMethod: method || undefined,
       });
       setStep(3);
     } catch {
@@ -393,6 +414,56 @@ export default function PLReserveModal({ open, onClose, shop, initialServiceId, 
                 onChange={e => setClientEmail(e.target.value)}
               />
             </div>
+
+            {/* Payment method selector */}
+            {(() => {
+              const methods = getAvailableMethods(shop);
+              if (methods.length <= 1) return null;
+              return (
+                <div className="pl-modal__field">
+                  <label className="pl-modal__label">MÉTODO DE PAGO</label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {methods.map(m => (
+                      <button
+                        key={m.value}
+                        type="button"
+                        onClick={() => setPaymentMethod(m.value)}
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          padding: '12px 14px', borderRadius: 12, cursor: 'pointer',
+                          fontFamily: 'inherit', textAlign: 'left',
+                          border: `1px solid ${paymentMethod === m.value ? 'var(--pl-accent)' : 'var(--pl-glass-border)'}`,
+                          background: paymentMethod === m.value ? 'oklch(0.3 0.06 280 / 0.25)' : 'var(--pl-glass)',
+                          transition: 'border-color .2s, background .2s',
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontSize: 14, fontWeight: 600, color: paymentMethod === m.value ? 'var(--pl-accent)' : 'var(--pl-fg)' }}>{m.label}</div>
+                          <div style={{ fontSize: 11.5, color: 'var(--pl-fg-mute)', marginTop: 2 }}>{m.desc}</div>
+                        </div>
+                        <div style={{
+                          width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
+                          border: `2px solid ${paymentMethod === m.value ? 'var(--pl-accent)' : 'var(--pl-glass-border)'}`,
+                          background: paymentMethod === m.value ? 'var(--pl-accent)' : 'transparent',
+                          display: 'grid', placeItems: 'center',
+                        }}>
+                          {paymentMethod === m.value && <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'white' }} />}
+                        </div>
+                      </button>
+                    ))}
+                    {paymentMethod === 'transfer' && shop.transfer_info && (
+                      <div style={{
+                        padding: '12px 14px', borderRadius: 12, fontSize: 12.5, lineHeight: 1.6,
+                        background: 'var(--pl-glass)', border: '1px solid var(--pl-glass-border)',
+                        color: 'var(--pl-fg-soft)', whiteSpace: 'pre-wrap',
+                      }}>
+                        {shop.transfer_info}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Summary */}
             <div className="pl-modal__summary">
