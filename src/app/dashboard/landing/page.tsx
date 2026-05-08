@@ -135,6 +135,7 @@ function ProfileTab({ token, slug }: { token: string | null; slug: string }) {
                 instagram_url: r.data.instagram_url ?? '',
                 tiktok_url: r.data.tiktok_url ?? '',
                 theme: r.data.theme ?? 'violet',
+                font: r.data.font ?? null,
                 cover_url: r.data.cover_url ?? '',
                 about_image_url: r.data.about_image_url ?? '',
                 about_quote: r.data.about_quote ?? '',
