@@ -122,6 +122,43 @@
   --pl-font-mono: "JetBrains Mono", monospace;
 }
 
+/* ── PALETTE · BW (black & white, editorial) ────────────── */
+[data-pl-theme="bw"] {
+  --pl-bg: #080808;
+  --pl-bg-2: #111111;
+  --pl-fg: #f0f0f0;
+  --pl-fg-soft: #b0b0b0;
+  --pl-fg-mute: #686868;
+  --pl-line: rgba(255,255,255,0.1);
+  --pl-line-strong: rgba(255,255,255,0.2);
+  --pl-accent: #e8e8e8;
+  --pl-accent-2: #909090;
+  --pl-gold: #d0d0d0;
+  --pl-glass: rgba(255,255,255,0.06);
+  --pl-glass-strong: rgba(255,255,255,0.11);
+  --pl-glass-border: rgba(255,255,255,0.1);
+  --pl-shadow: 0 30px 80px -30px rgba(0,0,0,0.8);
+  --pl-font-display: "Fraunces", Georgia, serif;
+  --pl-font-body: "Inter Tight", system-ui, sans-serif;
+  --pl-font-mono: "JetBrains Mono", monospace;
+}
+[data-pl-theme="bw"] .pl-bg__blob--a { width:500px;height:500px;left:-10%;top:-10%; background:radial-gradient(circle,#2a2a2a,transparent 70%); opacity:0.8; }
+[data-pl-theme="bw"] .pl-bg__blob--b { width:600px;height:600px;right:-15%;top:30%; background:radial-gradient(circle,#1a1a1a,transparent 70%); opacity:0.6; }
+[data-pl-theme="bw"] .pl-bg__blob--c { width:300px;height:300px;left:40%;bottom:5%; background:radial-gradient(circle,#383838,transparent 70%); opacity:0.4; }
+
+/* ── FONT OVERRIDES (come after palettes to win specificity) */
+.pl-page[data-pl-font="editorial"] {
+  --pl-font-display: "Fraunces", Georgia, serif;
+}
+.pl-page[data-pl-font="elegant"] {
+  --pl-font-display: "Cormorant Garamond", "Fraunces", Georgia, serif;
+}
+.pl-page[data-pl-font="modern"] {
+  --pl-font-display: "Inter Tight", system-ui, sans-serif;
+}
+.pl-page[data-pl-font="modern"] .pl-hero__title em,
+.pl-page[data-pl-font="modern"] .pl-h2 em { font-style: normal; font-weight: 700; }
+
 /* ── Base ─────────────────────────────────────────────────── */
 html:has(.pl-page) { scroll-behavior: smooth; }
 
@@ -250,13 +287,13 @@ html:has(.pl-page) { scroll-behavior: smooth; }
 /* ── Hero (full-screen cover) ───────────────────────────── */
 .pl-hero {
   position:relative; margin-top:-74px;
-  min-height:100svh;
+  min-height:88svh; max-height:960px;
   display:flex; flex-direction:column; justify-content:flex-end;
   overflow:hidden;
 }
 .pl-hero__bg {
   position:absolute; inset:0;
-  background-size:cover; background-position:center;
+  background-size:cover; background-position:center 30%;
   background-color:var(--pl-bg-2);
 }
 .pl-hero__overlay {

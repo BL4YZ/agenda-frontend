@@ -121,6 +121,7 @@ export default function PublicLanding({ shop }: Props) {
       <div
         className="pl-page"
         data-pl-theme={shop.theme ?? 'violet'}
+        {...(shop.font ? { 'data-pl-font': shop.font } : {})}
         style={accentOverride}
         id="top"
       >

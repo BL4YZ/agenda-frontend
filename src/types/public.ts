@@ -1,4 +1,5 @@
-export type ShopTheme = 'violet' | 'rose' | 'green' | 'cyan' | 'amber';
+export type ShopTheme = 'violet' | 'rose' | 'green' | 'cyan' | 'amber' | 'bw';
+export type ShopFont  = 'editorial' | 'elegant' | 'modern' | null;
 export type ShopPlan  = 'gratis' | 'pro' | 'negocio';
 
 export interface Service {
@@ -85,6 +86,7 @@ export interface Shop {
   about_image_url?: string | null;
   about_quote?: string;
   theme: ShopTheme;
+  font?: ShopFont;
   plan: ShopPlan;
   brand_color?: string | null;
   lat?: number | null;

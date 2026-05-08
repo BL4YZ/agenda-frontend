@@ -8,11 +8,12 @@ import { useBusiness } from '@/context/BusinessContext';
 import ImageUpload from '@/components/ImageUpload';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-type ShopTheme = 'violet' | 'rose' | 'green' | 'cyan' | 'amber';
+type ShopTheme = 'violet' | 'rose' | 'green' | 'cyan' | 'amber' | 'bw';
+type ShopFont  = 'editorial' | 'elegant' | 'modern';
 
 type Profile = {
     tagline: string; lede: string; address: string; phone: string; whatsapp: string;
-    instagram_url: string; tiktok_url: string; theme: ShopTheme; cover_url: string;
+    instagram_url: string; tiktok_url: string; theme: ShopTheme; font: ShopFont | null; cover_url: string;
     about_image_url: string; about_quote: string; founded_year: string;
 };
 
@@ -30,6 +31,13 @@ const THEMES: { value: ShopTheme; label: string; accent: string; bg: string; dot
     { value: 'green',  label: 'Verde',   accent: '#6e8267', bg: '#faf6f0', dot: '#86a98a', dark: false },
     { value: 'cyan',   label: 'Cian',    accent: '#2563eb', bg: '#f6f8fc', dot: '#06b6d4', dark: false },
     { value: 'amber',  label: 'Ámbar',   accent: '#d97706', bg: '#0d0b07', dot: '#fcd34d', dark: true  },
+    { value: 'bw',     label: 'B & N',   accent: '#e8e8e8', bg: '#080808', dot: '#c0c0c0', dark: true  },
+];
+
+const FONTS: { value: ShopFont; label: string; family: string; sample: string }[] = [
+    { value: 'editorial', label: 'Editorial',  family: '"Fraunces", Georgia, serif',                  sample: 'Aa' },
+    { value: 'elegant',   label: 'Elegante',   family: '"Cormorant Garamond", Georgia, serif',         sample: 'Aa' },
+    { value: 'modern',    label: 'Moderna',    family: '"Inter Tight", system-ui, sans-serif',         sample: 'Aa' },
 ];
 
 const TABS = ['Perfil', 'Tema', 'Horarios', 'FAQs', 'Productos', 'Reseñas', 'Galería', 'Equipo'] as const;
@@ -231,6 +239,7 @@ function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
     const isNegocio = (PLAN_RANK[plan] ?? 0) >= PLAN_RANK['negocio'];
 
     const [selected, setSelected]       = useState<ShopTheme>('violet');
+    const [font, setFont]               = useState<ShopFont | null>(null);
     const [brandColor, setBrandColor]   = useState<string | null>(null);  // saved value
     const [brandInput, setBrandInput]   = useState('#6366f1');            // live input
     const [loading, setLoading]         = useState(true);
@@ -245,6 +254,8 @@ function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
     const [savingLogo, setSavingLogo]   = useState(false);
     const [savedLogo, setSavedLogo]     = useState(false);
     const [logoError, setLogoError]     = useState('');
+    const [savingAll, setSavingAll]     = useState(false);
+    const [savedAll, setSavedAll]       = useState(false);
 
     const publicUrl = slug
         ? `${typeof window !== 'undefined' ? window.location.origin : ''}/public/${slug}`
@@ -257,6 +268,7 @@ function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
             axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/me`,    { headers: { Authorization: `Bearer ${token}` } }),
         ]).then(([profileRes, bizRes]) => {
             setSelected(profileRes.data.theme ?? 'violet');
+            setFont(profileRes.data.font ?? null);
             const bc: string | null = bizRes.data?.brand_color ?? null;
             setBrandColor(bc);
             if (bc) setBrandInput(bc);
@@ -271,7 +283,7 @@ function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
         setSaving(true);
         setSaveError('');
         try {
-            await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/profile`, { theme: selected }, {
+            await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/profile`, { theme: selected, font: font ?? null }, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setSaved(true);
@@ -343,6 +355,17 @@ function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
                 : 'Error al guardar.';
             setLogoError(msg);
         } finally { setSavingLogo(false); }
+    };
+
+    const handleSaveAll = async () => {
+        setSavingAll(true);
+        setSavedAll(false);
+        const tasks: Promise<void>[] = [handleSave()];
+        if (isNegocio) tasks.push(handleSaveBrand(), handleSaveLogo());
+        await Promise.all(tasks);
+        setSavedAll(true);
+        setSavingAll(false);
+        setTimeout(() => setSavedAll(false), 3000);
     };
 
     if (loading) return <div className="skel-page"><span className="skel" style={{ height: 220 }} /></div>;
@@ -451,14 +474,6 @@ function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
                         </p>
                     )}
 
-                    <button
-                        onClick={handleSave}
-                        disabled={saving}
-                        className="dbtn dbtn--primary"
-                        style={{ width: '100%', justifyContent: 'center', padding: 12 }}
-                    >
-                        {saved ? <>{IcoCheck}<span>Guardado</span></> : saving ? 'Guardando…' : 'Guardar tema'}
-                    </button>
                 </div>
             </div>
 
@@ -527,14 +542,6 @@ function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
                             {brandError}
                         </p>
                     )}
-                    <button
-                        className="dbtn dbtn--primary"
-                        onClick={handleSaveBrand}
-                        disabled={savingBrand}
-                        style={{ width: '100%', justifyContent: 'center', padding: 12 }}
-                    >
-                        {savedBrand ? <>{IcoCheck}<span>Guardado</span></> : savingBrand ? 'Guardando…' : 'Guardar color de marca'}
-                    </button>
                 </div>
             </div>
 
@@ -597,21 +604,92 @@ function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
                             {logoError}
                         </p>
                     )}
-                    <button
-                        className="dbtn dbtn--primary"
-                        onClick={handleSaveLogo}
-                        disabled={savingLogo}
-                        style={{ width: '100%', justifyContent: 'center', padding: 12 }}
-                    >
-                        {savedLogo ? <>{IcoCheck}<span>Guardado</span></> : savingLogo ? 'Guardando…' : 'Guardar logo'}
-                    </button>
                 </div>
             </div>
+
+            {/* Tipografía card */}
+            <div className="gcard">
+                <div className="gcard__head">
+                    <h3 className="gcard__title">Tipografía</h3>
+                    <span style={{ fontSize: 11, color: 'var(--fg-3)' }}>Estilo de letra en tu página pública</span>
+                </div>
+                <div className="gcard__body">
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
+                        {/* "Por defecto" option — null font */}
+                        <button
+                            onClick={() => setFont(null)}
+                            style={{
+                                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                                padding: '14px 10px', borderRadius: 12, cursor: 'pointer',
+                                border: `2px solid ${font === null ? 'var(--accent)' : 'var(--line)'}`,
+                                background: font === null ? 'var(--glass-bg)' : 'transparent',
+                                gap: 6, transition: 'all .15s', outline: 'none',
+                            }}
+                        >
+                            <span style={{ fontSize: 28, lineHeight: 1, color: 'var(--fg-0)', fontFamily: '"Fraunces", Georgia, serif', fontStyle: 'italic' }}>Aa</span>
+                            <span style={{ fontSize: 11, fontWeight: 600, color: font === null ? 'var(--accent)' : 'var(--fg-2)' }}>Por defecto</span>
+                        </button>
+                        {FONTS.map(f => (
+                            <button
+                                key={f.value}
+                                onClick={() => setFont(f.value)}
+                                style={{
+                                    display: 'flex', flexDirection: 'column', alignItems: 'center',
+                                    padding: '14px 10px', borderRadius: 12, cursor: 'pointer',
+                                    border: `2px solid ${font === f.value ? 'var(--accent)' : 'var(--line)'}`,
+                                    background: font === f.value ? 'var(--glass-bg)' : 'transparent',
+                                    gap: 6, transition: 'all .15s', outline: 'none',
+                                }}
+                            >
+                                <span style={{ fontSize: 28, lineHeight: 1, color: 'var(--fg-0)', fontFamily: f.family }}>{f.sample}</span>
+                                <span style={{ fontSize: 11, fontWeight: 600, color: font === f.value ? 'var(--accent)' : 'var(--fg-2)' }}>{f.label}</span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* Unified save button */}
+            <button
+                className="dbtn dbtn--primary"
+                onClick={handleSaveAll}
+                disabled={savingAll}
+                style={{ width: '100%', justifyContent: 'center', padding: 14 }}
+            >
+                {savedAll ? <>{IcoCheck}<span>Guardado</span></> : savingAll ? 'Guardando…' : 'Guardar cambios'}
+            </button>
         </div>
     );
 }
 
 // ── HoursTab ──────────────────────────────────────────────────────────────────
+const HOUR_OPTIONS  = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+const MINUTE_OPTIONS = ['00', '15', '30', '45'];
+
+function TimeSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+    const [h, m] = value.split(':');
+    const nearestMin = MINUTE_OPTIONS.reduce((prev, cur) =>
+        Math.abs(parseInt(cur) - parseInt(m)) < Math.abs(parseInt(prev) - parseInt(m)) ? cur : prev
+    );
+    return (
+        <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 2,
+            background: 'rgba(255,255,255,0.05)', border: '1px solid var(--line)',
+            borderRadius: 8, padding: '5px 10px',
+        }}>
+            <select value={h} onChange={e => onChange(`${e.target.value}:${nearestMin}`)}
+                style={{ background: 'transparent', fontSize: 13, fontWeight: 600, color: 'var(--fg-0)', border: 'none', outline: 'none', cursor: 'pointer' }}>
+                {HOUR_OPTIONS.map(hr => <option key={hr} value={hr}>{hr}</option>)}
+            </select>
+            <span style={{ color: 'var(--fg-3)', fontSize: 13, fontWeight: 600 }}>:</span>
+            <select value={nearestMin} onChange={e => onChange(`${h}:${e.target.value}`)}
+                style={{ background: 'transparent', fontSize: 13, fontWeight: 600, color: 'var(--fg-0)', border: 'none', outline: 'none', cursor: 'pointer' }}>
+                {MINUTE_OPTIONS.map(mn => <option key={mn} value={mn}>{mn}</option>)}
+            </select>
+        </div>
+    );
+}
+
 const DEFAULT_HOURS: Hour[] = DAY_LABELS.map((_, i) => ({
     day_of_week: i,
     open_time: '09:00',
@@ -646,8 +724,11 @@ function HoursTab({ token, slug }: { token: string | null; slug: string }) {
             .finally(() => setLoading(false));
     }, [token]);
 
-    const update = (i: number, patch: Partial<Hour>) =>
-        setHours(hs => hs.map((h, idx) => idx === i ? { ...h, ...patch } : h));
+    const toggle = (i: number) =>
+        setHours(hs => hs.map((h, idx) => idx === i ? { ...h, is_closed: !h.is_closed } : h));
+
+    const setTime = (i: number, field: 'open_time' | 'close_time', v: string) =>
+        setHours(hs => hs.map((h, idx) => idx === i ? { ...h, [field]: v } : h));
 
     const handleSave = async () => {
         setSaving(true);
@@ -671,60 +752,62 @@ function HoursTab({ token, slug }: { token: string | null; slug: string }) {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div className="gcard">
-                <div className="gcard__head"><h3 className="gcard__title">Horario de atención</h3></div>
-                <div className="gcard__body">
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        {hours.map((h, i) => (
-                            <div
-                                key={h.day_of_week}
-                                style={{
-                                    display: 'grid', gridTemplateColumns: '100px 1fr',
-                                    alignItems: 'center', gap: 12,
-                                    padding: '10px 0',
-                                    borderBottom: i < 6 ? '1px solid var(--line)' : 'none',
-                                    opacity: h.is_closed ? 0.5 : 1, transition: 'opacity .2s',
-                                }}
-                            >
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                    <input
-                                        type="checkbox"
-                                        id={`day-${i}`}
-                                        checked={!h.is_closed}
-                                        onChange={e => update(i, { is_closed: !e.target.checked })}
-                                        style={{ width: 15, height: 15, accentColor: 'var(--accent)', cursor: 'pointer' }}
-                                    />
-                                    <label htmlFor={`day-${i}`} style={{ fontSize: 13, fontWeight: 500, color: 'var(--fg-1)', cursor: 'pointer', userSelect: 'none' }}>
-                                        {DAY_LABELS[h.day_of_week]}
-                                    </label>
-                                </div>
-                                {h.is_closed ? (
-                                    <span style={{ fontSize: 12, color: 'var(--fg-3)' }}>Cerrado</span>
-                                ) : (
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                        <input
-                                            type="time"
-                                            value={h.open_time}
-                                            onChange={e => update(i, { open_time: e.target.value })}
-                                            className="fg-field__input"
-                                            style={{ width: 100, padding: '6px 10px', fontSize: 13 }}
-                                        />
-                                        <span style={{ fontSize: 12, color: 'var(--fg-3)' }}>–</span>
-                                        <input
-                                            type="time"
-                                            value={h.close_time}
-                                            onChange={e => update(i, { close_time: e.target.value })}
-                                            className="fg-field__input"
-                                            style={{ width: 100, padding: '6px 10px', fontSize: 13 }}
-                                        />
-                                    </div>
+            <div className="gcard" style={{ padding: 0 }}>
+                <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--line)' }}>
+                    <h3 className="gcard__title" style={{ margin: 0 }}>Horario de atención</h3>
+                </div>
+                <div>
+                    {hours.map((h, i) => (
+                        <div
+                            key={h.day_of_week}
+                            style={{
+                                padding: '12px 20px',
+                                borderBottom: i < hours.length - 1 ? '1px solid var(--line)' : 'none',
+                            }}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                <button
+                                    onClick={() => toggle(i)}
+                                    style={{
+                                        position: 'relative', width: 40, height: 22,
+                                        borderRadius: 11, flexShrink: 0,
+                                        background: !h.is_closed ? 'var(--accent)' : 'rgba(255,255,255,.1)',
+                                        border: 'none', cursor: 'pointer',
+                                        transition: 'background .25s',
+                                    }}
+                                >
+                                    <span style={{
+                                        position: 'absolute', top: 3, left: 3,
+                                        width: 16, height: 16, borderRadius: '50%',
+                                        background: '#fff',
+                                        transform: !h.is_closed ? 'translateX(18px)' : undefined,
+                                        transition: 'transform .25s',
+                                        display: 'block',
+                                    }} />
+                                </button>
+                                <span style={{
+                                    fontSize: 14, fontWeight: 500, flex: 1,
+                                    color: !h.is_closed ? 'var(--fg-0)' : 'var(--fg-3)',
+                                    transition: 'color .2s',
+                                }}>
+                                    {DAY_LABELS[h.day_of_week]}
+                                </span>
+                                {h.is_closed && (
+                                    <span style={{ fontSize: 12, color: 'var(--fg-3)' }}>No disponible</span>
                                 )}
                             </div>
-                        ))}
-                    </div>
-                    <div style={{ marginTop: 16 }}>
-                        <SaveBar saving={saving} saved={saved} error={saveError} onSave={handleSave} label="Guardar horarios" />
-                    </div>
+                            {!h.is_closed && (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, paddingLeft: 52 }}>
+                                    <TimeSelect value={h.open_time}  onChange={v => setTime(i, 'open_time', v)} />
+                                    <span style={{ color: 'var(--fg-3)', fontSize: 14 }}>—</span>
+                                    <TimeSelect value={h.close_time} onChange={v => setTime(i, 'close_time', v)} />
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+                <div style={{ padding: '16px 20px' }}>
+                    <SaveBar saving={saving} saved={saved} error={saveError} onSave={handleSave} label="Guardar horarios" />
                 </div>
             </div>
         </div>
@@ -1494,7 +1577,7 @@ export default function LandingAdminPage() {
             </div>
 
             {/* Tabs */}
-            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 20, borderBottom: '1px solid var(--line)', paddingBottom: 0 }}>
+            <div style={{ display: 'flex', gap: 4, overflowX: 'auto', marginBottom: 20, borderBottom: '1px solid var(--line)', paddingBottom: 0, scrollbarWidth: 'none' }}>
                 {TABS.map(t => {
                     const required  = TAB_PLAN[t];
                     const unlocked  = rank >= PLAN_RANK[required];
@@ -1506,7 +1589,7 @@ export default function LandingAdminPage() {
                             key={t}
                             onClick={() => setTab(t)}
                             style={{
-                                display: 'flex', alignItems: 'center', gap: 5,
+                                display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0,
                                 padding: '8px 14px', background: 'none', border: 'none',
                                 cursor: unlocked ? 'pointer' : 'default',
                                 fontSize: 13, fontWeight: tab === t ? 600 : 400,
@@ -1514,6 +1597,7 @@ export default function LandingAdminPage() {
                                 borderBottom: `2px solid ${tab === t ? 'var(--accent)' : 'transparent'}`,
                                 marginBottom: -1, transition: 'all .15s',
                                 opacity: unlocked ? 1 : 0.55,
+                                whiteSpace: 'nowrap',
                             }}
                         >
                             {t}
