@@ -9,7 +9,7 @@ import ImageUpload from '@/components/ImageUpload';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type ShopTheme = 'violet' | 'rose' | 'green' | 'cyan' | 'amber' | 'bw';
-type ShopFont  = 'editorial' | 'elegant' | 'modern';
+type ShopFont  = 'editorial' | 'playfair' | 'bebas' | 'oswald' | 'elegant' | 'dm-serif' | 'raleway' | 'modern' | 'montserrat' | 'nunito' | 'lora' | 'poppins';
 
 type Profile = {
     tagline: string; lede: string; address: string; phone: string; whatsapp: string;
@@ -34,10 +34,46 @@ const THEMES: { value: ShopTheme; label: string; accent: string; bg: string; dot
     { value: 'bw',     label: 'B & N',   accent: '#e8e8e8', bg: '#080808', dot: '#c0c0c0', dark: true  },
 ];
 
-const FONTS: { value: ShopFont; label: string; family: string; sample: string }[] = [
-    { value: 'editorial', label: 'Editorial',  family: '"Fraunces", Georgia, serif',                  sample: 'Aa' },
-    { value: 'elegant',   label: 'Elegante',   family: '"Cormorant Garamond", Georgia, serif',         sample: 'Aa' },
-    { value: 'modern',    label: 'Moderna',    family: '"Inter Tight", system-ui, sans-serif',         sample: 'Aa' },
+interface FontOption { value: ShopFont; label: string; family: string; sample: string }
+interface FontGroup  { label: string; hint: string; fonts: FontOption[] }
+
+const FONT_GROUPS: FontGroup[] = [
+    {
+        label: 'Editorial',
+        hint:  'Peluquerías, tatuajes, fotografía, arte',
+        fonts: [
+            { value: 'editorial',  label: 'Editorial',  family: '"Fraunces", Georgia, serif',              sample: 'Aa' },
+            { value: 'playfair',   label: 'Playfair',   family: '"Playfair Display", Georgia, serif',       sample: 'Aa' },
+            { value: 'dm-serif',   label: 'DM Serif',   family: '"DM Serif Display", Georgia, serif',       sample: 'Aa' },
+            { value: 'lora',       label: 'Lora',       family: '"Lora", Georgia, serif',                   sample: 'Aa' },
+        ],
+    },
+    {
+        label: 'Elegante',
+        hint:  'Spas, nail bars, estética, boda',
+        fonts: [
+            { value: 'elegant',    label: 'Elegante',   family: '"Cormorant Garamond", Georgia, serif',     sample: 'Aa' },
+            { value: 'raleway',    label: 'Raleway',    family: '"Raleway", sans-serif',                    sample: 'Aa' },
+        ],
+    },
+    {
+        label: 'Moderna',
+        hint:  'Gym, clínicas, tech, coworking',
+        fonts: [
+            { value: 'modern',     label: 'Moderna',    family: '"Inter Tight", system-ui, sans-serif',     sample: 'Aa' },
+            { value: 'montserrat', label: 'Montserrat', family: '"Montserrat", sans-serif',                  sample: 'Aa' },
+            { value: 'oswald',     label: 'Oswald',     family: '"Oswald", sans-serif',                     sample: 'Aa' },
+            { value: 'bebas',      label: 'Bebas',      family: '"Bebas Neue", sans-serif',                  sample: 'Aa' },
+        ],
+    },
+    {
+        label: 'Cálida',
+        hint:  'Cafés, restaurantes, tiendas locales',
+        fonts: [
+            { value: 'poppins',    label: 'Poppins',    family: '"Poppins", sans-serif',                    sample: 'Aa' },
+            { value: 'nunito',     label: 'Nunito',     family: '"Nunito", sans-serif',                     sample: 'Aa' },
+        ],
+    },
 ];
 
 const TABS = ['Perfil', 'Tema', 'Horarios', 'FAQs', 'Productos', 'Reseñas', 'Galería', 'Equipo'] as const;
@@ -614,8 +650,8 @@ function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
                     <span style={{ fontSize: 11, color: 'var(--fg-3)' }}>Estilo de letra en tu página pública</span>
                 </div>
                 <div className="gcard__body">
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
-                        {/* "Por defecto" option — null font */}
+                    {/* "Por defecto" option — null font */}
+                    <div style={{ marginBottom: 16 }}>
                         <button
                             onClick={() => setFont(null)}
                             style={{
@@ -623,29 +659,39 @@ function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
                                 padding: '14px 10px', borderRadius: 12, cursor: 'pointer',
                                 border: `2px solid ${font === null ? 'var(--accent)' : 'var(--line)'}`,
                                 background: font === null ? 'var(--glass-bg)' : 'transparent',
-                                gap: 6, transition: 'all .15s', outline: 'none',
+                                gap: 6, transition: 'all .15s', outline: 'none', minWidth: 80,
                             }}
                         >
                             <span style={{ fontSize: 28, lineHeight: 1, color: 'var(--fg-0)', fontFamily: '"Fraunces", Georgia, serif', fontStyle: 'italic' }}>Aa</span>
                             <span style={{ fontSize: 11, fontWeight: 600, color: font === null ? 'var(--accent)' : 'var(--fg-2)' }}>Por defecto</span>
                         </button>
-                        {FONTS.map(f => (
-                            <button
-                                key={f.value}
-                                onClick={() => setFont(f.value)}
-                                style={{
-                                    display: 'flex', flexDirection: 'column', alignItems: 'center',
-                                    padding: '14px 10px', borderRadius: 12, cursor: 'pointer',
-                                    border: `2px solid ${font === f.value ? 'var(--accent)' : 'var(--line)'}`,
-                                    background: font === f.value ? 'var(--glass-bg)' : 'transparent',
-                                    gap: 6, transition: 'all .15s', outline: 'none',
-                                }}
-                            >
-                                <span style={{ fontSize: 28, lineHeight: 1, color: 'var(--fg-0)', fontFamily: f.family }}>{f.sample}</span>
-                                <span style={{ fontSize: 11, fontWeight: 600, color: font === f.value ? 'var(--accent)' : 'var(--fg-2)' }}>{f.label}</span>
-                            </button>
-                        ))}
                     </div>
+                    {FONT_GROUPS.map(group => (
+                        <div key={group.label} style={{ marginBottom: 20 }}>
+                            <div style={{ marginBottom: 8 }}>
+                                <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--fg-1)' }}>{group.label}</span>
+                                <span style={{ fontSize: 11, color: 'var(--fg-3)', marginLeft: 8 }}>{group.hint}</span>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8 }}>
+                                {group.fonts.map(f => (
+                                    <button
+                                        key={f.value}
+                                        onClick={() => setFont(f.value)}
+                                        style={{
+                                            display: 'flex', flexDirection: 'column', alignItems: 'center',
+                                            padding: '12px 8px', borderRadius: 12, cursor: 'pointer',
+                                            border: `2px solid ${font === f.value ? 'var(--accent)' : 'var(--line)'}`,
+                                            background: font === f.value ? 'var(--glass-bg)' : 'transparent',
+                                            gap: 5, transition: 'all .15s', outline: 'none',
+                                        }}
+                                    >
+                                        <span style={{ fontSize: 26, lineHeight: 1, color: 'var(--fg-0)', fontFamily: f.family }}>{f.sample}</span>
+                                        <span style={{ fontSize: 10, fontWeight: 600, color: font === f.value ? 'var(--accent)' : 'var(--fg-2)' }}>{f.label}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
 
