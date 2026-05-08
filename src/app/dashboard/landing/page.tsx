@@ -114,7 +114,7 @@ function SaveBar({ saving, saved, error, onSave, label = 'Guardar cambios' }: {
 function ProfileTab({ token, slug }: { token: string | null; slug: string }) {
     const empty: Profile = {
         tagline: '', lede: '', address: '', phone: '', whatsapp: '',
-        instagram_url: '', tiktok_url: '', theme: 'violet', cover_url: '',
+        instagram_url: '', tiktok_url: '', theme: 'violet', font: null, cover_url: '',
         about_image_url: '', about_quote: '', founded_year: '',
     };
     const [form, setForm] = useState<Profile>(empty);
