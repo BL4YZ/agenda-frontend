@@ -46,7 +46,6 @@ const CRUMBS: Record<string, string[]> = {
   '/dashboard/finances/commissions': ['Inicio', 'Finanzas', 'Comisiones'],
   '/dashboard/settings':             ['Inicio', 'Configuración', 'Negocio'],
   '/dashboard/settings/billing':     ['Inicio', 'Configuración', 'Planes'],
-  '/dashboard/branches':             ['Inicio', 'Configuración', 'Sucursales'],
   '/dashboard/landing':              ['Inicio', 'Página pública'],
 };
 
@@ -109,7 +108,7 @@ function DashSidebar({
   const inAgenda = ['/dashboard/appointments', '/dashboard/services', '/dashboard/schedules'].some(p => pathname === p);
   const inTeam   = pathname.startsWith('/dashboard/team');
   const inFin    = pathname.startsWith('/dashboard/analytics') || pathname.startsWith('/dashboard/finances');
-  const inCfg    = pathname.startsWith('/dashboard/settings') || pathname === '/dashboard/branches';
+  const inCfg    = pathname.startsWith('/dashboard/settings');
 
   const [open, setOpen] = useState({
     agenda: inAgenda,
@@ -225,7 +224,7 @@ function DashSidebar({
         {canSettings && (
           <div className="dash-nav-group">
             <button
-              className={navGroupCls('cfg', ['/dashboard/settings', '/dashboard/branches'])}
+              className={navGroupCls('cfg', ['/dashboard/settings'])}
               onClick={() => toggle('cfg')}
             >
               <span className="dash-nav-item__icon">{Icon.settings}</span>
@@ -236,9 +235,6 @@ function DashSidebar({
               <div className="dash-nav-sub">
                 <Link href="/dashboard/settings" className={navSubCls('/dashboard/settings')}>Negocio</Link>
                 <Link href="/dashboard/settings/billing" className={navSubCls('/dashboard/settings/billing')}>Planes</Link>
-                {isOwner && isNegocio && (
-                  <Link href="/dashboard/branches" className={navSubCls('/dashboard/branches')}>Sucursales</Link>
-                )}
               </div>
             )}
           </div>
@@ -607,7 +603,7 @@ function MobileSubNav({
   const inAgenda = ['/dashboard/appointments', '/dashboard/services', '/dashboard/schedules'].some(p => pathname === p);
   const inTeam   = pathname.startsWith('/dashboard/team');
   const inFin    = pathname.startsWith('/dashboard/analytics') || pathname.startsWith('/dashboard/finances');
-  const inCfg    = pathname.startsWith('/dashboard/settings') || pathname === '/dashboard/branches';
+  const inCfg    = pathname.startsWith('/dashboard/settings');
 
   type SubItem = { href: string; label: string };
   let items: SubItem[] = [];
@@ -631,7 +627,6 @@ function MobileSubNav({
       { href: '/dashboard/settings',         label: 'Negocio' },
       { href: '/dashboard/settings/billing', label: 'Planes'  },
     ];
-    if (isOwner && isNegocio) items.push({ href: '/dashboard/branches', label: 'Sucursales' });
   }
 
   if (items.length <= 1) return null;

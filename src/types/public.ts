@@ -1,5 +1,5 @@
 export type ShopTheme = 'violet' | 'rose' | 'green' | 'cyan' | 'amber' | 'bw';
-export type ShopFont  = 'editorial' | 'elegant' | 'modern' | null;
+export type ShopFont  = 'editorial' | 'playfair' | 'bebas' | 'oswald' | 'elegant' | 'dm-serif' | 'raleway' | 'modern' | 'montserrat' | 'nunito' | 'lora' | 'poppins' | null;
 export type ShopPlan  = 'gratis' | 'pro' | 'negocio';
 
 export interface Service {
