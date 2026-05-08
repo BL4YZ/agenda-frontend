@@ -22,6 +22,12 @@ type Appointment = {
     employee_name?: string;
 };
 
+const METHOD_LABEL: Record<string, string> = {
+    mercadopago: 'MercadoPago',
+    cash: 'Efectivo',
+    transfer: 'Transferencia',
+};
+
 const STATUS_OPTIONS = [
     { value: 'all', label: 'Todos los estados' },
     { value: 'paid', label: 'Seña cobrada' },
@@ -415,7 +421,7 @@ export default function AppointmentsPage() {
                                             />
                                             {appt.payment_method && (
                                                 <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 99, letterSpacing: '0.04em', background: 'rgba(255,255,255,0.06)', color: 'var(--fg-3)', border: '1px solid var(--line)', alignSelf: 'flex-start' }}>
-                                                    {{ mercadopago: 'MercadoPago', cash: 'Efectivo', transfer: 'Transferencia' }[appt.payment_method] ?? appt.payment_method}
+                                                    {METHOD_LABEL[appt.payment_method ?? ''] ?? appt.payment_method}
                                                 </span>
                                             )}
                                         </div>
@@ -483,7 +489,7 @@ export default function AppointmentsPage() {
                                                 />
                                                 {appt.payment_method && (
                                                     <span style={{ display: 'inline-block', marginTop: 4, fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 99, letterSpacing: '0.04em', background: 'rgba(255,255,255,0.06)', color: 'var(--fg-3)', border: '1px solid var(--line)' }}>
-                                                        {{ mercadopago: 'MercadoPago', cash: 'Efectivo', transfer: 'Transferencia' }[appt.payment_method] ?? appt.payment_method}
+                                                        {METHOD_LABEL[appt.payment_method ?? ''] ?? appt.payment_method}
                                                     </span>
                                                 )}
                                             </td>
