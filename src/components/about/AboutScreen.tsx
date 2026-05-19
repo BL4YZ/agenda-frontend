@@ -36,7 +36,7 @@ export default function AboutScreen() {
             <em>los negocios merecen.</em>
           </h1>
           <p className="about-hero__sub">
-            MiAgenda nació de una frustración simple: los profesionales y pequeños
+            Novu nació de una frustración simple: los profesionales y pequeños
             negocios perdían tiempo y clientes por no tener una herramienta de
             agendamiento moderna, simple y pensada para ellos.
           </p>
@@ -55,7 +55,7 @@ export default function AboutScreen() {
             administración.
           </p>
           <p className="about-card__body" style={{ marginTop: 12 }}>
-            MiAgenda automatiza la agenda, los recordatorios, los cobros y los reportes
+            Novu automatiza la agenda, los recordatorios, los cobros y los reportes
             para que los profesionales puedan hacer lo que realmente saben hacer.
           </p>
         </div>
@@ -145,7 +145,7 @@ export default function AboutScreen() {
           <p className="about-card__label">Únete</p>
           <h2 className="about-card__title">¿Listo para ordenar tu agenda?</h2>
           <p className="about-card__body" style={{ marginBottom: 24 }}>
-            Probá MiAgenda con 14 días de Plan Pro incluidos. Sin contratos ni letras chicas.
+            Probá Novu con 14 días de Plan Pro incluidos. Sin contratos ni letras chicas.
             Cancelás antes de que termine la prueba y no te cobramos nada.
           </p>
           <div className="about-cta-row">
@@ -155,7 +155,7 @@ export default function AboutScreen() {
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
             </Link>
-            <a href="mailto:soporte@miagenda.app" className="about-cta-secondary">
+            <a href="mailto:soporte@novu.app" className="about-cta-secondary">
               Hablar con el equipo
             </a>
           </div>

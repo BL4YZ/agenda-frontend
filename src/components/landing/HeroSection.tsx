@@ -63,7 +63,7 @@ export default function HeroSection({ heroRef, mp }: HeroSectionProps) {
         </h1>
 
         <p className="vc-hero-sub">
-          MiAgenda toma reservas, envía recordatorios, cobra pagos y te muestra cómo va tu negocio.
+          Novu toma reservas, envía recordatorios, cobra pagos y te muestra cómo va tu negocio.
           Sin instalar nada. Sin contratar a nadie.
         </p>
 

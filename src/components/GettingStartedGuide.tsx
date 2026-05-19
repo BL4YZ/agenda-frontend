@@ -6,7 +6,7 @@ import { useBusiness } from '@/context/BusinessContext';
 import { useAuth } from '@/context/AuthContext';
 import api from '@/lib/api';
 
-const DISMISS_KEY = 'miagenda_guide_dismissed';
+const DISMISS_KEY = 'novu_guide_dismissed';
 
 type StepStatus = 'done' | 'pending' | 'optional' | 'loading';
 
@@ -43,7 +43,7 @@ export default function GettingStartedGuide() {
     useEffect(() => {
         if (typeof window !== 'undefined') {
             setDismissed(localStorage.getItem(DISMISS_KEY) === '1');
-            setLinkCopied(localStorage.getItem('miagenda_link_shared') === '1');
+            setLinkCopied(localStorage.getItem('novu_link_shared') === '1');
         }
     }, []);
 
@@ -65,7 +65,7 @@ export default function GettingStartedGuide() {
         if (!business) return;
         const url = `${process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin}/public/${business.slug}`;
         navigator.clipboard.writeText(url);
-        localStorage.setItem('miagenda_link_shared', '1');
+        localStorage.setItem('novu_link_shared', '1');
         setLinkCopied(true);
     };
 

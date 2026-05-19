@@ -190,7 +190,7 @@ function BookingContent() {
                     </a>
                 </div>
 
-                <p className="text-xs text-slate-400 dark:text-slate-600 mt-12">Reservas online con <span className="font-semibold">MiAgenda</span></p>
+                <p className="text-xs text-slate-400 dark:text-slate-600 mt-12">Reservas online con <span className="font-semibold">Novu</span></p>
             </div>
         );
     }
@@ -492,7 +492,7 @@ function BookingContent() {
 
             <div className="text-center pb-8">
                 <p className="text-xs text-slate-400 dark:text-slate-600">
-                    Reservas online con <span className="font-semibold text-slate-500 dark:text-slate-500">MiAgenda</span>
+                    Reservas online con <span className="font-semibold text-slate-500 dark:text-slate-500">Novu</span>
                 </p>
             </div>
         </div>

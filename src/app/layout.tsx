@@ -18,8 +18,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-    title: "MiAgenda",
-    description: "Tu agenda profesional",
+    title: "Novu",
+    description: "Gestión inteligente para tu negocio",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

@@ -54,7 +54,7 @@ export default function PLFooter({ shop }: Props) {
         </nav>
         <div className="pl-footer__credit">
           RESERVAS ONLINE CON{' '}
-          <a href="https://miagenda.com.uy" target="_blank" rel="noopener noreferrer">MIAGENDA</a>
+          <a href="https://novu.app" target="_blank" rel="noopener noreferrer">NOVU</a>
         </div>
       </div>
     </footer>

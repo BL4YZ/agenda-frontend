@@ -24,10 +24,10 @@ export async function generateMetadata(
   const { slug } = await params;
   const shop = await getShopData(slug);
   if (!shop) {
-    return { title: 'Negocio no encontrado | MiAgenda' };
+    return { title: 'Negocio no encontrado | Novu' };
   }
 
-  const title = `${shop.name}${shop.tagline ? ` — ${shop.tagline}` : ''} | MiAgenda`;
+  const title = `${shop.name}${shop.tagline ? ` — ${shop.tagline}` : ''} | Novu`;
   const description =
     shop.lede ??
     `Reservá tu turno en ${shop.name} de forma fácil y rápida.${shop.address ? ` ${shop.address}.` : ''}`;

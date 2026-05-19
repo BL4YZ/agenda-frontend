@@ -1,10 +1,10 @@
 'use client';
 
-interface MiAgendaLogoProps {
+interface NovuLogoProps {
   size?: number;
 }
 
-export default function MiAgendaLogo({ size = 28 }: MiAgendaLogoProps) {
+export default function NovuLogo({ size = 28 }: NovuLogoProps) {
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
       <div style={{
@@ -36,7 +36,7 @@ export default function MiAgendaLogo({ size = 28 }: MiAgendaLogoProps) {
         letterSpacing: '-0.02em',
         color: 'var(--fg-0)',
       }}>
-        MiAgenda
+        Novu
       </span>
     </div>
   );

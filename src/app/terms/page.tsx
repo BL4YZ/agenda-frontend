@@ -1,19 +1,19 @@
 import LegalLayout from '@/components/legal/LegalLayout';
 
-export const metadata = { title: 'Términos de Servicio — MiAgenda' };
+export const metadata = { title: 'Términos de Servicio — Novu' };
 
 export default function TermsPage() {
   return (
     <LegalLayout title="Términos de Servicio" lastUpdated="6 de mayo de 2026">
       <div className="legal-highlight">
-        Al crear una cuenta o utilizar MiAgenda aceptás estos términos en su totalidad.
+        Al crear una cuenta o utilizar Novu aceptás estos términos en su totalidad.
         Si no estás de acuerdo, no uses el servicio.
       </div>
 
       <div className="legal-section">
         <h2>1. El servicio</h2>
         <p>
-          MiAgenda es una plataforma de gestión de agenda y turnos para profesionales y pequeños negocios.
+          Novu es una plataforma de gestión de agenda y turnos para profesionales y pequeños negocios.
           Permite administrar citas, clientes, servicios, empleados, sucursales, cobros, gastos y comisiones
           a través de una interfaz web. Incluye una página pública de reservas para que tus clientes agenden
           turnos de forma autónoma.
@@ -39,7 +39,7 @@ export default function TermsPage() {
       <div className="legal-section">
         <h2>3. Planes y pagos</h2>
         <p>
-          MiAgenda ofrece un plan gratuito con funciones básicas y un plan Pro con funciones avanzadas.
+          Novu ofrece un plan gratuito con funciones básicas y un plan Pro con funciones avanzadas.
           El plan Pro incluye un período de prueba de 14 días al activarse por primera vez.
         </p>
         <ul>
@@ -77,7 +77,7 @@ export default function TermsPage() {
 
       <div className="legal-section">
         <h2>5. Uso aceptable</h2>
-        <p>Al usar MiAgenda te comprometés a:</p>
+        <p>Al usar Novu te comprometés a:</p>
         <ul>
           <li>No usar el servicio para actividades ilegales o fraudulentas.</li>
           <li>No intentar acceder a cuentas o datos de otros usuarios.</li>
@@ -91,7 +91,7 @@ export default function TermsPage() {
       <div className="legal-section">
         <h2>6. Tus datos</h2>
         <p>
-          Sos el propietario de los datos que cargás en MiAgenda (clientes, citas, servicios, gastos, etc.).
+          Sos el propietario de los datos que cargás en Novu (clientes, citas, servicios, gastos, etc.).
           Al eliminar tu cuenta desde el panel de configuración, todos tus datos —incluyendo los de tu negocio,
           empleados, citas y servicios— se eliminan de forma inmediata e irreversible de nuestros sistemas.
           Algunos registros de transacciones pueden conservarse por obligación legal.
@@ -105,7 +105,7 @@ export default function TermsPage() {
       <div className="legal-section">
         <h2>7. Propiedad intelectual</h2>
         <p>
-          El software, diseño, marca y contenidos de MiAgenda son propiedad de sus creadores y
+          El software, diseño, marca y contenidos de Novu son propiedad de sus creadores y
           están protegidos por las leyes de propiedad intelectual vigentes en la República Oriental del Uruguay.
           Te otorgamos una licencia limitada, no exclusiva e intransferible para usar el servicio.
         </p>
@@ -114,7 +114,7 @@ export default function TermsPage() {
       <div className="legal-section">
         <h2>8. Limitación de responsabilidad</h2>
         <p>
-          MiAgenda no será responsable por daños indirectos, incidentales o consecuentes derivados
+          Novu no será responsable por daños indirectos, incidentales o consecuentes derivados
           del uso o la imposibilidad de uso del servicio, incluyendo pero no limitado a:
           pérdida de ganancias, pérdida de datos o interrupción del negocio.
         </p>
@@ -146,7 +146,7 @@ export default function TermsPage() {
         <h2>11. Contacto</h2>
         <p>
           Para consultas sobre estos términos escribinos a{' '}
-          <a href="mailto:soporte@miagenda.app">soporte@miagenda.app</a>{' '}
+          <a href="mailto:soporte@novu.app">soporte@novu.app</a>{' '}
           o visitá nuestra <a href="/contact">página de contacto</a>.
         </p>
       </div>

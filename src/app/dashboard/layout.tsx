@@ -77,7 +77,7 @@ function DashBrand() {
         <circle cx="13" cy="14" r="1.2" fill="white" />
         <rect x="11.5" y="18" width="13" height="1.3" rx="0.7" fill="white" opacity="0.7" />
       </svg>
-      <span className="dash-side__brand-word">MiAgenda</span>
+      <span className="dash-side__brand-word">Novu</span>
     </div>
   );
 }
@@ -459,7 +459,7 @@ function DashTopbar({ crumbs, initial, businessName, role, logout, token }: {
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33h0a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51h0a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82v0a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
               Configuración
             </Link>
-            <a href="mailto:soporte@miagenda.app" className="topbar-drop__item" onClick={() => setOpen(null)}>
+            <a href="mailto:soporte@novu.app" className="topbar-drop__item" onClick={() => setOpen(null)}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
               Contactar soporte
             </a>

@@ -1,6 +1,6 @@
 import LegalLayout from '@/components/legal/LegalLayout';
 
-export const metadata = { title: 'Política de Privacidad — MiAgenda' };
+export const metadata = { title: 'Política de Privacidad — Novu' };
 
 export default function PrivacyPage() {
   return (
@@ -14,9 +14,9 @@ export default function PrivacyPage() {
       <div className="legal-section">
         <h2>1. Responsable del tratamiento</h2>
         <p>
-          El responsable del tratamiento de tus datos personales es <strong>MiAgenda</strong>,
+          El responsable del tratamiento de tus datos personales es <strong>Novu</strong>,
           con domicilio en la República Oriental del Uruguay. Para cualquier consulta sobre privacidad
-          contactanos en <a href="mailto:privacidad@miagenda.app">privacidad@miagenda.app</a>.
+          contactanos en <a href="mailto:privacidad@novu.app">privacidad@novu.app</a>.
         </p>
       </div>
 
@@ -92,7 +92,7 @@ export default function PrivacyPage() {
             recordatorios de citas). Solo reciben el destinatario y el contenido del email necesario para cada envío.
           </li>
           <li>
-            <strong>Railway</strong> — infraestructura de hosting donde se ejecutan los servidores de MiAgenda.
+            <strong>Railway</strong> — infraestructura de hosting donde se ejecutan los servidores de Novu.
             Actúa como encargado del tratamiento y está contractualmente obligado a proteger los datos. Política:{' '}
             <a href="https://railway.app/legal/privacy" target="_blank" rel="noopener noreferrer">
               railway.app/legal/privacy
@@ -152,7 +152,7 @@ export default function PrivacyPage() {
         </ul>
         <p>
           Para ejercer cualquiera de estos derechos escribinos a{' '}
-          <a href="mailto:privacidad@miagenda.app">privacidad@miagenda.app</a>.
+          <a href="mailto:privacidad@novu.app">privacidad@novu.app</a>.
           Responderemos en un plazo máximo de 15 días hábiles.
         </p>
       </div>
@@ -160,7 +160,7 @@ export default function PrivacyPage() {
       <div className="legal-section">
         <h2>8. Cookies</h2>
         <p>
-          MiAgenda utiliza únicamente cookies técnicas estrictamente necesarias para el
+          Novu utiliza únicamente cookies técnicas estrictamente necesarias para el
           funcionamiento de la sesión (token de autenticación JWT almacenado en <code>localStorage</code>).
           No usamos cookies de seguimiento, publicidad ni analítica de terceros.
         </p>
@@ -187,10 +187,10 @@ export default function PrivacyPage() {
         <h2>11. Contacto</h2>
         <p>
           Consultas sobre privacidad:{' '}
-          <a href="mailto:privacidad@miagenda.app">privacidad@miagenda.app</a>
+          <a href="mailto:privacidad@novu.app">privacidad@novu.app</a>
           <br />
           Consultas generales:{' '}
-          <a href="mailto:soporte@miagenda.app">soporte@miagenda.app</a>
+          <a href="mailto:soporte@novu.app">soporte@novu.app</a>
           <br />
           También podés contactarnos a través de nuestra <a href="/contact">página de contacto</a>.
         </p>

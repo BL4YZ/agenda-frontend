@@ -54,7 +54,7 @@ export default function FooterSection() {
 
       <div className="vc-footer-bot">
         <span className="mono" style={{ fontSize: 11, color: 'var(--fg-3)', letterSpacing: '0.12em' }}>
-          © {new Date().getFullYear()} MIAGENDA · TODOS LOS DERECHOS RESERVADOS
+          © {new Date().getFullYear()} NOVU · TODOS LOS DERECHOS RESERVADOS
         </span>
         <div style={{ display: 'flex', gap: 8 }}>
           <Link href="/login" style={{ fontSize: 12, color: 'var(--fg-2)' }}>Iniciar sesión</Link>

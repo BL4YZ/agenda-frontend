@@ -35,7 +35,7 @@ function JsonLd({ shop }: { shop: Shop }) {
     '@type': 'LocalBusiness',
     name: shop.name,
     description: shop.lede,
-    url: `https://miagenda.com.uy/public/${shop.slug}`,
+    url: `https://novu.app/public/${shop.slug}`,
     ...(shop.logo_url && { image: shop.logo_url }),
     ...(shop.phone && { telephone: shop.phone }),
     ...(shop.address && { address: { '@type': 'PostalAddress', streetAddress: shop.address } }),
