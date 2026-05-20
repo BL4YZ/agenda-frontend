@@ -25,7 +25,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-    title: "MiAgenda",
+    title: "Novu",
     description: "Gestión inteligente para tu negocio",
 };
 

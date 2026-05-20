@@ -58,7 +58,7 @@ export default function MiAgendaLogo({
         lineHeight: 1,
       }}
     >
-      MiAgenda
+      Novu
     </span>
   );
 
