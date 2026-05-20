@@ -151,7 +151,7 @@ export default function FeaturesSection() {
   return (
     <section className="vc-features container-pad" id="producto">
       <div className="vc-section-head reveal">
-        <span className="eyebrow">— Por qué Novu</span>
+        <span className="eyebrow">— Por qué MiAgenda</span>
         <h2 className="vc-h2">
           Suficientemente <em>simple</em> para usarlo hoy.<br />
           Suficientemente <em>poderoso</em> para escalar.
