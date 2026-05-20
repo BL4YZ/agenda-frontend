@@ -22,7 +22,7 @@ function scrollTo(id: string) {
 export default function NavBar({ rootRef }: NavBarProps) {
   return (
     <nav className="vc-nav">
-      <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 1, textDecoration: 'none' }}>
+      <Link href="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} style={{ display: 'inline-flex', alignItems: 'center', gap: 1, textDecoration: 'none' }}>
         <span style={{
           fontFamily: 'Inter Tight, system-ui, sans-serif',
           fontWeight: 700,
