@@ -22,7 +22,7 @@ function scrollTo(id: string) {
 export default function NavBar({ rootRef }: NavBarProps) {
   return (
     <nav className="vc-nav">
-      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
+      <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 1, textDecoration: 'none' }}>
         <span style={{
           fontFamily: 'Inter Tight, system-ui, sans-serif',
           fontWeight: 700,
@@ -43,7 +43,7 @@ export default function NavBar({ rootRef }: NavBarProps) {
             <circle cx="48" cy="54" r="4.5" fill="#e6c87a" />
           </g>
         </svg>
-      </div>
+      </Link>
       <div className="vc-nav-pill glass">
         {NAV_LINKS.map(({ label, id }) => (
           <a
