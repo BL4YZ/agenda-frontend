@@ -2,7 +2,7 @@
 
 const STEPS = [
   { n: '01', t: 'Configura',  d: 'Servicios, horarios y staff. Wizard guiado, plantillas listas.' },
-  { n: '02', t: 'Comparte',   d: 'Tu link miagenda.app/tu-negocio. En tu web, bio o WhatsApp.' },
+  { n: '02', t: 'Comparte',   d: 'Tu link novu.app/tu-negocio. En tu web, bio o WhatsApp.' },
   { n: '03', t: 'Cobra',      d: 'Calendario lleno, pagos automáticos. Tu trabajo es lo único que haces.' },
 ];
 
