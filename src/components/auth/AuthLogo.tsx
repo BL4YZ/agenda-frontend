@@ -1,5 +1,5 @@
-import MiAgendaLogo from '@/components/landing/MiAgendaLogo';
+import MiAgendaLogo from '@/components/MiAgendaLogo';
 
 export default function AuthLogo() {
-  return <MiAgendaLogo size={36} />;
+  return <MiAgendaLogo size={40} />;
 }

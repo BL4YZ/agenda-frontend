@@ -23,7 +23,7 @@ function scrollTo(id: string) {
 export default function NavBar({ rootRef }: NavBarProps) {
   return (
     <nav className="vc-nav">
-      <MiAgendaLogo />
+      <MiAgendaLogo size={32} />
       <div className="vc-nav-pill glass">
         {NAV_LINKS.map(({ label, id }) => (
           <a

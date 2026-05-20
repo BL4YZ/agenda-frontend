@@ -39,7 +39,7 @@ export default function FooterSection() {
     <footer className="vc-footer">
       <div className="vc-footer-top">
         <div style={{ maxWidth: 360 }}>
-          <MiAgendaLogo />
+          <MiAgendaLogo variant="inline" size={24} color="var(--fg-0)" />
           <p style={{ color: 'var(--fg-2)', marginTop: 16, fontSize: 14 }}>
             La agenda online para profesionales y pequeños negocios.<br />
             Hecho en LATAM, para LATAM.
@@ -54,7 +54,7 @@ export default function FooterSection() {
 
       <div className="vc-footer-bot">
         <span className="mono" style={{ fontSize: 11, color: 'var(--fg-3)', letterSpacing: '0.12em' }}>
-          © {new Date().getFullYear()} NOVU · TODOS LOS DERECHOS RESERVADOS
+          © {new Date().getFullYear()} MIAGENDA · TODOS LOS DERECHOS RESERVADOS
         </span>
         <div style={{ display: 'flex', gap: 8 }}>
           <Link href="/login" style={{ fontSize: 12, color: 'var(--fg-2)' }}>Iniciar sesión</Link>

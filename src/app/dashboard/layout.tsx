@@ -1,7 +1,7 @@
 'use client';
 
 import ProtectedRoute from "@/components/ProtectedRoute";
-import OnboardingModal from "@/components/OnboardingModal";
+import OnboardingWizard from "@/components/OnboardingWizard";
 import TrialBanner from "@/components/TrialBanner";
 import RouteProgress from "@/components/RouteProgress";
 import { useAuth } from "@/context/AuthContext";
@@ -11,6 +11,7 @@ import axios from "axios";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
+import MiAgendaLogo from "@/components/MiAgendaLogo";
 import "@/styles/system.css";
 import "@/styles/dashboard.css";
 
@@ -65,19 +66,7 @@ function DashBackdrop() {
 function DashBrand() {
   return (
     <div className="dash-side__brand">
-      <svg width="28" height="28" viewBox="0 0 36 36">
-        <defs>
-          <linearGradient id="dlg" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#c4b5fd" />
-            <stop offset="100%" stopColor="#7c3aed" />
-          </linearGradient>
-        </defs>
-        <rect x="2" y="2" width="32" height="32" rx="9" fill="url(#dlg)" />
-        <rect x="9" y="9" width="18" height="18" rx="3" fill="none" stroke="white" strokeWidth="1.4" />
-        <circle cx="13" cy="14" r="1.2" fill="white" />
-        <rect x="11.5" y="18" width="13" height="1.3" rx="0.7" fill="white" opacity="0.7" />
-      </svg>
-      <span className="dash-side__brand-word">Novu</span>
+      <MiAgendaLogo size={28} />
     </div>
   );
 }
@@ -724,7 +713,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
       <RouteProgress />
       <DashBackdrop />
 
-      {!loading && isOwner && !isOnboarded && <OnboardingModal />}
+      {!loading && isOwner && !isOnboarded && <OnboardingWizard />}
 
       <DashSidebar
         hasEquipo={hasEquipo}
