@@ -5,6 +5,22 @@ export const metadata: Metadata = { title: 'Cambios — Novu' };
 
 const ENTRIES = [
   {
+    version: 'v2.0',
+    date: 'Mayo 2026',
+    tag: 'Nuevo',
+    tagColor: '#34d399',
+    items: [
+      'Editor de página pública reorganizado en 10 pestañas: Identidad, Diseño, Contacto, Horarios, FAQs, Productos, Reseñas, Galería, Equipo y Sucursales.',
+      'Sección "Sobre nosotros" activable/desactivable desde el editor.',
+      'Nuevo campo de Facebook en redes sociales — se muestra en el footer de tu página pública.',
+      'Selector de tipografía mejorado: previsualización de cada fuente con muestra real.',
+      'Diseño de paleta de temas renovado con previsualización en miniatura.',
+      'Indicador de estado en tiempo real (Abierto / Cerrado) en el hero de la página pública, calculado con el timezone del visitante.',
+      'Aviso en el editor de horarios cuando aún no se han guardado los datos por primera vez.',
+      'Sección de fondo de la página pública simplificada: color sólido en lugar de degradado animado.',
+    ],
+  },
+  {
     version: 'v1.9',
     date: 'Mayo 2026',
     tag: 'Mejora',
