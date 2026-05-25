@@ -144,130 +144,140 @@ export default function ModalitiesPage() {
                 {/* ── Right panel — siempre flex-1, muestra editor o placeholder ── */}
                 <div className={`flex-1 overflow-y-auto ${!selected ? 'hidden md:flex items-center justify-center' : ''}`}>
                   {selected ? (
-                    <div className="max-w-lg mx-auto px-6 py-8">
-                            <div className="flex items-center gap-3 mb-8">
-                                <button
-                                    onClick={() => setSelected(null)}
-                                    className="md:hidden p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5"
-                                >
-                                    <X className="w-4 h-4" />
-                                </button>
-                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center text-white font-semibold">
-                                    {(selected.name || selected.email)[0].toUpperCase()}
-                                </div>
-                                <div>
-                                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{selected.name || selected.email}</p>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400">{selected.email}</p>
-                                </div>
+                    <div style={{ maxWidth: 480, margin: '0 auto', padding: '32px 24px' }}>
+                        {/* Header */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
+                            <button
+                                onClick={() => setSelected(null)}
+                                className="md:hidden"
+                                style={{ padding: 6, borderRadius: 8, background: 'var(--glass-bg)', border: '1px solid var(--line)', cursor: 'pointer', color: 'var(--fg-2)', display: 'flex' }}
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                            <div style={{ width: 40, height: 40, borderRadius: 12, background: 'linear-gradient(135deg, #818cf8, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 600, fontSize: 16, flexShrink: 0 }}>
+                                {(selected.name || selected.email)[0].toUpperCase()}
                             </div>
+                            <div>
+                                <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--fg-0)', margin: 0 }}>{selected.name || selected.email}</p>
+                                <p style={{ fontSize: 12, color: 'var(--fg-3)', margin: 0 }}>{selected.email}</p>
+                            </div>
+                        </div>
 
-                            {/* Modality selector */}
-                            <div className="mb-6">
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
-                                    Modalidad de compensación
-                                </label>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {(['employee', 'commission', 'rental', 'mixed'] as Modality[]).map(m => (
+                        {/* Modality selector */}
+                        <div style={{ marginBottom: 20 }}>
+                            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--fg-1)', marginBottom: 10 }}>
+                                Modalidad de compensación
+                            </label>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                                {(['employee', 'commission', 'rental', 'mixed'] as Modality[]).map(m => {
+                                    const active = modality === m;
+                                    return (
                                         <button
                                             key={m}
                                             onClick={() => setModality(m)}
-                                            className={`px-4 py-3 rounded-xl border text-sm font-medium text-left transition-all duration-200 ${
-                                                modality === m
-                                                    ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400'
-                                                    : 'border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-white/20'
-                                            }`}
+                                            style={{
+                                                padding: '12px 14px', borderRadius: 14, textAlign: 'left',
+                                                border: `2px solid ${active ? 'var(--accent)' : 'var(--line-strong)'}`,
+                                                background: active ? 'oklch(from var(--accent) l c h / 0.12)' : 'var(--glass-bg)',
+                                                color: active ? 'var(--accent)' : 'var(--fg-1)',
+                                                cursor: 'pointer', fontFamily: 'inherit',
+                                                transition: 'border-color .15s, background .15s',
+                                            }}
                                         >
-                                            <span className="font-semibold block mb-0.5">{MODALITY_LABELS[m]}</span>
-                                            <span className="text-[11px] opacity-70">
+                                            <span style={{ fontWeight: 700, fontSize: 13, display: 'block', marginBottom: 2 }}>{MODALITY_LABELS[m]}</span>
+                                            <span style={{ fontSize: 11, opacity: 0.65, color: 'var(--fg-2)' }}>
                                                 {m === 'employee'   && 'Sueldo fijo externo'}
                                                 {m === 'commission' && '% de cada cita'}
                                                 {m === 'rental'     && 'Paga alquiler fijo'}
                                                 {m === 'mixed'      && 'Alquiler + comisión'}
                                             </span>
                                         </button>
-                                    ))}
-                                </div>
+                                    );
+                                })}
                             </div>
+                        </div>
 
-                            {/* Commission rate */}
-                            {(modality === 'commission' || modality === 'mixed') && (
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                                        Porcentaje de comisión
-                                    </label>
-                                    <div className="relative">
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            max="100"
-                                            step="0.5"
-                                            value={commissionRate}
-                                            onChange={e => setCommissionRate(e.target.value)}
-                                            placeholder="0"
-                                            className="w-full px-4 py-2.5 pr-10 bg-white/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-sm transition-all"
-                                        />
-                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-slate-400">%</span>
-                                    </div>
-                                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1.5">
-                                        El integrante recibe este porcentaje del precio de cada cita que atiende.
-                                    </p>
+                        {/* Commission rate */}
+                        {(modality === 'commission' || modality === 'mixed') && (
+                            <div style={{ marginBottom: 16 }}>
+                                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--fg-1)', marginBottom: 6 }}>
+                                    Porcentaje de comisión
+                                </label>
+                                <div style={{ position: 'relative' }}>
+                                    <input
+                                        type="number" min="0" max="100" step="0.5"
+                                        value={commissionRate} onChange={e => setCommissionRate(e.target.value)}
+                                        placeholder="0"
+                                        className="fg-field__input"
+                                        style={{ paddingRight: 36 }}
+                                    />
+                                    <span style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 13, color: 'var(--fg-3)' }}>%</span>
                                 </div>
-                            )}
+                                <p style={{ fontSize: 11, color: 'var(--fg-3)', marginTop: 6 }}>
+                                    El integrante recibe este porcentaje del precio de cada cita que atiende.
+                                </p>
+                            </div>
+                        )}
 
-                            {/* Rental amount */}
-                            {(modality === 'rental' || modality === 'mixed') && (
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                                        Monto de alquiler
-                                    </label>
-                                    <div className="relative">
-                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-slate-400">$</span>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            step="100"
-                                            value={rentalAmount}
-                                            onChange={e => setRentalAmount(e.target.value)}
-                                            placeholder="0"
-                                            className="w-full pl-8 pr-4 py-2.5 bg-white/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-sm transition-all"
-                                        />
-                                    </div>
-                                    <div className="flex gap-2 mt-2">
-                                        {(['weekly', 'monthly'] as const).map(p => (
+                        {/* Rental amount */}
+                        {(modality === 'rental' || modality === 'mixed') && (
+                            <div style={{ marginBottom: 16 }}>
+                                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--fg-1)', marginBottom: 6 }}>
+                                    Monto de alquiler
+                                </label>
+                                <div style={{ position: 'relative' }}>
+                                    <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 13, color: 'var(--fg-3)' }}>$</span>
+                                    <input
+                                        type="number" min="0" step="100"
+                                        value={rentalAmount} onChange={e => setRentalAmount(e.target.value)}
+                                        placeholder="0"
+                                        className="fg-field__input"
+                                        style={{ paddingLeft: 28 }}
+                                    />
+                                </div>
+                                <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                                    {(['weekly', 'monthly'] as const).map(p => {
+                                        const active = rentalPeriod === p;
+                                        return (
                                             <button
                                                 key={p}
                                                 onClick={() => setRentalPeriod(p)}
-                                                className={`flex-1 py-2 rounded-xl text-xs font-medium border transition-all ${
-                                                    rentalPeriod === p
-                                                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400'
-                                                        : 'border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-white/20'
-                                                }`}
+                                                style={{
+                                                    flex: 1, padding: '8px 0', borderRadius: 10,
+                                                    border: `2px solid ${active ? 'var(--accent)' : 'var(--line-strong)'}`,
+                                                    background: active ? 'oklch(from var(--accent) l c h / 0.12)' : 'var(--glass-bg)',
+                                                    color: active ? 'var(--accent)' : 'var(--fg-2)',
+                                                    fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                                                    transition: 'border-color .15s, background .15s',
+                                                }}
                                             >
                                                 {p === 'weekly' ? 'Semanal' : 'Mensual'}
                                             </button>
-                                        ))}
-                                    </div>
+                                        );
+                                    })}
                                 </div>
-                            )}
+                            </div>
+                        )}
 
-                            {modality === 'employee' && (
-                                <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/[0.06] mb-4">
-                                    <p className="text-sm text-slate-500 dark:text-slate-400">
-                                        El integrante figura como empleado. El manejo de su sueldo se realiza externamente.
-                                    </p>
-                                </div>
-                            )}
+                        {modality === 'employee' && (
+                            <div style={{ padding: '12px 16px', borderRadius: 12, background: 'var(--glass-bg)', border: '1px solid var(--line-strong)', marginBottom: 16 }}>
+                                <p style={{ fontSize: 13, color: 'var(--fg-2)', margin: 0 }}>
+                                    El integrante figura como empleado. El manejo de su sueldo se realiza externamente.
+                                </p>
+                            </div>
+                        )}
 
-                            <button
-                                onClick={handleSave}
-                                disabled={saving}
-                                className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:scale-100 text-sm flex items-center justify-center gap-2"
-                            >
-                                {saved ? <><Check className="w-4 h-4" /> Guardado</> : saving ? 'Guardando...' : 'Guardar cambios'}
-                            </button>
-                        </div>
+                        <button
+                            onClick={handleSave}
+                            disabled={saving}
+                            className="dbtn dbtn--primary"
+                            style={{ width: '100%', justifyContent: 'center', padding: '12px 0', fontSize: 14 }}
+                        >
+                            {saved ? <><Check className="w-4 h-4" /> Guardado</> : saving ? 'Guardando...' : 'Guardar cambios'}
+                        </button>
+                    </div>
                   ) : (
-                    <p className="text-sm text-slate-400 dark:text-slate-500">Seleccioná un integrante para configurar su modalidad</p>
+                    <p style={{ fontSize: 13, color: 'var(--fg-3)' }}>Seleccioná un integrante para configurar su modalidad</p>
                   )}
                 </div>
             </div>

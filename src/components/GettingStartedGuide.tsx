@@ -3,8 +3,6 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useBusiness } from '@/context/BusinessContext';
-import { useAuth } from '@/context/AuthContext';
-import api from '@/lib/api';
 
 const DISMISS_KEY = 'novu_guide_dismissed';
 
@@ -18,6 +16,7 @@ type Step = {
     href?: string;
     action?: string;
     tag?: string;
+    onClick?: () => void;
 };
 
 const IcoDone     = () => <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="7" fill="#22c55e"/><path d="M4 7l2 2 4-4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
@@ -32,13 +31,10 @@ const IcoChev     = ({ open }: { open: boolean }) => (
 );
 
 export default function GettingStartedGuide() {
-    const { business } = useBusiness();
-    const { userId }   = useAuth();
+    const { business, onboardingProgress } = useBusiness();
     const [dismissed, setDismissed] = useState(false);
     const [open, setOpen]           = useState(true);
-    const [hasServices, setHasServices]   = useState<boolean | null>(null);
-    const [hasSchedules, setHasSchedules] = useState<boolean | null>(null);
-    const [linkCopied, setLinkCopied]     = useState(false);
+    const [linkCopied, setLinkCopied] = useState(false);
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -47,18 +43,15 @@ export default function GettingStartedGuide() {
         }
     }, []);
 
-    useEffect(() => {
-        api.get('/services').then(r => setHasServices(r.data.length > 0)).catch(() => setHasServices(false));
-    }, []);
-
-    useEffect(() => {
-        if (!userId) return;
-        api.get(`/schedules/${userId}`).then(r => setHasSchedules(r.data.length > 0)).catch(() => setHasSchedules(false));
-    }, [userId]);
-
     const dismiss = () => {
         localStorage.setItem(DISMISS_KEY, '1');
         setDismissed(true);
+    };
+
+    const restart = () => {
+        localStorage.removeItem(DISMISS_KEY);
+        setDismissed(false);
+        setOpen(true);
     };
 
     const copyLink = () => {
@@ -73,6 +66,7 @@ export default function GettingStartedGuide() {
 
     const mpConnected = business.mp_connected;
     const isPro = business.subscription_plan === 'pro' || business.subscription_plan === 'negocio';
+    const { hasService, hasSchedule } = onboardingProgress;
 
     const steps: Step[] = [
         {
@@ -85,7 +79,7 @@ export default function GettingStartedGuide() {
             id: 'services',
             title: 'Agregar tus servicios',
             desc: 'Definí qué ofrecés: nombre, duración y precio. Tus clientes los verán al reservar.',
-            status: hasServices === null ? 'loading' : hasServices ? 'done' : 'pending',
+            status: hasService === null ? 'loading' : hasService ? 'done' : 'pending',
             href: '/dashboard/services',
             action: 'Ir a Servicios',
         },
@@ -93,7 +87,7 @@ export default function GettingStartedGuide() {
             id: 'schedules',
             title: 'Configurar tus horarios',
             desc: 'Indicá en qué días y horarios atendés para que las reservas estén disponibles.',
-            status: hasSchedules === null ? 'loading' : hasSchedules ? 'done' : 'pending',
+            status: hasSchedule === null ? 'loading' : hasSchedule ? 'done' : 'pending',
             href: '/dashboard/schedules',
             action: 'Ir a Horarios',
         },
@@ -104,17 +98,26 @@ export default function GettingStartedGuide() {
             status: linkCopied ? 'done' : 'pending',
             action: linkCopied ? 'Copiado ✓' : 'Copiar link',
         },
-        {
-            id: 'mp',
-            title: 'Conectar MercadoPago',
-            desc: isPro
-                ? 'Cobrá señas o el total al momento de la reserva. Directo a tu cuenta, sin comisiones extra.'
-                : 'Disponible en Plan Pro. Cobrá señas o el pago completo al reservar.',
-            status: mpConnected ? 'done' : 'optional',
-            href: isPro ? '/dashboard/settings' : undefined,
-            action: isPro ? 'Conectar' : undefined,
-            tag: isPro ? undefined : 'Pro',
-        },
+        ...(isPro ? [
+            {
+                id: 'mp',
+                title: 'Conectar MercadoPago',
+                desc: 'Cobrá señas o el total al momento de la reserva. Directo a tu cuenta, sin comisiones extra.',
+                status: (mpConnected ? 'done' : 'pending') as StepStatus,
+                href: '/dashboard/settings',
+                action: mpConnected ? undefined : 'Conectar',
+            },
+        ] : [
+            {
+                id: 'upgrade',
+                title: 'Desbloquear cobros en línea',
+                desc: 'Con el Plan Pro podés cobrar señas o el pago completo al reservar, y acceder a reportes avanzados.',
+                status: 'optional' as StepStatus,
+                href: '/dashboard/settings/billing',
+                action: 'Ver Planes',
+                tag: 'Pro',
+            },
+        ]),
     ];
 
     const loaded  = steps.filter(s => s.status !== 'loading');
@@ -253,7 +256,17 @@ export default function GettingStartedGuide() {
                     ))}
 
                     {/* Footer */}
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '8px 20px 12px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 20px 12px' }}>
+                        <button
+                            onClick={restart}
+                            style={{
+                                background: 'none', border: 'none', cursor: 'pointer',
+                                fontSize: 11, color: 'var(--fg-3)', padding: '4px 0',
+                                textDecoration: 'underline', textUnderlineOffset: '2px',
+                            }}
+                        >
+                            Reiniciar guía
+                        </button>
                         <button
                             onClick={dismiss}
                             style={{

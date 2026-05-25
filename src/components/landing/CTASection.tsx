@@ -17,7 +17,7 @@ export default function CTASection() {
           <Link href="/register" className="btn btn-primary">Empezar gratis</Link>
           <Link href="/register" className="btn btn-ghost">Agendar demo</Link>
         </div>
-        <div className="mono" style={{ marginTop: 32, fontSize: 11, letterSpacing: '0.18em', color: 'var(--fg-3)' }}>
+        <div className="mono" style={{ marginTop: 32, fontSize: 12, letterSpacing: '0.14em', color: 'var(--fg-2)' }}>
           PLAN FREE SIEMPRE GRATIS · 14 DÍAS DE PRUEBA EN PLAN PRO · CANCELÁ CUANDO QUIERAS
         </div>
       </div>

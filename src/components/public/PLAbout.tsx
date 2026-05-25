@@ -1,17 +1,16 @@
 import type { Shop } from '@/types/public';
 
 interface Props {
-  shop: Pick<Shop, 'name' | 'lede' | 'address' | 'about_quote' | 'founded_year' | 'about_image_url'>;
+  shop: Pick<Shop, 'name' | 'lede' | 'about_quote' | 'about_image_url' | 'about_hidden'>;
 }
 
 export default function PLAbout({ shop }: Props) {
+  if (shop.about_hidden) return null;
+
   const quote = shop.about_quote ||
     (shop.lede
       ? `"${shop.lede.slice(0, 80)}${shop.lede.length > 80 ? '…' : ''}"`
       : `"Más que un servicio — una experiencia que <em>recordarás</em>."`);
-
-  const neighbourhood = shop.address?.split(',').slice(1, 2).join('').trim() || 'la ciudad';
-  const since = shop.founded_year ?? 2018;
 
   return (
     <section className="pl-section" id="sobre" aria-label="Sobre nosotros">
@@ -45,9 +44,6 @@ export default function PLAbout({ shop }: Props) {
               dangerouslySetInnerHTML={{ __html: quote }}
             />
             {shop.lede && <p className="pl-about__body">{shop.lede}</p>}
-            <p className="pl-about__body">
-              Estamos en {neighbourhood} desde {since}, atendiendo a clientes que vuelven mes a mes porque valoran la calidad y la experiencia.
-            </p>
           </div>
         </div>
       </div>

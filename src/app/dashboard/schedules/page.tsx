@@ -67,7 +67,7 @@ type DayState = { enabled: boolean; start: string; end: string };
 const defaultDay = (): DayState => ({ enabled: false, start: '09:00', end: '18:00' });
 
 export default function SchedulesPage() {
-    const { token } = useAuth();
+    const { token, role, userId } = useAuth();
     const [members, setMembers] = useState<Member[]>([]);
     const [membersLoading, setMembersLoading] = useState(true);
     const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -78,14 +78,24 @@ export default function SchedulesPage() {
 
     useEffect(() => {
         if (!token) return;
-        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/team`, { headers: { Authorization: `Bearer ${token}` } })
-            .then(res => {
-                setMembers(res.data);
-                if (res.data.length > 0) setSelectedId(res.data[0].id);
-            })
-            .catch(console.error)
-            .finally(() => setMembersLoading(false));
-    }, [token]);
+        if (role === 'owner') {
+            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/team`, { headers: { Authorization: `Bearer ${token}` } })
+                .then(res => {
+                    setMembers(res.data);
+                    if (res.data.length > 0) setSelectedId(res.data[0].id);
+                })
+                .catch(console.error)
+                .finally(() => setMembersLoading(false));
+        } else if (userId) {
+            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/users/me`, { headers: { Authorization: `Bearer ${token}` } })
+                .then(res => {
+                    setMembers([{ id: res.data.id, name: res.data.name, email: res.data.email }]);
+                    setSelectedId(res.data.id);
+                })
+                .catch(() => setSelectedId(userId))
+                .finally(() => setMembersLoading(false));
+        }
+    }, [token, role, userId]);
 
     useEffect(() => {
         if (!selectedId || !token) return;
@@ -184,25 +194,27 @@ export default function SchedulesPage() {
                         ))}
                     </div>
                 </div>
-            ) : members.length === 0 ? (
+            ) : members.length === 0 && role === 'owner' ? (
                 <div className="empty">
                     No hay empleados todavía.<br />
                     <span style={{ color: 'var(--fg-3)', fontSize: 13 }}>Añade empleados en la sección Equipo.</span>
                 </div>
             ) : (
                 <>
-                    {/* Member selector */}
-                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
-                        {members.map(m => (
-                            <button
-                                key={m.id}
-                                onClick={() => setSelectedId(m.id)}
-                                className={selectedId === m.id ? 'dbtn dbtn--primary' : 'dbtn'}
-                            >
-                                {m.name || m.email}
-                            </button>
-                        ))}
-                    </div>
+                    {/* Member selector — solo para owner */}
+                    {role === 'owner' && (
+                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
+                            {members.map(m => (
+                                <button
+                                    key={m.id}
+                                    onClick={() => setSelectedId(m.id)}
+                                    className={selectedId === m.id ? 'dbtn dbtn--primary' : 'dbtn'}
+                                >
+                                    {m.name || m.email}
+                                </button>
+                            ))}
+                        </div>
+                    )}
 
                     {/* Schedule card */}
                     <div className="gcard" style={{ padding: 0, overflow: 'hidden' }}>
@@ -214,7 +226,7 @@ export default function SchedulesPage() {
                             color: 'var(--fg-2)', fontSize: 14, fontWeight: 500,
                         }}>
                             <span style={{ color: 'var(--fg-3)' }}>{IcoClock}</span>
-                            {selectedMember?.name || selectedMember?.email}
+                            {selectedMember?.name || selectedMember?.email || 'Mi horario'}
                         </div>
 
                         {loading ? (

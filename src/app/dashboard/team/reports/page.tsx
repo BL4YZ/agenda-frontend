@@ -7,7 +7,7 @@ import Link from 'next/link';
 
 type ReportRow = {
     id: number;
-    name: string;
+    name: string | null;
     email: string;
     modality: string;
     commission_rate: string | null;
@@ -95,7 +95,7 @@ export default function TeamReportsPage() {
                                 <div key={row.id} className="p-5 rounded-2xl bg-white/70 dark:bg-white/[0.03] border border-slate-200/50 dark:border-white/[0.06]">
                                     <div className="flex items-center gap-3 mb-4">
                                         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center text-white font-semibold">
-                                            {row.name[0].toUpperCase()}
+                                            {(row.name || row.email)[0].toUpperCase()}
                                         </div>
                                         <div>
                                             <p className="text-sm font-semibold text-slate-900 dark:text-white">{row.name}</p>

@@ -1,11 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useAuth } from '@/context/AuthContext';
 import { useBusiness } from '@/context/BusinessContext';
 
-type Member = { id: number; name: string | null; email: string; role: string; phone: string | null; permissions: Record<string, boolean>; plan_suspended?: boolean };
+type Member = {
+    id: number; name: string | null; email: string; role: string; phone: string | null;
+    permissions: Record<string, boolean>; plan_suspended?: boolean;
+    modality?: string; commission_rate?: number | null; rental_amount?: number | null;
+    rental_period?: string | null; branch_id?: number | null;
+};
 type ServiceAssignment = { id: number; name: string; duration_minutes: number; price: number; assigned: boolean };
 
 const PERMISSION_DEFS = [
@@ -39,10 +45,11 @@ function Toggle({ checked, onChange, disabled }: { checked: boolean; onChange: (
         <button
             onClick={onChange}
             disabled={disabled}
+            aria-pressed={checked}
             style={{
                 position: 'relative', width: 40, height: 22, borderRadius: 11,
                 border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', flexShrink: 0,
-                background: checked ? 'var(--accent)' : 'rgba(255,255,255,.12)',
+                background: checked ? 'var(--accent)' : 'var(--line-strong, rgba(0,0,0,0.18))',
                 opacity: disabled ? 0.5 : 1,
                 transition: 'background .25s',
             }}
@@ -51,7 +58,7 @@ function Toggle({ checked, onChange, disabled }: { checked: boolean; onChange: (
                 position: 'absolute', top: 3, left: 3,
                 width: 16, height: 16, borderRadius: '50%',
                 background: '#fff', display: 'block',
-                transform: checked ? 'translateX(18px)' : undefined,
+                transform: checked ? 'translateX(18px)' : 'translateX(0)',
                 transition: 'transform .25s',
             }} />
         </button>
@@ -59,8 +66,14 @@ function Toggle({ checked, onChange, disabled }: { checked: boolean; onChange: (
 }
 
 export default function TeamPage() {
-    const { token } = useAuth();
+    const { token, role, profileLoading } = useAuth();
+    const router = useRouter();
     const { business } = useBusiness();
+
+    useEffect(() => {
+        if (profileLoading) return;
+        if (role === 'employee') router.replace('/dashboard');
+    }, [role, profileLoading, router]);
     const plan = (business?.subscription_plan ?? 'gratis') as string;
     const employeeLimit = EMPLOYEE_LIMITS[plan] ?? 1;
     const [members, setMembers] = useState<Member[]>([]);

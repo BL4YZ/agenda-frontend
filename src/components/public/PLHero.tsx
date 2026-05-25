@@ -1,3 +1,6 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import type { Shop, BusinessHour } from '@/types/public';
 
 const CalIcon = () => (
@@ -11,12 +14,14 @@ const PhoneIcon = () => (
   </svg>
 );
 
-function getOpenStatus(hours: BusinessHour[]): { open: boolean; label: string } {
-  const today = hours.find(h => h.is_today);
-  if (!today || today.is_closed || !today.open_time || !today.close_time) {
+function getOpenStatus(hours: BusinessHour[]): { open: boolean; label: string } | null {
+  if (!hours.length) return null;
+  const now = new Date();
+  const today = hours.find(h => h.day_of_week === now.getDay());
+  if (!today) return null;
+  if (today.is_closed || !today.open_time || !today.close_time) {
     return { open: false, label: 'Cerrado hoy' };
   }
-  const now = new Date();
   const cur = now.getHours() * 60 + now.getMinutes();
   const [oh, om] = today.open_time.split(':').map(Number);
   const [ch, cm] = today.close_time.split(':').map(Number);
@@ -33,7 +38,12 @@ interface Props {
 }
 
 export default function PLHero({ shop, onReserve }: Props) {
-  const status = getOpenStatus(shop.hours);
+  const [status, setStatus] = useState<{ open: boolean; label: string } | null>(null);
+
+  useEffect(() => {
+    setStatus(getOpenStatus(shop.hours));
+  }, [shop.hours]);
+
   const titleWords = shop.tagline ? shop.tagline.split(' ') : [shop.name];
   const titleHead = titleWords.slice(0, -1).join(' ');
   const titleTail = titleWords.slice(-1)[0];
@@ -103,16 +113,18 @@ export default function PLHero({ shop, onReserve }: Props) {
                   </span>
                 </div>
               )}
-              <div className="pl-hero__meta-item">
-                <span className="pl-hero__meta-label">Estado</span>
-                <span
-                  className={`pl-hero__meta-val${status.open ? ' pl-hero__meta-val--green' : ''}`}
-                  style={status.open ? undefined : { color: 'rgba(255,255,255,0.4)', fontSize: '14px' }}
-                  aria-label={status.label}
-                >
-                  {status.open ? '● ' : '○ '}{status.label}
-                </span>
-              </div>
+              {status && (
+                <div className="pl-hero__meta-item">
+                  <span className="pl-hero__meta-label">Estado</span>
+                  <span
+                    className={`pl-hero__meta-val${status.open ? ' pl-hero__meta-val--green' : ''}`}
+                    style={status.open ? undefined : { color: 'rgba(255,255,255,0.4)', fontSize: '14px' }}
+                    aria-label={status.label}
+                  >
+                    {status.open ? '● ' : '○ '}{status.label}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>

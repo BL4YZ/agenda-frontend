@@ -79,12 +79,14 @@ export interface Shop {
   whatsapp?: string;
   instagram_url?: string;
   tiktok_url?: string;
+  facebook_url?: string;
   rating?: number | null;
   review_count?: number;
   logo_url?: string | null;
   cover_url?: string | null;
   about_image_url?: string | null;
   about_quote?: string;
+  about_hidden?: boolean;
   theme: ShopTheme;
   font?: ShopFont;
   plan: ShopPlan;

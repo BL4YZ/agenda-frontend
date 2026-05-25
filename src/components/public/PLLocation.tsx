@@ -1,3 +1,6 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import type { Shop, BusinessHour } from '@/types/public';
 
 const PinIcon = () => (
@@ -106,6 +109,8 @@ function MapEmbed({ shop }: { shop: Props['shop'] }) {
 }
 
 export default function PLLocation({ shop, hours }: Props) {
+  const [todayDow, setTodayDow] = useState<number | null>(null);
+  useEffect(() => { setTodayDow(new Date().getDay()); }, []);
   const mapsUrl = shop.address
     ? `https://maps.google.com/?q=${encodeURIComponent(shop.address)}`
     : null;
@@ -153,7 +158,7 @@ export default function PLLocation({ shop, hours }: Props) {
                     {hours.map((h, i) => (
                       <div
                         key={i}
-                        className={`pl-hours__row${h.is_today ? ' is-today' : ''}${h.is_closed ? ' is-closed' : ''}`}
+                        className={`pl-hours__row${todayDow !== null && h.day_of_week === todayDow ? ' is-today' : ''}${h.is_closed ? ' is-closed' : ''}`}
                       >
                         <span className="pl-hours__day">{h.day_label}</span>
                         <span className="pl-hours__val">

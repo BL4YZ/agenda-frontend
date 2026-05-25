@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { format, addDays } from 'date-fns';
+import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import axios from 'axios';
 import type { Shop, Service } from '@/types/public';
@@ -65,7 +65,7 @@ export default function PLReserveModal({ open, onClose, shop, initialServiceId, 
   const [svc, setSvc] = useState<Service | null>(null);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [employeeId, setEmployeeId] = useState<number | ''>('');
-  const [weekOffset, setWeekOffset] = useState(0);
+  const [monthOffset, setMonthOffset] = useState(0);
   const [selectedDate, setSelectedDate] = useState('');
   const [slots, setSlots] = useState<string[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
@@ -91,7 +91,7 @@ export default function PLReserveModal({ open, onClose, shop, initialServiceId, 
     if (!open) {
       // reset state when closed
       setStep(0); setSvc(null); setEmployees([]); setEmployeeId('');
-      setWeekOffset(0); setSelectedDate(''); setSlots([]); setSlot('');
+      setMonthOffset(0); setSelectedDate(''); setSlots([]); setSlot('');
       setClientName(''); setClientPhone(''); setClientEmail('');
       setSubmitting(false); setError(''); setPaymentMethod('');
     }
@@ -156,9 +156,16 @@ export default function PLReserveModal({ open, onClose, shop, initialServiceId, 
   }, [svc, employeeId, shop.slug]);
 
   const today = new Date(); today.setHours(0, 0, 0, 0);
-  const dow = today.getDay(); // 0=Sun
-  const monday = addDays(today, dow === 0 ? -6 : 1 - dow);
-  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(monday, i + weekOffset * 7));
+
+  // Monthly calendar
+  const firstOfMonth = new Date(today.getFullYear(), today.getMonth() + monthOffset, 1);
+  const daysInMonth  = new Date(today.getFullYear(), today.getMonth() + monthOffset + 1, 0).getDate();
+  const firstDow     = (firstOfMonth.getDay() + 6) % 7; // Mon=0 … Sun=6
+  const calendarDays: (Date | null)[] = [
+    ...Array.from({ length: firstDow }, () => null),
+    ...Array.from({ length: daysInMonth }, (_, i) => new Date(firstOfMonth.getFullYear(), firstOfMonth.getMonth(), i + 1)),
+  ];
+  while (calendarDays.length % 7 !== 0) calendarDays.push(null);
 
   const handleSubmit = async () => {
     if (!svc || !selectedDate || !slot || !clientName || !clientPhone) return;
@@ -276,21 +283,21 @@ export default function PLReserveModal({ open, onClose, shop, initialServiceId, 
               </div>
             )}
 
-            {/* Week nav */}
+            {/* Month nav */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
               <button
                 style={{ background: 'none', border: 'none', color: 'var(--pl-fg)', cursor: 'pointer', padding: 4, borderRadius: 8 }}
-                disabled={weekOffset === 0}
-                onClick={() => { setWeekOffset(w => Math.max(0, w - 1)); setSelectedDate(''); setSlots([]); setSlot(''); }}
-                aria-label="Semana anterior"
+                disabled={monthOffset === 0}
+                onClick={() => { setMonthOffset(m => Math.max(0, m - 1)); setSelectedDate(''); setSlots([]); setSlot(''); }}
+                aria-label="Mes anterior"
               >‹</button>
-              <span style={{ fontFamily: 'var(--pl-font-mono)', fontSize: 11, color: 'var(--pl-fg-mute)' }}>
-                {format(weekDays[0], "d MMM", { locale: es })} – {format(weekDays[6], "d MMM yyyy", { locale: es })}
+              <span style={{ fontFamily: 'var(--pl-font-mono)', fontSize: 11, color: 'var(--pl-fg-mute)', textTransform: 'capitalize' }}>
+                {format(firstOfMonth, "MMMM yyyy", { locale: es })}
               </span>
               <button
                 style={{ background: 'none', border: 'none', color: 'var(--pl-fg)', cursor: 'pointer', padding: 4, borderRadius: 8 }}
-                onClick={() => { setWeekOffset(w => w + 1); setSelectedDate(''); setSlots([]); setSlot(''); }}
-                aria-label="Semana siguiente"
+                onClick={() => { setMonthOffset(m => m + 1); setSelectedDate(''); setSlots([]); setSlot(''); }}
+                aria-label="Mes siguiente"
               >›</button>
             </div>
 
@@ -302,9 +309,10 @@ export default function PLReserveModal({ open, onClose, shop, initialServiceId, 
                   padding: '4px 0', fontFamily: 'var(--pl-font-mono)', letterSpacing: '0.12em',
                 }} aria-hidden="true">{d}</div>
               ))}
-              {weekDays.map(day => {
+              {calendarDays.map((day, i) => {
+                if (!day) return <div key={`empty-${i}`} />;
                 const dateStr = format(day, 'yyyy-MM-dd');
-                const isPast = day < today;
+                const isPast   = day < today;
                 const isSunday = day.getDay() === 0;
                 const isSelected = selectedDate === dateStr;
                 return (

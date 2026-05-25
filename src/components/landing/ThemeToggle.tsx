@@ -30,7 +30,8 @@ export default function ThemeToggle({ rootRef }: ThemeToggleProps) {
   return (
     <button
       onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
-      aria-label="Toggle theme"
+      aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+      aria-pressed={theme === 'dark'}
       style={{
         width: 40, height: 40, borderRadius: '50%',
         display: 'inline-flex', alignItems: 'center', justifyContent: 'center',

@@ -20,10 +20,14 @@ type Business = {
     logo_url?: string | null;
     brand_color?: string | null;
     subscription_plan: 'gratis' | 'pro' | 'negocio';
-    subscription_status: 'active' | 'pending' | 'paused' | 'cancelled';
+    subscription_status: 'active' | 'pending' | 'paused' | 'cancelled' | 'expired';
     subscription_ends_at?: string | null;
     pending_plan?: 'pro' | 'negocio' | null;
     feature_flags?: { bookingEnabled?: boolean; [key: string]: unknown };
+    address?: string | null;
+    phone?: string | null;
+    whatsapp?: string | null;
+    lede?: string | null;
 };
 
 // ── SVG Icons ─────────────────────────────────────────────────────────────────
@@ -80,7 +84,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void 
 // ── BusinessTypeSection ───────────────────────────────────────────────────────
 function BusinessTypeSection() {
     const { business, featureFlags, updateBusiness } = useBusiness();
-    const isPro = (business?.subscription_plan === 'pro' || business?.subscription_plan === 'negocio');
+    const isPro = (business?.subscription_plan === 'pro' || business?.subscription_plan === 'negocio') && business?.subscription_status !== 'expired';
     const [localType, setLocalType]   = useState<BusinessType | ''>(business?.business_type ?? '');
     const [localFlags, setLocalFlags] = useState({ ...featureFlags });
     const [saving, setSaving]         = useState(false);
@@ -127,8 +131,8 @@ function BusinessTypeSection() {
                             <button key={t.value} onClick={() => applyPreset(t.value)}
                                 style={{
                                     display:'flex', alignItems:'center', gap:8, padding:'10px 12px',
-                                    borderRadius:10, border:`1px solid ${active ? 'var(--accent)' : 'var(--line)'}`,
-                                    background: active ? 'oklch(0.25 0.08 290 / 0.4)' : 'transparent',
+                                    borderRadius:10, border:`1.5px solid ${active ? 'var(--accent)' : 'var(--line-strong)'}`,
+                                    background: active ? 'oklch(from var(--accent) l c h / 0.12)' : 'var(--glass-bg)',
                                     color: active ? 'var(--accent)' : 'var(--fg-2)',
                                     fontSize:12, fontWeight:500, textAlign:'left', cursor:'pointer',
                                     transition:'all .2s',
@@ -191,6 +195,14 @@ function SettingsContent() {
     const [error, setError] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [loadingBusiness, setLoadingBusiness] = useState(true);
+
+    // Redirect removed employees (business_id = NULL → GET /businesses/me returns null)
+    useEffect(() => {
+        if (loadingBusiness || profileLoading) return;
+        if (!business && role === 'employee') {
+            router.replace('/dashboard');
+        }
+    }, [business, loadingBusiness, profileLoading, role, router]);
     const [mpStatus, setMpStatus] = useState<'idle' | 'connected' | 'error'>('idle');
 
     const [paymentMode, setPaymentMode] = useState<'disabled' | 'deposit' | 'full'>('disabled');
@@ -202,6 +214,15 @@ function SettingsContent() {
     const [paymentSaved, setPaymentSaved] = useState(false);
     const [manualToken, setManualToken] = useState('');
     const [savingToken, setSavingToken] = useState(false);
+
+    const [bizName, setBizName] = useState('');
+    const [bizAddress, setBizAddress] = useState('');
+    const [bizPhone, setBizPhone] = useState('');
+    const [bizWhatsapp, setBizWhatsapp] = useState('');
+    const [bizLede, setBizLede] = useState('');
+    const [savingInfo, setSavingInfo] = useState(false);
+    const [infoSaved, setInfoSaved] = useState(false);
+    const [infoError, setInfoError] = useState('');
 
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deletePassword, setDeletePassword] = useState('');
@@ -227,6 +248,11 @@ function SettingsContent() {
                     setAllowCash(!!res.data.allow_cash);
                     setAllowTransfer(!!res.data.allow_transfer);
                     setTransferInfo(res.data.transfer_info || '');
+                    setBizName(res.data.name || '');
+                    setBizAddress(res.data.address || '');
+                    setBizPhone(res.data.phone || '');
+                    setBizWhatsapp(res.data.whatsapp || '');
+                    setBizLede(res.data.lede || '');
                     localStorage.setItem('business_slug', res.data.slug);
                     localStorage.setItem('business_name', res.data.name);
                     localStorage.setItem('business_id', String(res.data.id));
@@ -293,6 +319,28 @@ function SettingsContent() {
         finally { setSavingPayment(false); }
     };
 
+    const handleSaveInfo = async () => {
+        if (!bizName.trim() || bizName.trim().length < 2) {
+            setInfoError('El nombre debe tener al menos 2 caracteres.');
+            return;
+        }
+        setInfoError('');
+        setSavingInfo(true);
+        try {
+            await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/me`,
+                { name: bizName.trim(), address: bizAddress || null, phone: bizPhone || null, whatsapp: bizWhatsapp || null, lede: bizLede || null },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setBusiness(prev => prev ? { ...prev, name: bizName.trim(), address: bizAddress || null, phone: bizPhone || null, whatsapp: bizWhatsapp || null, lede: bizLede || null } : prev);
+            localStorage.setItem('business_name', bizName.trim());
+            setInfoSaved(true);
+            setTimeout(() => setInfoSaved(false), 2000);
+        } catch (err: unknown) {
+            if (axios.isAxiosError(err)) setInfoError(err.response?.data?.message || 'Error al guardar.');
+            else setInfoError('Error al guardar.');
+        } finally { setSavingInfo(false); }
+    };
+
     const handleDeleteAccount = async () => {
         setDeleteError('');
         setDeleting(true);
@@ -312,7 +360,7 @@ function SettingsContent() {
 
     const plan       = business?.subscription_plan ?? 'gratis';
     const planMeta   = PLAN_META[plan] ?? PLAN_META.gratis;
-    const isPro      = plan === 'pro' || plan === 'negocio';
+    const isPro      = (plan === 'pro' || plan === 'negocio') && business?.subscription_status !== 'expired';
 
     if (loadingBusiness) {
         return (
@@ -395,6 +443,69 @@ function SettingsContent() {
                 </div>
             ) : (
                 <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+                    {/* Información del negocio */}
+                    <div className="gcard">
+                        <div className="gcard__head">
+                            <h3 className="gcard__title">Información del negocio</h3>
+                        </div>
+                        <div className="gcard__body" style={{ display:'flex', flexDirection:'column', gap:14 }}>
+                            <div className="fg-field">
+                                <span className="fg-field__label">Nombre del negocio</span>
+                                <input
+                                    value={bizName}
+                                    onChange={e => setBizName(e.target.value)}
+                                    className="fg-field__input"
+                                    placeholder="Ej: Barbería Nova"
+                                    minLength={2}
+                                />
+                            </div>
+                            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+                                <div className="fg-field">
+                                    <span className="fg-field__label">Teléfono</span>
+                                    <input
+                                        value={bizPhone}
+                                        onChange={e => setBizPhone(e.target.value)}
+                                        className="fg-field__input"
+                                        placeholder="+598 99 123 456"
+                                    />
+                                </div>
+                                <div className="fg-field">
+                                    <span className="fg-field__label">WhatsApp</span>
+                                    <input
+                                        value={bizWhatsapp}
+                                        onChange={e => setBizWhatsapp(e.target.value)}
+                                        className="fg-field__input"
+                                        placeholder="+598 99 123 456"
+                                    />
+                                </div>
+                            </div>
+                            <div className="fg-field">
+                                <span className="fg-field__label">Dirección</span>
+                                <input
+                                    value={bizAddress}
+                                    onChange={e => setBizAddress(e.target.value)}
+                                    className="fg-field__input"
+                                    placeholder="Av. 18 de Julio 1234, Montevideo"
+                                />
+                            </div>
+                            <div className="fg-field">
+                                <span className="fg-field__label">Descripción del negocio</span>
+                                <textarea
+                                    value={bizLede}
+                                    onChange={e => setBizLede(e.target.value)}
+                                    className="fg-field__input"
+                                    placeholder="Contá brevemente qué hacés y qué te diferencia..."
+                                    rows={3}
+                                    style={{ resize:'vertical' }}
+                                />
+                            </div>
+                            {infoError && <p style={{ fontSize:12, color:'oklch(0.65 0.22 25)' }}>{infoError}</p>}
+                            <button onClick={handleSaveInfo} disabled={savingInfo} className="dbtn dbtn--primary" style={{ width:'100%', justifyContent:'center', padding:12 }}>
+                                {infoSaved ? <>{IcoCheck}<span>Guardado</span></> : savingInfo ? 'Guardando…' : 'Guardar información'}
+                            </button>
+                        </div>
+                    </div>
+
                     <BusinessTypeSection />
 
                         {/* Payments */}

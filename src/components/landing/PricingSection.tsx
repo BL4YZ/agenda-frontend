@@ -22,11 +22,16 @@ function Tooltip({ text }: { text: string }) {
   return (
     <span
       ref={ref}
+      role="button"
+      tabIndex={0}
+      aria-label={`Más información: ${text}`}
       style={{ display: 'inline-flex', alignItems: 'center', marginLeft: 4, cursor: 'help' }}
       onMouseEnter={show}
       onMouseLeave={() => setPos(null)}
+      onFocus={show}
+      onBlur={() => setPos(null)}
     >
-      <span style={{
+      <span aria-hidden="true" style={{
         width: 14, height: 14, borderRadius: '50%',
         border: '1px solid currentColor',
         display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
@@ -68,13 +73,19 @@ function FeatureItem({ feature }: { feature: PlanFeature }) {
       opacity: feature.available ? 1 : 0.45,
     }}>
       {feature.available ? (
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ flexShrink: 0, color: 'var(--accent)' }}>
-          <path d="M20 6L9 17l-5-5" />
-        </svg>
+        <>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ flexShrink: 0, color: 'var(--accent)' }} aria-hidden="true">
+            <path d="M20 6L9 17l-5-5" />
+          </svg>
+          <span className="sr-only">Incluido: </span>
+        </>
       ) : (
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ flexShrink: 0 }}>
-          <path d="M18 6L6 18M6 6l12 12" />
-        </svg>
+        <>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ flexShrink: 0 }} aria-hidden="true">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+          <span className="sr-only">No incluido: </span>
+        </>
       )}
       <span style={{ flex: 1 }}>{feature.label}</span>
       {feature.tooltip && <Tooltip text={feature.tooltip} />}
@@ -131,6 +142,7 @@ export default function PricingSection() {
         <div style={{ textAlign: 'center', marginTop: 28 }}>
           <button
             onClick={() => setExpanded(e => !e)}
+            aria-expanded={expanded}
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 8,
               padding: '10px 24px', borderRadius: 100,
@@ -143,9 +155,9 @@ export default function PricingSection() {
             onMouseLeave={e => { e.currentTarget.style.background = 'var(--glass-bg)'; e.currentTarget.style.transform = 'none'; }}
           >
             {expanded ? (
-              <>↑ Ver menos funcionalidades</>
+              <><span aria-hidden="true">↑ </span>Ver menos funcionalidades</>
             ) : (
-              <>↓ Comparar todas las funcionalidades</>
+              <><span aria-hidden="true">↓ </span>Comparar todas las funcionalidades</>
             )}
           </button>
         </div>

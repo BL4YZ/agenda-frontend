@@ -296,6 +296,9 @@ export default function AnalyticsPage() {
     const { token, role, permissions, profileLoading } = useAuth();
     const router = useRouter();
     const [mounted, setMounted] = useState(false);
+    const [businessFetchDone, setBusinessFetchDone] = useState(false);
+    const [business, setBusiness] = useState<Business | null>(null);
+    const [employees, setEmployees] = useState<Employee[]>([]);
 
     useEffect(() => {
         if (profileLoading) return;
@@ -304,8 +307,13 @@ export default function AnalyticsPage() {
         }
     }, [role, permissions, profileLoading, router]);
 
-    const [business, setBusiness] = useState<Business | null>(null);
-    const [employees, setEmployees] = useState<Employee[]>([]);
+    // Redirect removed employees (business_id = NULL → GET /businesses/me returns null)
+    useEffect(() => {
+        if (!businessFetchDone || profileLoading) return;
+        if (!business && role === 'employee') {
+            router.replace('/dashboard');
+        }
+    }, [business, businessFetchDone, profileLoading, role, router]);
 
     const [periodData, setPeriodData]       = useState<PeriodData | null>(null);
     const [revenueData, setRevenueData]     = useState<RevenuePoint[]>([]);
@@ -343,8 +351,9 @@ export default function AnalyticsPage() {
 
     const plan: Plan = (business?.subscription_plan as Plan) || 'gratis';
     const brandColor = business?.brand_color || '#6366f1';
-    const isPro     = plan === 'pro' || plan === 'negocio';
-    const isNegocio = plan === 'negocio';
+    const isExpired  = business?.subscription_status === 'expired';
+    const isPro     = (plan === 'pro' || plan === 'negocio') && !isExpired;
+    const isNegocio = plan === 'negocio' && !isExpired;
     const h = { Authorization: `Bearer ${token}` };
 
     const queryParams = useCallback(() => {
@@ -359,16 +368,22 @@ export default function AnalyticsPage() {
     useEffect(() => {
         setMounted(true);
         if (!token) return;
-        Promise.all([
-            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/me`, { headers: h }),
-            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/team`, { headers: h }),
-        ]).then(([bRes, tRes]) => { setBusiness(bRes.data); setEmployees(tRes.data); }).catch(console.error);
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/me`, { headers: h })
+            .then(r => setBusiness(r.data))
+            .catch(console.error)
+            .finally(() => setBusinessFetchDone(true));
+        if (role === 'owner') {
+            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/team`, { headers: h })
+                .then(r => setEmployees(r.data))
+                .catch(console.error);
+        }
     }, [token]);
 
     const fetchData = useCallback(async () => {
         if (!token) return;
         const currentPlan = (business?.subscription_plan as Plan) || 'gratis';
-        if (currentPlan === 'gratis') { setLoadingMain(false); setLoadingCharts(false); return; }
+        const expired = business?.subscription_status === 'expired';
+        if (currentPlan === 'gratis' || expired) { setLoadingMain(false); setLoadingCharts(false); return; }
         setLoadingCharts(true);
         const p = queryParams();
         const gbp = { ...p, groupBy };
@@ -388,7 +403,7 @@ export default function AnalyticsPage() {
             setRevenueData(revRes.data);
             setEmployeeStats(empRes.data);
             setServiceStats(svcRes.data);
-            setAppointments(listRes.data);
+            setAppointments(Array.isArray(listRes.data) ? listRes.data : (listRes.data?.data ?? []));
             setHeatmapData(heatRes.data);
             setTopClients(topRes.data);
             setBranchStats(branchRes.data);

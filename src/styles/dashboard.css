@@ -750,6 +750,14 @@
   background: oklch(0.3 0.13 10 / 0.4);
   color: #fda4af;
 }
+[data-theme="light"] .kpi__delta {
+  background: rgba(22, 163, 74, 0.12);
+  color: #15803d;
+}
+[data-theme="light"] .kpi__delta--down {
+  background: rgba(220, 38, 38, 0.1);
+  color: #b91c1c;
+}
 
 /* ---------- Insight chips ---------- */
 .insights {
@@ -1475,7 +1483,49 @@
 /* ---------- FullCalendar overrides for new theme ---------- */
 .dash-fc-wrap {
   margin: 0 24px 24px;
+  padding: 20px;
+  border-radius: 20px;
+  border: 2px solid oklch(0.35 0.04 280 / 0.22);
+  overflow: visible;
+  /* Las celdas internas del calendar tienen sus propios fondos;
+     no necesitamos clip aquí y overflow:hidden cortaba el mirror del drag */
 }
+
+/* Mirror (ghost) — FullCalendar lo añade a document.body, no a .dash-fc-wrap */
+.fc-event-mirror {
+  opacity: 0.85 !important;
+  visibility: visible !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important;
+  z-index: 9999 !important;
+  pointer-events: none !important;
+}
+
+/* El evento original se oscurece levemente mientras se arrastra */
+.fc-event-dragging:not(.fc-event-mirror) {
+  opacity: 0.35 !important;
+}
+
+/* Celda de destino al hacer hover durante el drag */
+.dash-fc-wrap .fc-highlight {
+  background: oklch(0.55 0.18 280 / 0.15) !important;
+  border-radius: 6px;
+}
+[data-theme="light"] .dash-fc-wrap {
+  border-color: rgba(0, 0, 0, 0.1);
+  background: #fff;
+}
+[data-theme="light"] .dash-modal {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.15);
+}
+[data-theme="light"] .dash-modal-overlay {
+  background: rgba(0, 0, 0, 0.3);
+}
+.dash-fc-wrap .fc-view-harness {
+  border-radius: 12px;
+}
+
 .dash-fc-wrap .fc {
   --fc-border-color: oklch(0.35 0.04 280 / 0.18);
   --fc-today-bg-color: oklch(0.65 0.2 290 / 0.08);
@@ -1736,6 +1786,16 @@
   background: rgba(255, 255, 255, 0.9);
   border-color: rgba(0, 0, 0, 0.1);
   color: var(--fg-0);
+}
+
+/* Light mode: branch cards */
+[data-theme="light"] .suc__pin {
+  background: rgba(109, 40, 217, 0.08);
+  border-color: rgba(109, 40, 217, 0.14);
+}
+[data-theme="light"] .suc__chip {
+  background: rgba(255, 255, 255, 0.75);
+  border-color: rgba(90, 75, 150, 0.14);
 }
 
 /* Light mode: table */
@@ -2113,4 +2173,47 @@
     transform: none;
     order: -1;
   }
+}
+
+/* ── Pricing light-mode overrides ────────────────────────────────────────── */
+[data-theme="light"] .pricing-card {
+  background: #ffffff;
+  border-color: var(--plan-border, rgba(0,0,0,0.1));
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+[data-theme="light"] .pricing-card--featured {
+  box-shadow: 0 0 0 2px var(--plan-border), 0 16px 48px rgba(0,0,0,0.12);
+}
+
+[data-theme="light"] .pricing-card--current {
+  box-shadow: 0 0 0 2px var(--plan-border), 0 1px 4px rgba(0,0,0,0.06);
+}
+
+[data-theme="light"] .pricing-card__icon {
+  background: var(--plan-accent, rgba(0,0,0,0.04));
+  border-color: var(--plan-border, rgba(0,0,0,0.1));
+}
+
+[data-theme="light"] .pricing-card__trial {
+  background: var(--plan-accent, rgba(0,0,0,0.04));
+  border-color: var(--plan-border, rgba(0,0,0,0.1));
+}
+
+[data-theme="light"] .pricing-feat {
+  border-bottom-color: rgba(0,0,0,0.06);
+}
+
+[data-theme="light"] .pricing-feat--off {
+  color: rgba(0,0,0,0.3);
+}
+
+[data-theme="light"] .pricing-feat__icon {
+  background: rgba(220,38,38,0.08);
+  color: rgba(0,0,0,0.3);
+}
+
+[data-theme="light"] .pricing-feat:not(.pricing-feat--off) .pricing-feat__icon {
+  background: rgba(22,163,74,0.1);
+  color: #16a34a;
 }

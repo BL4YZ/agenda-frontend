@@ -70,8 +70,9 @@ export default function LoginScreen() {
         password: pwd,
       });
       if (res.data.token) login(res.data.token, remember);
-    } catch {
-      setServerError('Credenciales inválidas. Por favor intentá de nuevo.');
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      setServerError(msg ?? 'Credenciales inválidas. Por favor intentá de nuevo.');
     } finally {
       setLoading(false);
     }

@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useSearchParams } from 'next/navigation';
 import axios from 'axios';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useAuth } from '@/context/AuthContext';
 
@@ -21,6 +21,20 @@ type Appointment = {
     amount_paid?: string;
     employee_name?: string;
 };
+
+// date-fns format() uses the browser's local timezone; this shifts an ISO string
+// to a "wall-clock" Date in America/Montevideo so HH:mm renders the correct local hour.
+function parseInMVD(iso: string): Date {
+    const d = new Date(iso);
+    const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/Montevideo',
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        hour12: false,
+    }).formatToParts(d);
+    const get = (t: string) => parseInt(parts.find(p => p.type === t)?.value ?? '0');
+    return new Date(get('year'), get('month') - 1, get('day'), get('hour') % 24, get('minute'), get('second'));
+}
 
 const METHOD_LABEL: Record<string, string> = {
     mercadopago: 'MercadoPago',
@@ -201,6 +215,13 @@ export default function AppointmentsPage() {
         return () => document.removeEventListener('mousedown', handler);
     }, []);
 
+    // Re-apply active status filter after optimistic updates so changed rows
+    // disappear from the filtered view without needing a full refetch.
+    const filteredAppointments = useMemo(
+        () => status === 'all' ? appointments : appointments.filter(a => a.payment_status === status),
+        [appointments, status]
+    );
+
     const title = status === 'paid'         ? 'Señas cobradas'
         : status === 'full_payment'          ? 'Pagos completos'
         : status === 'pending'               ? 'Pagos pendientes'
@@ -248,7 +269,7 @@ export default function AppointmentsPage() {
                     </div>
                     <h1 className="dash-page__title">{title}</h1>
                     <p className="dash-page__sub">
-                        {appointments.length} resultado{appointments.length !== 1 ? 's' : ''}
+                        {filteredAppointments.length} resultado{filteredAppointments.length !== 1 ? 's' : ''}
                     </p>
                 </div>
             </div>
@@ -362,24 +383,24 @@ export default function AppointmentsPage() {
                         </div>
                     ))}
                 </div>
-            ) : appointments.length === 0 ? (
+            ) : filteredAppointments.length === 0 ? (
                 <div className="empty">No hay citas con los filtros seleccionados.</div>
             ) : (
                 <>
                     {/* Mobile: cards */}
                     <div className="dtable-mobile">
-                        {appointments.map(appt => {
+                        {filteredAppointments.map(appt => {
                             const amount = formatAmount(appt);
                             return (
                                 <div key={appt.id} className="gcard" style={{ padding: '16px 18px' }}>
                                     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 10 }}>
                                         <div>
                                             <p style={{ fontWeight: 600, fontSize: 14, color: 'var(--fg-0)', textTransform: 'capitalize' }}>
-                                                {format(parseISO(appt.start), "EEEE d 'de' MMMM", { locale: es })}
+                                                {format(parseInMVD(appt.start), "EEEE d 'de' MMMM", { locale: es })}
                                             </p>
                                             <p style={{ fontSize: 12, color: 'var(--fg-3)', display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
                                                 {IcoClock}
-                                                {format(parseISO(appt.start), 'HH:mm')} – {format(parseISO(appt.end), 'HH:mm')}
+                                                {format(parseInMVD(appt.start), 'HH:mm')} – {format(parseInMVD(appt.end), 'HH:mm')}
                                             </p>
                                         </div>
                                         <button
@@ -449,17 +470,17 @@ export default function AppointmentsPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {appointments.map(appt => {
+                                {filteredAppointments.map(appt => {
                                     const amount = formatAmount(appt);
                                     return (
                                         <tr key={appt.id}>
                                             <td style={{ whiteSpace: 'nowrap' }}>
                                                 <p style={{ fontWeight: 600, color: 'var(--fg-0)', textTransform: 'capitalize', fontSize: 13 }}>
-                                                    {format(parseISO(appt.start), "d 'de' MMM yyyy", { locale: es })}
+                                                    {format(parseInMVD(appt.start), "d 'de' MMM yyyy", { locale: es })}
                                                 </p>
                                                 <p style={{ fontSize: 11, color: 'var(--fg-3)', display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
                                                     {IcoClock}
-                                                    {format(parseISO(appt.start), 'HH:mm')} – {format(parseISO(appt.end), 'HH:mm')}
+                                                    {format(parseInMVD(appt.start), 'HH:mm')} – {format(parseInMVD(appt.end), 'HH:mm')}
                                                 </p>
                                             </td>
                                             <td>

@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useBusiness } from '@/context/BusinessContext';
 import ImageUpload from '@/components/ImageUpload';
@@ -11,14 +12,7 @@ import ImageUpload from '@/components/ImageUpload';
 type ShopTheme = 'violet' | 'rose' | 'green' | 'cyan' | 'amber' | 'bw';
 type ShopFont  = 'editorial' | 'playfair' | 'bebas' | 'oswald' | 'elegant' | 'dm-serif' | 'raleway' | 'modern' | 'montserrat' | 'nunito' | 'lora' | 'poppins';
 
-type Profile = {
-    tagline: string; lede: string; address: string; phone: string; whatsapp: string;
-    instagram_url: string; tiktok_url: string; theme: ShopTheme; cover_url: string;
-    about_image_url: string; about_quote: string; founded_year: string;
-};
-
 type Hour = { day_of_week: number; open_time: string; close_time: string; is_closed: boolean };
-
 type Faq     = { id: number; question: string; answer: string; sort_order: number };
 type Product = { id: number; name: string; brand: string; price: number | null; image_url: string; badge: string; description: string; is_visible: boolean };
 type Review  = { id: number; author_name: string; author_initial: string; stars: number; text: string; date_label: string; is_visible: boolean };
@@ -34,64 +28,49 @@ const THEMES: { value: ShopTheme; label: string; accent: string; bg: string; dot
     { value: 'bw',     label: 'B & N',   accent: '#e8e8e8', bg: '#080808', dot: '#c0c0c0', dark: true  },
 ];
 
-interface FontOption { value: ShopFont; label: string; family: string; sample: string }
+interface FontOption { value: ShopFont; label: string; family: string }
 interface FontGroup  { label: string; hint: string; fonts: FontOption[] }
 
 const FONT_GROUPS: FontGroup[] = [
-    {
-        label: 'Editorial',
-        hint:  'Peluquerías, tatuajes, fotografía, arte',
-        fonts: [
-            { value: 'editorial',  label: 'Editorial',  family: '"Fraunces", Georgia, serif',              sample: 'Aa' },
-            { value: 'playfair',   label: 'Playfair',   family: '"Playfair Display", Georgia, serif',       sample: 'Aa' },
-            { value: 'dm-serif',   label: 'DM Serif',   family: '"DM Serif Display", Georgia, serif',       sample: 'Aa' },
-            { value: 'lora',       label: 'Lora',       family: '"Lora", Georgia, serif',                   sample: 'Aa' },
-        ],
-    },
-    {
-        label: 'Elegante',
-        hint:  'Spas, nail bars, estética, boda',
-        fonts: [
-            { value: 'elegant',    label: 'Elegante',   family: '"Cormorant Garamond", Georgia, serif',     sample: 'Aa' },
-            { value: 'raleway',    label: 'Raleway',    family: '"Raleway", sans-serif',                    sample: 'Aa' },
-        ],
-    },
-    {
-        label: 'Moderna',
-        hint:  'Gym, clínicas, tech, coworking',
-        fonts: [
-            { value: 'modern',     label: 'Moderna',    family: '"Inter Tight", system-ui, sans-serif',     sample: 'Aa' },
-            { value: 'montserrat', label: 'Montserrat', family: '"Montserrat", sans-serif',                  sample: 'Aa' },
-            { value: 'oswald',     label: 'Oswald',     family: '"Oswald", sans-serif',                     sample: 'Aa' },
-            { value: 'bebas',      label: 'Bebas',      family: '"Bebas Neue", sans-serif',                  sample: 'Aa' },
-        ],
-    },
-    {
-        label: 'Cálida',
-        hint:  'Cafés, restaurantes, tiendas locales',
-        fonts: [
-            { value: 'poppins',    label: 'Poppins',    family: '"Poppins", sans-serif',                    sample: 'Aa' },
-            { value: 'nunito',     label: 'Nunito',     family: '"Nunito", sans-serif',                     sample: 'Aa' },
-        ],
-    },
+    { label: 'Editorial', hint: 'Peluquerías, tatuajes, fotografía', fonts: [
+        { value: 'editorial',  label: 'Editorial',  family: '"Fraunces", Georgia, serif' },
+        { value: 'playfair',   label: 'Playfair',   family: '"Playfair Display", Georgia, serif' },
+        { value: 'dm-serif',   label: 'DM Serif',   family: '"DM Serif Display", Georgia, serif' },
+        { value: 'lora',       label: 'Lora',       family: '"Lora", Georgia, serif' },
+    ]},
+    { label: 'Elegante', hint: 'Spas, nail bars, estética', fonts: [
+        { value: 'elegant',    label: 'Elegante',   family: '"Cormorant Garamond", Georgia, serif' },
+        { value: 'raleway',    label: 'Raleway',    family: '"Raleway", sans-serif' },
+    ]},
+    { label: 'Moderna', hint: 'Gym, clínicas, coworking', fonts: [
+        { value: 'modern',     label: 'Moderna',    family: '"Inter Tight", system-ui, sans-serif' },
+        { value: 'montserrat', label: 'Montserrat', family: '"Montserrat", sans-serif' },
+        { value: 'oswald',     label: 'Oswald',     family: '"Oswald", sans-serif' },
+        { value: 'bebas',      label: 'Bebas',      family: '"Bebas Neue", sans-serif' },
+    ]},
+    { label: 'Cálida', hint: 'Cafés, restaurantes, locales', fonts: [
+        { value: 'poppins',    label: 'Poppins',    family: '"Poppins", sans-serif' },
+        { value: 'nunito',     label: 'Nunito',     family: '"Nunito", sans-serif' },
+    ]},
 ];
 
-const TABS = ['Perfil', 'Tema', 'Horarios', 'FAQs', 'Productos', 'Reseñas', 'Sucursales', 'Galería', 'Equipo'] as const;
+const TABS = ['Identidad', 'Diseño', 'Contacto', 'Horarios', 'FAQs', 'Productos', 'Reseñas', 'Galería', 'Equipo', 'Sucursales'] as const;
 type Tab = typeof TABS[number];
 
 const PLAN_RANK = { gratis: 0, pro: 1, negocio: 2 } as const;
 type PlanKey = keyof typeof PLAN_RANK;
 
 const TAB_PLAN: Record<Tab, PlanKey> = {
-    'Perfil':      'gratis',
-    'Tema':        'gratis',
-    'Horarios':    'gratis',
-    'FAQs':        'pro',
-    'Productos':   'pro',
-    'Reseñas':     'pro',
-    'Sucursales':  'negocio',
-    'Galería':     'negocio',
-    'Equipo':      'negocio',
+    'Identidad':  'gratis',
+    'Diseño':     'gratis',
+    'Contacto':   'gratis',
+    'Horarios':   'gratis',
+    'FAQs':       'pro',
+    'Productos':  'pro',
+    'Reseñas':    'pro',
+    'Galería':    'negocio',
+    'Equipo':     'negocio',
+    'Sucursales': 'negocio',
 };
 
 // ── Inline SVG icons ──────────────────────────────────────────────────────────
@@ -102,350 +81,347 @@ const IcoPencil  = <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><
 const IcoEye     = <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1.5 6.5C2.5 4 4.3 2.5 6.5 2.5S10.5 4 11.5 6.5C10.5 9 8.7 10.5 6.5 10.5S2.5 9 1.5 6.5z" stroke="currentColor" strokeWidth="1.2"/><circle cx="6.5" cy="6.5" r="1.5" stroke="currentColor" strokeWidth="1.2"/></svg>;
 const IcoExtLink = <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M9 2h2v2M11 2L6.5 6.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/><path d="M10 7.5V10a1 1 0 01-1 1H3a1 1 0 01-1-1V4a1 1 0 011-1h2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 
-// ── Revalidate public page cache after saves ──────────────────────────────────
 async function revalidatePublicPage(slug: string) {
     if (!slug) return;
     try {
-        await fetch('/api/revalidate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ slug }),
-        });
+        await fetch('/api/revalidate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slug }) });
     } catch { /* non-critical */ }
 }
 
-// ── Field helper ──────────────────────────────────────────────────────────────
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, children, hint }: { label: React.ReactNode; children: React.ReactNode; hint?: string }) {
     return (
         <div className="fg-field">
             <span className="fg-field__label">{label}</span>
             {children}
+            {hint && <span style={{ fontSize: 11, color: 'var(--fg-3)', marginTop: 2 }}>{hint}</span>}
         </div>
     );
 }
 
-// ── SaveBar ───────────────────────────────────────────────────────────────────
 function SaveBar({ saving, saved, error, onSave, label = 'Guardar cambios' }: {
     saving: boolean; saved: boolean; error?: string; onSave: () => void; label?: string;
 }) {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 4 }}>
-            {error && (
-                <p style={{ fontSize: 12, color: '#f87171', padding: '8px 12px', borderRadius: 8, background: 'rgba(239,68,68,.08)', border: '1px solid rgba(239,68,68,.2)', margin: 0 }}>
-                    {error}
-                </p>
-            )}
-            <button
-                onClick={onSave}
-                disabled={saving}
-                className="dbtn dbtn--primary"
-                style={{ width: '100%', justifyContent: 'center', padding: 12 }}
-            >
+            {error && <p style={{ fontSize: 12, color: '#f87171', padding: '8px 12px', borderRadius: 8, background: 'rgba(239,68,68,.08)', border: '1px solid rgba(239,68,68,.2)', margin: 0 }}>{error}</p>}
+            <button onClick={onSave} disabled={saving} className="dbtn dbtn--primary" style={{ width: '100%', justifyContent: 'center', padding: 12 }}>
                 {saved ? <>{IcoCheck}<span>Guardado</span></> : saving ? 'Guardando…' : label}
             </button>
         </div>
     );
 }
 
-// ── ProfileTab ────────────────────────────────────────────────────────────────
-function ProfileTab({ token, slug }: { token: string | null; slug: string }) {
-    const empty: Profile = {
-        tagline: '', lede: '', address: '', phone: '', whatsapp: '',
-        instagram_url: '', tiktok_url: '', theme: 'violet', cover_url: '',
-        about_image_url: '', about_quote: '', founded_year: '',
-    };
-    const [form, setForm] = useState<Profile>(empty);
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
-    const [saved, setSaved] = useState(false);
-    const [saveError, setSaveError] = useState('');
+function PlanBadge({ plan }: { plan: 'pro' | 'negocio' }) {
+    const isPro = plan === 'pro';
+    return (
+        <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 99,
+            background: isPro ? 'rgba(167,139,250,.15)' : 'rgba(192,132,252,.15)',
+            color: isPro ? '#a78bfa' : '#c084fc', letterSpacing: '0.06em' }}>
+            {isPro ? 'PRO' : 'NEGOCIO'}
+        </span>
+    );
+}
+
+function LockedOverlay({ required }: { required: 'pro' | 'negocio' }) {
+    const isPro = required === 'pro';
+    const color = isPro ? '#a78bfa' : '#c084fc';
+    const bg    = isPro ? 'rgba(167,139,250,.1)' : 'rgba(192,132,252,.1)';
+    return (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 10, backdropFilter: 'blur(4px)', background: 'rgba(10,8,16,.6)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, borderRadius: 'inherit' }}>
+            <div style={{ width: 42, height: 42, borderRadius: 12, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color }}>
+                <svg width="19" height="19" viewBox="0 0 22 22" fill="none">
+                    <rect x="4" y="10" width="14" height="11" rx="2" stroke="currentColor" strokeWidth="1.5"/>
+                    <path d="M7.5 10V7.5a3.5 3.5 0 0 1 7 0V10" stroke="currentColor" strokeWidth="1.5"/>
+                </svg>
+            </div>
+            <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-0)', margin: 0 }}>Requiere plan {isPro ? 'Pro' : 'Negocio'}</p>
+            <Link href="/dashboard/settings/billing" className="dbtn dbtn--primary dbtn--sm" style={{ textDecoration: 'none' }}>Ver planes →</Link>
+        </div>
+    );
+}
+
+// ── IdentidadTab ──────────────────────────────────────────────────────────────
+function IdentidadTab({ token, slug, isPro }: { token: string | null; slug: string; isPro: boolean }) {
+    const [tagline, setTagline]       = useState('');
+    const [lede, setLede]             = useState('');
+    const [aboutQuote, setAboutQuote] = useState('');
+    const [foundedYear, setFoundedYear] = useState('');
+    const [aboutHidden, setAboutHidden] = useState(false);
+    const [coverUrl, setCoverUrl]     = useState('');
+    const [aboutImageUrl, setAboutImageUrl] = useState('');
+    const [logoUrl, setLogoUrl]       = useState('');
+    const [savedLogoUrl, setSavedLogoUrl] = useState('');
+    const [loading, setLoading]       = useState(true);
+    const [saving, setSaving]         = useState(false);
+    const [saved, setSaved]           = useState(false);
+    const [saveError, setSaveError]   = useState('');
+    const [savingLogo, setSavingLogo] = useState(false);
+    const [savedLogo, setSavedLogo]   = useState(false);
+    const [logoError, setLogoError]   = useState('');
 
     useEffect(() => {
         if (!token) return;
-        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/profile`, { headers: { Authorization: `Bearer ${token}` } })
-            .then(r => setForm({
-                tagline: r.data.tagline ?? '',
-                lede: r.data.lede ?? '',
-                address: r.data.address ?? '',
-                phone: r.data.phone ?? '',
-                whatsapp: r.data.whatsapp ?? '',
-                instagram_url: r.data.instagram_url ?? '',
-                tiktok_url: r.data.tiktok_url ?? '',
-                theme: r.data.theme ?? 'violet',
-                cover_url: r.data.cover_url ?? '',
-                about_image_url: r.data.about_image_url ?? '',
-                about_quote: r.data.about_quote ?? '',
-                founded_year: r.data.founded_year ? String(r.data.founded_year) : '',
-            }))
-            .catch(console.error)
-            .finally(() => setLoading(false));
+        Promise.all([
+            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/profile`, { headers: { Authorization: `Bearer ${token}` } }),
+            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/me`,   { headers: { Authorization: `Bearer ${token}` } }),
+        ]).then(([profileRes, bizRes]) => {
+            setTagline(profileRes.data.tagline ?? '');
+            setLede(profileRes.data.lede ?? '');
+            setAboutQuote(profileRes.data.about_quote ?? '');
+            setFoundedYear(profileRes.data.founded_year ? String(profileRes.data.founded_year) : '');
+            setAboutHidden(profileRes.data.about_hidden ?? false);
+            setCoverUrl(profileRes.data.cover_url ?? '');
+            setAboutImageUrl(profileRes.data.about_image_url ?? '');
+            const lu = bizRes.data?.logo_url ?? '';
+            setLogoUrl(lu);
+            setSavedLogoUrl(lu);
+        }).catch(console.error).finally(() => setLoading(false));
     }, [token]);
 
-    const set = (k: keyof Profile) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-        setForm(f => ({ ...f, [k]: e.target.value }));
-
     const handleSave = async () => {
-        setSaving(true);
-        setSaveError('');
+        setSaving(true); setSaveError('');
         try {
-            await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/profile`, form, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            setSaved(true);
-            setTimeout(() => setSaved(false), 2000);
+            await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/profile`,
+                { tagline, lede, about_quote: aboutQuote, founded_year: foundedYear || null, cover_url: coverUrl, about_image_url: aboutImageUrl, about_hidden: aboutHidden },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setSaved(true); setTimeout(() => setSaved(false), 2500);
             revalidatePublicPage(slug);
         } catch (err) {
-            const msg = axios.isAxiosError(err)
-                ? (err.response?.data?.message ?? `Error ${err.response?.status}: no se pudo guardar. ¿Corriste la migración 002 en Neon?`)
-                : 'Error al guardar.';
-            setSaveError(msg);
+            setSaveError(axios.isAxiosError(err) ? (err.response?.data?.message ?? 'Error al guardar.') : 'Error al guardar.');
         } finally { setSaving(false); }
     };
 
-    if (loading) return <div className="skel-page"><div className="skel-card"><span className="skel" style={{ height: 360 }} /></div></div>;
+    const handleSaveLogo = async () => {
+        setSavingLogo(true); setLogoError('');
+        try {
+            await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/me`,
+                { logo_url: logoUrl || null },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setSavedLogoUrl(logoUrl); setSavedLogo(true);
+            setTimeout(() => setSavedLogo(false), 3000);
+            revalidatePublicPage(slug);
+        } catch (err) {
+            setLogoError(axios.isAxiosError(err) ? (err.response?.data?.message ?? 'Error al guardar.') : 'Error al guardar.');
+        } finally { setSavingLogo(false); }
+    };
+
+    if (loading) return <div className="skel-page"><span className="skel" style={{ height: 380 }} /></div>;
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {/* Toggle sección Sobre nosotros */}
             <div className="gcard">
-                <div className="gcard__head"><h3 className="gcard__title">Información principal</h3></div>
+                <div className="gcard__head" style={{ justifyContent: 'space-between' }}>
+                    <div>
+                        <h3 className="gcard__title">Sección "Sobre nosotros"</h3>
+                        <span style={{ fontSize: 11, color: 'var(--fg-3)' }}>Bloque de presentación bajo el hero</span>
+                    </div>
+                    <button
+                        role="switch"
+                        aria-checked={!aboutHidden}
+                        onClick={() => setAboutHidden(v => !v)}
+                        style={{
+                            width: 44, height: 24, borderRadius: 99, border: 'none', cursor: 'pointer', flexShrink: 0,
+                            background: !aboutHidden ? 'var(--accent)' : 'var(--line)',
+                            position: 'relative', transition: 'background .2s',
+                        }}
+                    >
+                        <span style={{
+                            position: 'absolute', top: 3, left: !aboutHidden ? 23 : 3,
+                            width: 18, height: 18, borderRadius: '50%', background: 'white',
+                            transition: 'left .2s', display: 'block',
+                        }} />
+                    </button>
+                </div>
+            </div>
+
+            {/* Texto principal */}
+            <div className="gcard" style={{ opacity: aboutHidden ? 0.45 : 1, pointerEvents: aboutHidden ? 'none' : undefined, transition: 'opacity .2s' }}>
+                <div className="gcard__head"><h3 className="gcard__title">Presentación</h3></div>
                 <div className="gcard__body" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                    <Field label="Tagline (frase corta debajo del nombre)">
-                        <input className="fg-field__input" value={form.tagline} onChange={set('tagline')} placeholder="Ej: Barbería de autor en el centro" maxLength={120} />
+                    <Field label="Tagline — frase principal del hero" hint="Aparece como título grande en la portada">
+                        <input className="fg-field__input" value={tagline} onChange={e => setTagline(e.target.value)}
+                            placeholder="Ej: Barbería de autor en el centro" maxLength={120} />
                     </Field>
-                    <Field label="Lede (descripción SEO, ~150 caracteres)">
-                        <textarea className="fg-field__input" value={form.lede} onChange={set('lede')}
-                            placeholder="Ej: Cortamos, peinamos y barbamos con estilo. Reservá online."
-                            rows={3} maxLength={300} style={{ resize: 'vertical' }} />
+                    <Field label="Descripción (SEO)" hint="Texto breve para buscadores y sección 'Sobre nosotros'">
+                        <textarea className="fg-field__input" value={lede} onChange={e => setLede(e.target.value)}
+                            placeholder="Ej: Cortamos, peinamos y barbamos con estilo. Reservá online." rows={3} maxLength={300} style={{ resize: 'vertical' }} />
                     </Field>
-                    <Field label="Frase destacada (sección Sobre nosotros)">
-                        <input className="fg-field__input" value={form.about_quote} onChange={set('about_quote')} placeholder="Ej: Cada corte es una obra de arte" maxLength={200} />
+                    <Field label="Frase destacada" hint="Aparece en la sección 'Sobre nosotros' en tipografía grande">
+                        <input className="fg-field__input" value={aboutQuote} onChange={e => setAboutQuote(e.target.value)}
+                            placeholder="Ej: Cada corte es una obra de arte" maxLength={200} />
                     </Field>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                        <Field label="Año de fundación">
-                            <input className="fg-field__input" value={form.founded_year} onChange={set('founded_year')} placeholder="Ej: 2018" type="number" min={1900} max={2099} />
-                        </Field>
-                        <Field label="Dirección">
-                            <input className="fg-field__input" value={form.address} onChange={set('address')} placeholder="Ej: Av. 18 de Julio 1234" />
-                        </Field>
-                    </div>
+                    <Field label="Año de fundación">
+                        <input className="fg-field__input" value={foundedYear} onChange={e => setFoundedYear(e.target.value)}
+                            placeholder="Ej: 2018" type="number" min={1900} max={2099} style={{ maxWidth: 140 }} />
+                    </Field>
                 </div>
             </div>
 
-            <div className="gcard">
-                <div className="gcard__head"><h3 className="gcard__title">Contacto y redes</h3></div>
+            {/* Fotos */}
+            <div className="gcard" style={{ opacity: aboutHidden ? 0.45 : 1, pointerEvents: aboutHidden ? 'none' : undefined, transition: 'opacity .2s' }}>
+                <div className="gcard__head"><h3 className="gcard__title">Fotos</h3></div>
                 <div className="gcard__body" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-                    <Field label="Teléfono (llamadas)">
-                        <input className="fg-field__input" value={form.phone} onChange={set('phone')} placeholder="+598 99 123 456" />
-                    </Field>
-                    <Field label="WhatsApp (número completo)">
-                        <input className="fg-field__input" value={form.whatsapp} onChange={set('whatsapp')} placeholder="+598 99 123 456" />
-                    </Field>
-                    <Field label="URL Instagram">
-                        <input className="fg-field__input" value={form.instagram_url} onChange={set('instagram_url')} placeholder="https://instagram.com/mi_negocio" />
-                    </Field>
-                    <Field label="URL TikTok">
-                        <input className="fg-field__input" value={form.tiktok_url} onChange={set('tiktok_url')} placeholder="https://tiktok.com/@mi_negocio" />
-                    </Field>
-                </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-                <div className="gcard">
-                    <div className="gcard__head"><h3 className="gcard__title">Foto de portada</h3></div>
-                    <div className="gcard__body">
-                        <ImageUpload value={form.cover_url} onChange={url => setForm(f => ({ ...f, cover_url: url }))} previewHeight={160} />
+                    <div>
+                        <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-2)', marginBottom: 8 }}>Foto de portada</p>
+                        <p style={{ fontSize: 11, color: 'var(--fg-3)', marginBottom: 8 }}>Imagen de fondo del hero</p>
+                        <ImageUpload value={coverUrl} onChange={setCoverUrl} previewHeight={140} />
                     </div>
-                </div>
-                <div className="gcard">
-                    <div className="gcard__head"><h3 className="gcard__title">Foto "Sobre nosotros"</h3></div>
-                    <div className="gcard__body">
-                        <ImageUpload value={form.about_image_url} onChange={url => setForm(f => ({ ...f, about_image_url: url }))} previewHeight={160} />
+                    <div>
+                        <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-2)', marginBottom: 8 }}>Foto "Sobre nosotros"</p>
+                        <p style={{ fontSize: 11, color: 'var(--fg-3)', marginBottom: 8 }}>Sección de presentación</p>
+                        <ImageUpload value={aboutImageUrl} onChange={setAboutImageUrl} previewHeight={140} />
                     </div>
                 </div>
             </div>
 
             <SaveBar saving={saving} saved={saved} error={saveError} onSave={handleSave} />
+
+            {/* Logo — Pro+ */}
+            <div className="gcard" style={{ position: 'relative', overflow: 'hidden' }}>
+                {!isPro && <LockedOverlay required="pro" />}
+                <div className="gcard__head">
+                    <h3 className="gcard__title">Logo del negocio</h3>
+                    <PlanBadge plan="pro" />
+                </div>
+                <div className="gcard__body" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    <p style={{ fontSize: 12, color: 'var(--fg-2)', lineHeight: 1.65, margin: 0 }}>
+                        Aparece como ícono circular en el nav de tu página pública. Usá una imagen cuadrada (mínimo 128×128 px).
+                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div style={{ width: 52, height: 52, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', border: '2px solid var(--line)',
+                            background: 'linear-gradient(135deg,#8b5cf6,#6366f1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: 20 }}>
+                            {logoUrl ? <img src={logoUrl} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : '?'}
+                        </div>
+                        <span style={{ fontSize: 11, color: 'var(--fg-3)', lineHeight: 1.5 }}>
+                            Vista previa del ícono en el nav
+                            {savedLogoUrl !== logoUrl && <><br/><em style={{ color: '#fbbf24' }}>Sin guardar</em></>}
+                        </span>
+                    </div>
+                    <ImageUpload value={logoUrl} onChange={setLogoUrl} previewHeight={100} />
+                    {logoError && <p style={{ fontSize: 12, color: '#f87171', padding: '8px 12px', borderRadius: 8, background: 'rgba(239,68,68,.08)', border: '1px solid rgba(239,68,68,.2)', margin: 0 }}>{logoError}</p>}
+                    <SaveBar saving={savingLogo} saved={savedLogo} onSave={handleSaveLogo} label="Guardar logo" />
+                </div>
+            </div>
         </div>
     );
 }
 
-// ── ThemeTab ──────────────────────────────────────────────────────────────────
-function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
+// ── DiseñoTab ─────────────────────────────────────────────────────────────────
+function DisenoTab({ token, slug }: { token: string | null; slug: string }) {
     const { business } = useBusiness();
     const plan      = (business?.subscription_plan ?? 'gratis') as PlanKey;
-    const isNegocio = (PLAN_RANK[plan] ?? 0) >= PLAN_RANK['negocio'];
+    const isNegocio = business?.subscription_status !== 'expired' && (PLAN_RANK[plan] ?? 0) >= PLAN_RANK['negocio'];
 
-    const [selected, setSelected]       = useState<ShopTheme>('violet');
-    const [font, setFont]               = useState<ShopFont | null>(null);
-    const [brandColor, setBrandColor]   = useState<string | null>(null);  // saved value
-    const [brandInput, setBrandInput]   = useState('#6366f1');            // live input
-    const [loading, setLoading]         = useState(true);
-    const [saving, setSaving]           = useState(false);
-    const [saved, setSaved]             = useState(false);
-    const [saveError, setSaveError]     = useState('');
+    const [selected, setSelected]     = useState<ShopTheme>('violet');
+    const [font, setFont]             = useState<ShopFont | null>(null);
+    const [brandColor, setBrandColor] = useState<string | null>(null);
+    const [brandInput, setBrandInput] = useState('#6366f1');
+    const [loading, setLoading]       = useState(true);
+    const [saving, setSaving]         = useState(false);
+    const [saved, setSaved]           = useState(false);
+    const [saveError, setSaveError]   = useState('');
     const [savingBrand, setSavingBrand] = useState(false);
     const [savedBrand, setSavedBrand]   = useState(false);
     const [brandError, setBrandError]   = useState('');
-    const [logoUrl, setLogoUrl]         = useState('');
-    const [savedLogoUrl, setSavedLogoUrl] = useState('');
-    const [savingLogo, setSavingLogo]   = useState(false);
-    const [savedLogo, setSavedLogo]     = useState(false);
-    const [logoError, setLogoError]     = useState('');
-    const [savingAll, setSavingAll]     = useState(false);
-    const [savedAll, setSavedAll]       = useState(false);
 
-    const publicUrl = slug
-        ? `${typeof window !== 'undefined' ? window.location.origin : ''}/public/${slug}`
-        : '';
+    const publicUrl = slug ? `${typeof window !== 'undefined' ? window.location.origin : ''}/public/${slug}` : '';
 
     useEffect(() => {
         if (!token) return;
         Promise.all([
-            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/profile`,  { headers: { Authorization: `Bearer ${token}` } }),
-            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/me`,    { headers: { Authorization: `Bearer ${token}` } }),
+            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/profile`, { headers: { Authorization: `Bearer ${token}` } }),
+            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/me`,   { headers: { Authorization: `Bearer ${token}` } }),
         ]).then(([profileRes, bizRes]) => {
             setSelected(profileRes.data.theme ?? 'violet');
             setFont(profileRes.data.font ?? null);
             const bc: string | null = bizRes.data?.brand_color ?? null;
             setBrandColor(bc);
             if (bc) setBrandInput(bc);
-            const lu: string = bizRes.data?.logo_url ?? '';
-            setLogoUrl(lu);
-            setSavedLogoUrl(lu);
-        }).catch(console.error)
-          .finally(() => setLoading(false));
+        }).catch(console.error).finally(() => setLoading(false));
     }, [token]);
 
-    const handleSave = async () => {
-        setSaving(true);
-        setSaveError('');
+    const handleSaveThemeFont = async () => {
+        setSaving(true); setSaveError('');
         try {
-            await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/profile`, { theme: selected, font: font ?? null }, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            setSaved(true);
-            setTimeout(() => setSaved(false), 4000);
+            await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/profile`,
+                { theme: selected, font: font ?? null },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setSaved(true); setTimeout(() => setSaved(false), 4000);
+            revalidatePublicPage(slug);
         } catch (err) {
-            const msg = axios.isAxiosError(err)
-                ? (err.response?.data?.message ?? `Error ${err.response?.status}: no se pudo guardar.`)
-                : 'Error al guardar.';
-            setSaveError(msg);
+            setSaveError(axios.isAxiosError(err) ? (err.response?.data?.message ?? 'Error al guardar.') : 'Error al guardar.');
         } finally { setSaving(false); }
     };
 
     const handleSaveBrand = async () => {
-        setSavingBrand(true);
-        setBrandError('');
+        setSavingBrand(true); setBrandError('');
         try {
             await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/me`,
-                { brand_color: brandInput },
-                { headers: { Authorization: `Bearer ${token}` } }
+                { brand_color: brandInput }, { headers: { Authorization: `Bearer ${token}` } }
             );
-            setBrandColor(brandInput);
-            setSavedBrand(true);
+            setBrandColor(brandInput); setSavedBrand(true);
             setTimeout(() => setSavedBrand(false), 3000);
             revalidatePublicPage(slug);
         } catch (err) {
-            const msg = axios.isAxiosError(err)
-                ? (err.response?.data?.message ?? `Error ${err.response?.status}: no se pudo guardar.`)
-                : 'Error al guardar.';
-            setBrandError(msg);
+            setBrandError(axios.isAxiosError(err) ? (err.response?.data?.message ?? 'Error.') : 'Error.');
         } finally { setSavingBrand(false); }
     };
 
     const handleClearBrand = async () => {
-        setSavingBrand(true);
-        setBrandError('');
+        setSavingBrand(true); setBrandError('');
         try {
             await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/me`,
-                { brand_color: null },
-                { headers: { Authorization: `Bearer ${token}` } }
+                { brand_color: null }, { headers: { Authorization: `Bearer ${token}` } }
             );
-            setBrandColor(null);
-            setBrandInput('#6366f1');
-            setSavedBrand(true);
+            setBrandColor(null); setBrandInput('#6366f1'); setSavedBrand(true);
             setTimeout(() => setSavedBrand(false), 3000);
             revalidatePublicPage(slug);
         } catch (err) {
-            const msg = axios.isAxiosError(err)
-                ? (err.response?.data?.message ?? `Error ${err.response?.status}: no se pudo guardar.`)
-                : 'Error al guardar.';
-            setBrandError(msg);
+            setBrandError(axios.isAxiosError(err) ? (err.response?.data?.message ?? 'Error.') : 'Error.');
         } finally { setSavingBrand(false); }
-    };
-
-    const handleSaveLogo = async () => {
-        setSavingLogo(true);
-        setLogoError('');
-        try {
-            await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/me`,
-                { logo_url: logoUrl || null },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            setSavedLogoUrl(logoUrl);
-            setSavedLogo(true);
-            setTimeout(() => setSavedLogo(false), 3000);
-            revalidatePublicPage(slug);
-        } catch (err) {
-            const msg = axios.isAxiosError(err)
-                ? (err.response?.data?.message ?? `Error ${err.response?.status}: no se pudo guardar.`)
-                : 'Error al guardar.';
-            setLogoError(msg);
-        } finally { setSavingLogo(false); }
-    };
-
-    const handleSaveAll = async () => {
-        setSavingAll(true);
-        setSavedAll(false);
-        const tasks: Promise<void>[] = [handleSave()];
-        if (isNegocio) tasks.push(handleSaveBrand(), handleSaveLogo());
-        await Promise.all(tasks);
-        setSavedAll(true);
-        setSavingAll(false);
-        setTimeout(() => setSavedAll(false), 3000);
     };
 
     if (loading) return <div className="skel-page"><span className="skel" style={{ height: 220 }} /></div>;
 
-    // mini-preview accent: if Negocio and brand color is saved, show live brandInput
     const t = THEMES.find(x => x.value === selected)!;
     const previewAccent = (isNegocio && brandColor !== null) ? brandInput : t.accent;
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {/* Paleta de color */}
             <div className="gcard">
                 <div className="gcard__head">
                     <h3 className="gcard__title">Paleta de color</h3>
-                    <span style={{ fontSize: 11, color: 'var(--fg-3)' }}>Define la apariencia de tu página pública</span>
+                    <span style={{ fontSize: 11, color: 'var(--fg-3)' }}>Fondo y acento de tu página pública</span>
                 </div>
                 <div className="gcard__body">
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 10, marginBottom: 20 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 20 }}>
                         {THEMES.map(th => {
                             const active = selected === th.value;
                             return (
-                                <button
-                                    key={th.value}
-                                    onClick={() => setSelected(th.value)}
-                                    style={{
-                                        display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
-                                        padding: '14px 16px', borderRadius: 12, cursor: 'pointer',
-                                        border: `2px solid ${active ? th.accent : 'var(--line)'}`,
-                                        background: active ? `${th.bg}` : 'var(--glass-bg)',
-                                        gap: 10, transition: 'all .15s', outline: 'none',
-                                    }}
-                                >
-                                    <div style={{ display: 'flex', gap: 5 }}>
-                                        <span style={{ width: 28, height: 28, borderRadius: 8, background: th.bg, border: '1px solid rgba(255,255,255,.08)', display: 'block' }} />
-                                        <span style={{ width: 28, height: 28, borderRadius: 8, background: th.accent, display: 'block' }} />
-                                        <span style={{ width: 28, height: 28, borderRadius: 8, background: th.dot, display: 'block' }} />
+                                <button key={th.value} onClick={() => setSelected(th.value)} style={{
+                                    display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
+                                    padding: '12px 14px', borderRadius: 12, cursor: 'pointer',
+                                    border: `2px solid ${active ? th.accent : 'var(--line)'}`,
+                                    background: active ? th.bg : 'var(--glass-bg)',
+                                    gap: 8, transition: 'all .15s', outline: 'none',
+                                }}>
+                                    {/* Color swatches */}
+                                    <div style={{ display: 'flex', gap: 4 }}>
+                                        <span style={{ width: 24, height: 24, borderRadius: 6, background: th.bg, border: '1px solid rgba(255,255,255,.1)', display: 'block' }} />
+                                        <span style={{ width: 24, height: 24, borderRadius: 6, background: th.accent, display: 'block' }} />
+                                        <span style={{ width: 24, height: 24, borderRadius: 6, background: th.dot, display: 'block' }} />
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                                        <span style={{ fontSize: 13, fontWeight: 600, color: active ? th.dot : 'var(--fg-1)' }}>{th.label}</span>
-                                        {active && (
-                                            <span style={{ width: 18, height: 18, borderRadius: '50%', background: th.accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5 3.5-4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                                            </span>
-                                        )}
+                                        <span style={{ fontSize: 12, fontWeight: 600, color: active ? th.dot : 'var(--fg-1)' }}>{th.label}</span>
+                                        {active && <span style={{ width: 16, height: 16, borderRadius: '50%', background: th.accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5 3.5-4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                        </span>}
                                     </div>
                                 </button>
                             );
@@ -457,237 +433,73 @@ function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
                         const tb = t.dark ? 'rgba(255,255,255,' : 'rgba(0,0,0,';
                         return (
                             <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid var(--line)', marginBottom: 20 }}>
-                                <div style={{ background: t.bg, padding: '20px 20px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                                    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                                        <span style={{ width: 30, height: 8, borderRadius: 4, background: t.dot, opacity: 0.9 }} />
-                                        <span style={{ width: 60, height: 8, borderRadius: 4, background: `${tb}.12)` }} />
-                                    </div>
-                                    <div style={{ height: 18, width: '55%', borderRadius: 4, background: `${tb}.75)`, marginTop: 4 }} />
-                                    <div style={{ height: 11, width: '75%', borderRadius: 4, background: `${tb}.25)` }} />
-                                    <div style={{ height: 11, width: '60%', borderRadius: 4, background: `${tb}.16)` }} />
-                                    <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
-                                        <span style={{ padding: '7px 18px', borderRadius: 8, background: previewAccent, fontSize: 11, color: '#fff', fontWeight: 600, display: 'inline-block' }}>
+                                <div style={{ background: t.bg, padding: '18px 18px 14px', display: 'flex', flexDirection: 'column', gap: 7 }}>
+                                    <div style={{ height: 16, width: '50%', borderRadius: 4, background: `${tb}.7)` }} />
+                                    <div style={{ height: 11, width: '72%', borderRadius: 4, background: `${tb}.2)` }} />
+                                    <div style={{ marginTop: 6, display: 'flex', gap: 8 }}>
+                                        <span style={{ padding: '6px 16px', borderRadius: 8, background: previewAccent, fontSize: 11, color: '#fff', fontWeight: 600, display: 'inline-block' }}>
                                             Reservar turno
                                         </span>
                                     </div>
                                 </div>
-                                <div style={{ padding: '8px 20px', background: `${tb}.03)`, borderTop: `1px solid ${tb}.08)`, fontSize: 11, color: 'var(--fg-3)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: t.dot, display: 'inline-block' }} />
-                                    Vista previa · Tema {t.label}
-                                    {isNegocio && brandColor && (
-                                        <span style={{ marginLeft: 4, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                                            · Color de marca
-                                            <span style={{ width: 8, height: 8, borderRadius: '50%', background: brandInput, display: 'inline-block', border: '1px solid rgba(255,255,255,.2)' }} />
-                                        </span>
+                                <div style={{ padding: '7px 18px', background: `${tb}.03)`, borderTop: `1px solid ${tb}.08)`, fontSize: 11, color: 'var(--fg-3)', display: 'flex', alignItems: 'center', gap: 5 }}>
+                                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: t.dot, display: 'inline-block' }} />
+                                    Tema {t.label}
+                                    {publicUrl && (
+                                        <a href={publicUrl} target="_blank" rel="noopener noreferrer"
+                                            style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: 4, textDecoration: 'none' }}>
+                                            Ver página {IcoExtLink}
+                                        </a>
                                     )}
                                 </div>
                             </div>
                         );
                     })()}
 
-                    {/* Success banner with link to public page */}
-                    {saved && publicUrl && (
-                        <div style={{
-                            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
-                            padding: '12px 16px', borderRadius: 10, marginBottom: 12,
-                            background: 'rgba(52,211,153,.08)', border: '1px solid rgba(52,211,153,.2)',
-                        }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                {IcoCheck}
-                                <span style={{ fontSize: 12, color: 'rgb(52,211,153)' }}>Tema guardado correctamente.</span>
-                            </div>
-                            <a
-                                href={publicUrl} target="_blank" rel="noopener noreferrer"
-                                style={{ fontSize: 12, color: 'rgb(52,211,153)', textDecoration: 'underline', whiteSpace: 'nowrap', flexShrink: 0 }}
-                            >
-                                Ver página pública {IcoExtLink}
-                            </a>
-                        </div>
-                    )}
-
-                    {saveError && (
-                        <p style={{ fontSize: 12, color: '#f87171', padding: '8px 12px', borderRadius: 8, background: 'rgba(239,68,68,.08)', border: '1px solid rgba(239,68,68,.2)', marginBottom: 12 }}>
-                            {saveError}
-                        </p>
-                    )}
-
+                    {saved && <p style={{ fontSize: 12, color: '#34d399', marginBottom: 12 }}>{IcoCheck} Guardado correctamente.</p>}
+                    {saveError && <p style={{ fontSize: 12, color: '#f87171', padding: '8px 12px', borderRadius: 8, background: 'rgba(239,68,68,.08)', border: '1px solid rgba(239,68,68,.2)', marginBottom: 12 }}>{saveError}</p>}
                 </div>
             </div>
 
-            {/* Brand color card — Negocio only */}
-            <div className="gcard" style={{ position: 'relative', overflow: 'hidden' }}>
-                {!isNegocio && (
-                    <div style={{
-                        position: 'absolute', inset: 0, zIndex: 10,
-                        backdropFilter: 'blur(4px)',
-                        background: 'rgba(10,8,16,.6)',
-                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                        gap: 10, borderRadius: 'inherit',
-                    }}>
-                        <div style={{ width: 42, height: 42, borderRadius: 12, background: 'rgba(192,132,252,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c084fc' }}>
-                            <svg width="19" height="19" viewBox="0 0 22 22" fill="none">
-                                <rect x="4" y="10" width="14" height="11" rx="2" stroke="currentColor" strokeWidth="1.5"/>
-                                <path d="M7.5 10V7.5a3.5 3.5 0 0 1 7 0V10" stroke="currentColor" strokeWidth="1.5"/>
-                            </svg>
-                        </div>
-                        <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-0)', margin: 0 }}>Requiere plan Negocio</p>
-                        <Link href="/dashboard/settings/billing" className="dbtn dbtn--primary dbtn--sm" style={{ textDecoration: 'none' }}>
-                            Ver planes →
-                        </Link>
-                    </div>
-                )}
-                <div className="gcard__head">
-                    <h3 className="gcard__title">Color de marca</h3>
-                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 99, background: 'rgba(192,132,252,.15)', color: '#c084fc', letterSpacing: '0.06em' }}>NEGOCIO</span>
-                </div>
-                <div className="gcard__body" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                    <p style={{ fontSize: 12, color: 'var(--fg-2)', lineHeight: 1.65, margin: 0 }}>
-                        Reemplaza el color de acento del tema elegido en tu página pública. Afecta el botón <em>Reservar turno</em>, el degradado del título del Hero y las etiquetas de acento de los servicios.
-                    </p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        {/* Color swatch / native picker trigger */}
-                        <div style={{ position: 'relative', width: 44, height: 44, borderRadius: 10, overflow: 'hidden', border: '2px solid var(--line)', flexShrink: 0 }}>
-                            <input
-                                type="color"
-                                value={brandInput}
-                                onChange={e => setBrandInput(e.target.value)}
-                                style={{ position: 'absolute', inset: '-8px', width: 'calc(100% + 16px)', height: 'calc(100% + 16px)', cursor: 'pointer', border: 'none', padding: 0, background: 'none' }}
-                            />
-                        </div>
-                        {/* Hex input */}
-                        <input
-                            className="fg-field__input"
-                            value={brandInput}
-                            onChange={e => setBrandInput(e.target.value)}
-                            placeholder="#6366f1"
-                            style={{ fontFamily: 'var(--font-mono)', letterSpacing: '0.05em', flex: 1 }}
-                            maxLength={7}
-                        />
-                        {brandColor && (
-                            <button
-                                className="dbtn dbtn--sm"
-                                onClick={handleClearBrand}
-                                disabled={savingBrand}
-                                title="Quitar color de marca y volver al color del tema"
-                            >
-                                Quitar
-                            </button>
-                        )}
-                    </div>
-                    {brandError && (
-                        <p style={{ fontSize: 12, color: '#f87171', padding: '8px 12px', borderRadius: 8, background: 'rgba(239,68,68,.08)', border: '1px solid rgba(239,68,68,.2)', margin: 0 }}>
-                            {brandError}
-                        </p>
-                    )}
-                </div>
-            </div>
-
-            {/* Logo card — Negocio only */}
-            <div className="gcard" style={{ position: 'relative', overflow: 'hidden' }}>
-                {!isNegocio && (
-                    <div style={{
-                        position: 'absolute', inset: 0, zIndex: 10,
-                        backdropFilter: 'blur(4px)',
-                        background: 'rgba(10,8,16,.6)',
-                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                        gap: 10, borderRadius: 'inherit',
-                    }}>
-                        <div style={{ width: 42, height: 42, borderRadius: 12, background: 'rgba(192,132,252,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c084fc' }}>
-                            <svg width="19" height="19" viewBox="0 0 22 22" fill="none">
-                                <rect x="4" y="10" width="14" height="11" rx="2" stroke="currentColor" strokeWidth="1.5"/>
-                                <path d="M7.5 10V7.5a3.5 3.5 0 0 1 7 0V10" stroke="currentColor" strokeWidth="1.5"/>
-                            </svg>
-                        </div>
-                        <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-0)', margin: 0 }}>Requiere plan Negocio</p>
-                        <Link href="/dashboard/settings/billing" className="dbtn dbtn--primary dbtn--sm" style={{ textDecoration: 'none' }}>
-                            Ver planes →
-                        </Link>
-                    </div>
-                )}
-                <div className="gcard__head">
-                    <h3 className="gcard__title">Logo del negocio</h3>
-                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 99, background: 'rgba(192,132,252,.15)', color: '#c084fc', letterSpacing: '0.06em' }}>NEGOCIO</span>
-                </div>
-                <div className="gcard__body" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                    <p style={{ fontSize: 12, color: 'var(--fg-2)', lineHeight: 1.65, margin: 0 }}>
-                        Aparece como ícono circular en el nav de tu página pública. Usá una imagen cuadrada (mínimo 128×128 px).
-                    </p>
-                    {/* Circular nav preview */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div style={{
-                            width: 48, height: 48, borderRadius: '50%', flexShrink: 0,
-                            overflow: 'hidden', border: '2px solid var(--line)',
-                            background: 'linear-gradient(135deg,#8b5cf6,#6366f1)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: 'white', fontWeight: 700, fontSize: 18,
-                        }}>
-                            {logoUrl
-                                ? <img src={logoUrl} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                : <span style={{ pointerEvents: 'none' }}>?</span>
-                            }
-                        </div>
-                        <span style={{ fontSize: 11, color: 'var(--fg-3)', lineHeight: 1.5 }}>
-                            Vista previa del ícono en el nav
-                            {savedLogoUrl !== logoUrl && <><br/><em style={{ color: '#fbbf24' }}>Cambios sin guardar</em></>}
-                        </span>
-                    </div>
-                    <ImageUpload
-                        value={logoUrl}
-                        onChange={setLogoUrl}
-                        previewHeight={100}
-                    />
-                    {logoError && (
-                        <p style={{ fontSize: 12, color: '#f87171', padding: '8px 12px', borderRadius: 8, background: 'rgba(239,68,68,.08)', border: '1px solid rgba(239,68,68,.2)', margin: 0 }}>
-                            {logoError}
-                        </p>
-                    )}
-                </div>
-            </div>
-
-            {/* Tipografía card */}
+            {/* Tipografía */}
             <div className="gcard">
                 <div className="gcard__head">
                     <h3 className="gcard__title">Tipografía</h3>
-                    <span style={{ fontSize: 11, color: 'var(--fg-3)' }}>Estilo de letra en tu página pública</span>
+                    <span style={{ fontSize: 11, color: 'var(--fg-3)' }}>Estilo de letra en toda la página</span>
                 </div>
                 <div className="gcard__body">
-                    {/* "Por defecto" option — null font */}
                     <div style={{ marginBottom: 16 }}>
-                        <button
-                            onClick={() => setFont(null)}
-                            style={{
-                                display: 'flex', flexDirection: 'column', alignItems: 'center',
-                                padding: '14px 10px', borderRadius: 12, cursor: 'pointer',
-                                border: `2px solid ${font === null ? 'var(--accent)' : 'var(--line)'}`,
-                                background: font === null ? 'var(--glass-bg)' : 'transparent',
-                                gap: 6, transition: 'all .15s', outline: 'none', minWidth: 80,
-                            }}
-                        >
-                            <span style={{ fontSize: 28, lineHeight: 1, color: 'var(--fg-0)', fontFamily: '"Fraunces", Georgia, serif', fontStyle: 'italic' }}>Aa</span>
-                            <span style={{ fontSize: 11, fontWeight: 600, color: font === null ? 'var(--accent)' : 'var(--fg-2)' }}>Por defecto</span>
+                        <button onClick={() => setFont(null)} style={{
+                            display: 'flex', alignItems: 'center', gap: 10,
+                            padding: '10px 14px', borderRadius: 10, cursor: 'pointer', width: '100%',
+                            border: `2px solid ${font === null ? 'var(--accent)' : 'var(--line)'}`,
+                            background: font === null ? 'var(--glass-bg)' : 'transparent',
+                            transition: 'all .15s', outline: 'none',
+                        }}>
+                            <span style={{ fontSize: 22, lineHeight: 1, color: 'var(--fg-0)', fontFamily: '"Fraunces", Georgia, serif', fontStyle: 'italic', width: 36 }}>Aa</span>
+                            <div style={{ textAlign: 'left' }}>
+                                <span style={{ fontSize: 13, fontWeight: 600, color: font === null ? 'var(--accent)' : 'var(--fg-1)', display: 'block' }}>Por defecto</span>
+                                <span style={{ fontSize: 11, color: 'var(--fg-3)' }}>Fraunces + Inter Tight</span>
+                            </div>
                         </button>
                     </div>
                     {FONT_GROUPS.map(group => (
-                        <div key={group.label} style={{ marginBottom: 20 }}>
-                            <div style={{ marginBottom: 8 }}>
+                        <div key={group.label} style={{ marginBottom: 16 }}>
+                            <div style={{ marginBottom: 8, display: 'flex', alignItems: 'baseline', gap: 8 }}>
                                 <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--fg-1)' }}>{group.label}</span>
-                                <span style={{ fontSize: 11, color: 'var(--fg-3)', marginLeft: 8 }}>{group.hint}</span>
+                                <span style={{ fontSize: 11, color: 'var(--fg-3)' }}>{group.hint}</span>
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8 }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 8 }}>
                                 {group.fonts.map(f => (
-                                    <button
-                                        key={f.value}
-                                        onClick={() => setFont(f.value)}
-                                        style={{
-                                            display: 'flex', flexDirection: 'column', alignItems: 'center',
-                                            padding: '12px 8px', borderRadius: 12, cursor: 'pointer',
-                                            border: `2px solid ${font === f.value ? 'var(--accent)' : 'var(--line)'}`,
-                                            background: font === f.value ? 'var(--glass-bg)' : 'transparent',
-                                            gap: 5, transition: 'all .15s', outline: 'none',
-                                        }}
-                                    >
-                                        <span style={{ fontSize: 26, lineHeight: 1, color: 'var(--fg-0)', fontFamily: f.family }}>{f.sample}</span>
-                                        <span style={{ fontSize: 10, fontWeight: 600, color: font === f.value ? 'var(--accent)' : 'var(--fg-2)' }}>{f.label}</span>
+                                    <button key={f.value} onClick={() => setFont(f.value)} style={{
+                                        display: 'flex', alignItems: 'center', gap: 10,
+                                        padding: '10px 14px', borderRadius: 10, cursor: 'pointer',
+                                        border: `2px solid ${font === f.value ? 'var(--accent)' : 'var(--line)'}`,
+                                        background: font === f.value ? 'var(--glass-bg)' : 'transparent',
+                                        transition: 'all .15s', outline: 'none',
+                                    }}>
+                                        <span style={{ fontSize: 22, lineHeight: 1, color: 'var(--fg-0)', fontFamily: f.family, width: 36 }}>Aa</span>
+                                        <span style={{ fontSize: 12, fontWeight: 600, color: font === f.value ? 'var(--accent)' : 'var(--fg-2)', fontFamily: f.family }}>{f.label}</span>
                                     </button>
                                 ))}
                             </div>
@@ -696,21 +508,127 @@ function ThemeTab({ token, slug }: { token: string | null; slug: string }) {
                 </div>
             </div>
 
-            {/* Unified save button */}
-            <button
-                className="dbtn dbtn--primary"
-                onClick={handleSaveAll}
-                disabled={savingAll}
-                style={{ width: '100%', justifyContent: 'center', padding: 14 }}
-            >
-                {savedAll ? <>{IcoCheck}<span>Guardado</span></> : savingAll ? 'Guardando…' : 'Guardar cambios'}
+            <button className="dbtn dbtn--primary" onClick={handleSaveThemeFont} disabled={saving}
+                style={{ width: '100%', justifyContent: 'center', padding: 14 }}>
+                {saved ? <>{IcoCheck}<span>Guardado</span></> : saving ? 'Guardando…' : 'Guardar tema y tipografía'}
             </button>
+
+            {/* Color de marca — Negocio */}
+            <div className="gcard" style={{ position: 'relative', overflow: 'hidden' }}>
+                {!isNegocio && <LockedOverlay required="negocio" />}
+                <div className="gcard__head">
+                    <h3 className="gcard__title">Color de marca personalizado</h3>
+                    <PlanBadge plan="negocio" />
+                </div>
+                <div className="gcard__body" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    <p style={{ fontSize: 12, color: 'var(--fg-2)', lineHeight: 1.65, margin: 0 }}>
+                        Reemplaza el color de acento del tema. Afecta el botón <em>Reservar turno</em> y todos los elementos de acento de la página.
+                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div style={{ position: 'relative', width: 44, height: 44, borderRadius: 10, overflow: 'hidden', border: '2px solid var(--line)', flexShrink: 0 }}>
+                            <input type="color" value={brandInput} onChange={e => setBrandInput(e.target.value)}
+                                style={{ position: 'absolute', inset: '-8px', width: 'calc(100% + 16px)', height: 'calc(100% + 16px)', cursor: 'pointer', border: 'none', padding: 0 }} />
+                        </div>
+                        <input className="fg-field__input" value={brandInput} onChange={e => setBrandInput(e.target.value)}
+                            placeholder="#6366f1" style={{ fontFamily: 'var(--font-mono)', letterSpacing: '0.05em', flex: 1 }} maxLength={7} />
+                        {brandColor && (
+                            <button className="dbtn dbtn--sm" onClick={handleClearBrand} disabled={savingBrand}>Quitar</button>
+                        )}
+                        <button className="dbtn dbtn--primary dbtn--sm" onClick={handleSaveBrand} disabled={savingBrand}>
+                            {savedBrand ? IcoCheck : 'Aplicar'}
+                        </button>
+                    </div>
+                    {brandError && <p style={{ fontSize: 12, color: '#f87171', padding: '8px 12px', borderRadius: 8, background: 'rgba(239,68,68,.08)', border: '1px solid rgba(239,68,68,.2)', margin: 0 }}>{brandError}</p>}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ── ContactoTab ───────────────────────────────────────────────────────────────
+function ContactoTab({ token, slug }: { token: string | null; slug: string }) {
+    const [form, setForm] = useState({ address: '', phone: '', whatsapp: '', instagram_url: '', tiktok_url: '', facebook_url: '' });
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving]   = useState(false);
+    const [saved, setSaved]     = useState(false);
+    const [saveError, setSaveError] = useState('');
+
+    useEffect(() => {
+        if (!token) return;
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/profile`, { headers: { Authorization: `Bearer ${token}` } })
+            .then(r => setForm({
+                address:       r.data.address ?? '',
+                phone:         r.data.phone ?? '',
+                whatsapp:      r.data.whatsapp ?? '',
+                instagram_url: r.data.instagram_url ?? '',
+                tiktok_url:    r.data.tiktok_url ?? '',
+                facebook_url:  r.data.facebook_url ?? '',
+            }))
+            .catch(console.error)
+            .finally(() => setLoading(false));
+    }, [token]);
+
+    const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
+        setForm(f => ({ ...f, [k]: e.target.value }));
+
+    const handleSave = async () => {
+        setSaving(true); setSaveError('');
+        try {
+            await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/profile`, form,
+                { headers: { Authorization: `Bearer ${token}` } });
+            setSaved(true); setTimeout(() => setSaved(false), 2500);
+            revalidatePublicPage(slug);
+        } catch (err) {
+            setSaveError(axios.isAxiosError(err) ? (err.response?.data?.message ?? 'Error al guardar.') : 'Error al guardar.');
+        } finally { setSaving(false); }
+    };
+
+    if (loading) return <div className="skel-page"><span className="skel" style={{ height: 260 }} /></div>;
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div className="gcard">
+                <div className="gcard__head"><h3 className="gcard__title">Información de contacto</h3></div>
+                <div className="gcard__body" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <Field label="Dirección">
+                        <input className="fg-field__input" value={form.address} onChange={set('address')} placeholder="Ej: Av. 18 de Julio 1234, Montevideo" />
+                    </Field>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                        <Field label="Teléfono">
+                            <input className="fg-field__input" value={form.phone} onChange={set('phone')} placeholder="+598 99 123 456" />
+                        </Field>
+                        <Field label="WhatsApp">
+                            <input className="fg-field__input" value={form.whatsapp} onChange={set('whatsapp')} placeholder="+598 99 123 456" />
+                        </Field>
+                    </div>
+                </div>
+            </div>
+
+            <div className="gcard">
+                <div className="gcard__head"><h3 className="gcard__title">Redes sociales</h3></div>
+                <div className="gcard__body" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {([
+                        { key: 'instagram_url' as const, label: 'Instagram', placeholder: 'https://instagram.com/mi_negocio',
+                          icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg> },
+                        { key: 'tiktok_url'    as const, label: 'TikTok',    placeholder: 'https://tiktok.com/@mi_negocio',
+                          icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19.6 6.3a4.8 4.8 0 01-3-1.7 4.8 4.8 0 01-1.1-2.6h-3.4v13.7c0 1.6-1.3 2.9-2.9 2.9s-2.9-1.3-2.9-2.9 1.3-2.9 2.9-2.9c.3 0 .6.1.9.2v-3.5a6.5 6.5 0 00-.9-.1 6.3 6.3 0 100 12.6c3.5 0 6.3-2.8 6.3-6.3V8.6a8 8 0 004.7 1.5V6.7s-.3 0-.6-.4z"/></svg> },
+                        { key: 'facebook_url'  as const, label: 'Facebook',  placeholder: 'https://facebook.com/mi_negocio',
+                          icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.07C24 5.41 18.63 0 12 0S0 5.41 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.04V9.41c0-3.02 1.8-4.7 4.54-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.95.93-1.95 1.88v2.27h3.32l-.53 3.49h-2.79V24C19.61 23.1 24 18.1 24 12.07z"/></svg> },
+                    ] as { key: 'instagram_url'|'tiktok_url'|'facebook_url'; label: string; placeholder: string; icon: React.ReactNode }[]).map(({ key, label, placeholder, icon }) => (
+                        <Field key={key} label={<span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>{icon}{label}</span>}>
+                            <input className="fg-field__input" value={form[key]} onChange={set(key)} placeholder={placeholder} />
+                        </Field>
+                    ))}
+                </div>
+            </div>
+
+            <SaveBar saving={saving} saved={saved} error={saveError} onSave={handleSave} />
         </div>
     );
 }
 
 // ── HoursTab ──────────────────────────────────────────────────────────────────
-const HOUR_OPTIONS  = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+const HOUR_OPTIONS   = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
 const MINUTE_OPTIONS = ['00', '15', '30', '45'];
 
 function TimeSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
@@ -719,11 +637,7 @@ function TimeSelect({ value, onChange }: { value: string; onChange: (v: string) 
         Math.abs(parseInt(cur) - parseInt(m)) < Math.abs(parseInt(prev) - parseInt(m)) ? cur : prev
     );
     return (
-        <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 2,
-            background: 'rgba(255,255,255,0.05)', border: '1px solid var(--line)',
-            borderRadius: 8, padding: '5px 10px',
-        }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 2, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--line)', borderRadius: 8, padding: '5px 10px' }}>
             <select value={h} onChange={e => onChange(`${e.target.value}:${nearestMin}`)}
                 style={{ background: 'transparent', fontSize: 13, fontWeight: 600, color: 'var(--fg-0)', border: 'none', outline: 'none', cursor: 'pointer' }}>
                 {HOUR_OPTIONS.map(hr => <option key={hr} value={hr}>{hr}</option>)}
@@ -737,61 +651,44 @@ function TimeSelect({ value, onChange }: { value: string; onChange: (v: string) 
     );
 }
 
-const DEFAULT_HOURS: Hour[] = DAY_LABELS.map((_, i) => ({
-    day_of_week: i,
-    open_time: '09:00',
-    close_time: '18:00',
-    is_closed: i === 0,
-}));
+const DEFAULT_HOURS: Hour[] = DAY_LABELS.map((_, i) => ({ day_of_week: i, open_time: '09:00', close_time: '18:00', is_closed: i === 0 }));
 
 function HoursTab({ token, slug }: { token: string | null; slug: string }) {
-    const [hours, setHours] = useState<Hour[]>(DEFAULT_HOURS);
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
-    const [saved, setSaved] = useState(false);
+    const [hours, setHours]         = useState<Hour[]>(DEFAULT_HOURS);
+    const [neverSaved, setNeverSaved] = useState(false);
+    const [loading, setLoading]     = useState(true);
+    const [saving, setSaving]       = useState(false);
+    const [saved, setSaved]         = useState(false);
     const [saveError, setSaveError] = useState('');
 
     useEffect(() => {
         if (!token) return;
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/hours`, { headers: { Authorization: `Bearer ${token}` } })
             .then(r => {
-                if (r.data.length === 0) return;
+                if (r.data.length === 0) {
+                    setNeverSaved(true);
+                    return;
+                }
                 const map = new Map(r.data.map((h: Hour) => [h.day_of_week, h]));
                 setHours(DEFAULT_HOURS.map(d => {
                     const h = map.get(d.day_of_week) as Hour | undefined;
-                    return h ? {
-                        day_of_week: d.day_of_week,
-                        open_time:  h.open_time  ? h.open_time.slice(0, 5)  : '09:00',
-                        close_time: h.close_time ? h.close_time.slice(0, 5) : '18:00',
-                        is_closed:  !!h.is_closed,
-                    } : d;
+                    return h ? { day_of_week: d.day_of_week, open_time: h.open_time?.slice(0,5) ?? '09:00', close_time: h.close_time?.slice(0,5) ?? '18:00', is_closed: !!h.is_closed } : d;
                 }));
-            })
-            .catch(console.error)
-            .finally(() => setLoading(false));
+            }).catch(console.error).finally(() => setLoading(false));
     }, [token]);
 
-    const toggle = (i: number) =>
-        setHours(hs => hs.map((h, idx) => idx === i ? { ...h, is_closed: !h.is_closed } : h));
-
-    const setTime = (i: number, field: 'open_time' | 'close_time', v: string) =>
+    const toggle   = (i: number) => setHours(hs => hs.map((h, idx) => idx === i ? { ...h, is_closed: !h.is_closed } : h));
+    const setTime  = (i: number, field: 'open_time' | 'close_time', v: string) =>
         setHours(hs => hs.map((h, idx) => idx === i ? { ...h, [field]: v } : h));
 
     const handleSave = async () => {
-        setSaving(true);
-        setSaveError('');
+        setSaving(true); setSaveError('');
         try {
-            await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/hours`, { hours }, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            setSaved(true);
-            setTimeout(() => setSaved(false), 2000);
+            await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/hours`, { hours }, { headers: { Authorization: `Bearer ${token}` } });
+            setSaved(true); setNeverSaved(false); setTimeout(() => setSaved(false), 2000);
             revalidatePublicPage(slug);
         } catch (err) {
-            const msg = axios.isAxiosError(err)
-                ? (err.response?.data?.message ?? `Error ${err.response?.status}: no se pudo guardar.`)
-                : 'Error al guardar.';
-            setSaveError(msg);
+            setSaveError(axios.isAxiosError(err) ? (err.response?.data?.message ?? 'Error.') : 'Error.');
         } finally { setSaving(false); }
     };
 
@@ -799,49 +696,34 @@ function HoursTab({ token, slug }: { token: string | null; slug: string }) {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {neverSaved && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 10, background: 'rgba(251,191,36,.08)', border: '1px solid rgba(251,191,36,.25)' }}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                    <span style={{ fontSize: 12, color: '#fbbf24', lineHeight: 1.5 }}>
+                        Estos son los horarios por defecto. <strong>Guardá para que aparezcan en tu página pública.</strong>
+                    </span>
+                </div>
+            )}
             <div className="gcard" style={{ padding: 0 }}>
                 <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--line)' }}>
                     <h3 className="gcard__title" style={{ margin: 0 }}>Horario de atención</h3>
                 </div>
                 <div>
                     {hours.map((h, i) => (
-                        <div
-                            key={h.day_of_week}
-                            style={{
-                                padding: '12px 20px',
-                                borderBottom: i < hours.length - 1 ? '1px solid var(--line)' : 'none',
-                            }}
-                        >
+                        <div key={h.day_of_week} style={{ padding: '12px 20px', borderBottom: i < hours.length - 1 ? '1px solid var(--line)' : 'none' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                                <button
-                                    onClick={() => toggle(i)}
-                                    style={{
-                                        position: 'relative', width: 40, height: 22,
-                                        borderRadius: 11, flexShrink: 0,
-                                        background: !h.is_closed ? 'var(--accent)' : 'rgba(255,255,255,.1)',
-                                        border: 'none', cursor: 'pointer',
-                                        transition: 'background .25s',
-                                    }}
-                                >
-                                    <span style={{
-                                        position: 'absolute', top: 3, left: 3,
-                                        width: 16, height: 16, borderRadius: '50%',
-                                        background: '#fff',
-                                        transform: !h.is_closed ? 'translateX(18px)' : undefined,
-                                        transition: 'transform .25s',
-                                        display: 'block',
-                                    }} />
-                                </button>
-                                <span style={{
-                                    fontSize: 14, fontWeight: 500, flex: 1,
-                                    color: !h.is_closed ? 'var(--fg-0)' : 'var(--fg-3)',
-                                    transition: 'color .2s',
+                                <button onClick={() => toggle(i)} style={{
+                                    position: 'relative', width: 40, height: 22, borderRadius: 11, flexShrink: 0,
+                                    background: !h.is_closed ? 'var(--accent)' : 'rgba(255,255,255,.1)',
+                                    border: 'none', cursor: 'pointer', transition: 'background .25s',
                                 }}>
+                                    <span style={{ position: 'absolute', top: 3, left: 3, width: 16, height: 16, borderRadius: '50%', background: '#fff',
+                                        transform: !h.is_closed ? 'translateX(18px)' : undefined, transition: 'transform .25s', display: 'block' }} />
+                                </button>
+                                <span style={{ fontSize: 14, fontWeight: 500, flex: 1, color: !h.is_closed ? 'var(--fg-0)' : 'var(--fg-3)', transition: 'color .2s' }}>
                                     {DAY_LABELS[h.day_of_week]}
                                 </span>
-                                {h.is_closed && (
-                                    <span style={{ fontSize: 12, color: 'var(--fg-3)' }}>No disponible</span>
-                                )}
+                                {h.is_closed && <span style={{ fontSize: 12, color: 'var(--fg-3)' }}>No disponible</span>}
                             </div>
                             {!h.is_closed && (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, paddingLeft: 52 }}>
@@ -863,7 +745,7 @@ function HoursTab({ token, slug }: { token: string | null; slug: string }) {
 
 // ── FaqsTab ───────────────────────────────────────────────────────────────────
 function FaqsTab({ token, slug }: { token: string | null; slug: string }) {
-    const [faqs, setFaqs] = useState<Faq[]>([]);
+    const [faqs, setFaqs]   = useState<Faq[]>([]);
     const [loading, setLoading] = useState(true);
     const [editId, setEditId]   = useState<number | null>(null);
     const [editQ, setEditQ]     = useState('');
@@ -876,11 +758,8 @@ function FaqsTab({ token, slug }: { token: string | null; slug: string }) {
     const load = useCallback(() => {
         if (!token) return;
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/faqs`, { headers: { Authorization: `Bearer ${token}` } })
-            .then(r => setFaqs(r.data))
-            .catch(console.error)
-            .finally(() => setLoading(false));
+            .then(r => setFaqs(r.data)).catch(console.error).finally(() => setLoading(false));
     }, [token]);
-
     useEffect(() => { load(); }, [load]);
 
     const handleAdd = async () => {
@@ -888,38 +767,27 @@ function FaqsTab({ token, slug }: { token: string | null; slug: string }) {
         setSaving(true);
         try {
             const r = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/faqs`,
-                { question: newQ.trim(), answer: newA.trim() },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            setFaqs(f => [...f, r.data]);
-            setNewQ(''); setNewA(''); setAdding(false);
+                { question: newQ.trim(), answer: newA.trim() }, { headers: { Authorization: `Bearer ${token}` } });
+            setFaqs(f => [...f, r.data]); setNewQ(''); setNewA(''); setAdding(false);
             revalidatePublicPage(slug);
-        } catch (err) { console.error(err); }
-        finally { setSaving(false); }
+        } catch (err) { console.error(err); } finally { setSaving(false); }
     };
 
     const handleUpdate = async (id: number) => {
         setSaving(true);
         try {
             const r = await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/faqs/${id}`,
-                { question: editQ.trim(), answer: editA.trim() },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            setFaqs(f => f.map(x => x.id === id ? r.data : x));
-            setEditId(null);
+                { question: editQ.trim(), answer: editA.trim() }, { headers: { Authorization: `Bearer ${token}` } });
+            setFaqs(f => f.map(x => x.id === id ? r.data : x)); setEditId(null);
             revalidatePublicPage(slug);
-        } catch (err) { console.error(err); }
-        finally { setSaving(false); }
+        } catch (err) { console.error(err); } finally { setSaving(false); }
     };
 
     const handleDelete = async (id: number) => {
         if (!confirm('¿Eliminar esta FAQ?')) return;
         try {
-            await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/faqs/${id}`,
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            setFaqs(f => f.filter(x => x.id !== id));
-            revalidatePublicPage(slug);
+            await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/faqs/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+            setFaqs(f => f.filter(x => x.id !== id)); revalidatePublicPage(slug);
         } catch (err) { console.error(err); }
     };
 
@@ -930,16 +798,10 @@ function FaqsTab({ token, slug }: { token: string | null; slug: string }) {
             <div className="gcard">
                 <div className="gcard__head">
                     <h3 className="gcard__title">Preguntas frecuentes</h3>
-                    <button className="dbtn dbtn--primary dbtn--sm" onClick={() => setAdding(true)}>
-                        {IcoPlus}<span>Agregar</span>
-                    </button>
+                    <button className="dbtn dbtn--primary dbtn--sm" onClick={() => setAdding(true)}>{IcoPlus}<span>Agregar</span></button>
                 </div>
                 <div className="gcard__body">
-                    {faqs.length === 0 && !adding && (
-                        <p style={{ fontSize: 13, color: 'var(--fg-3)', textAlign: 'center', padding: '20px 0' }}>
-                            Sin FAQs todavía. Hacé clic en Agregar para crear la primera.
-                        </p>
-                    )}
+                    {faqs.length === 0 && !adding && <p style={{ fontSize: 13, color: 'var(--fg-3)', textAlign: 'center', padding: '20px 0' }}>Sin FAQs. Hacé clic en Agregar.</p>}
                     {faqs.map(faq => (
                         <div key={faq.id} style={{ borderBottom: '1px solid var(--line)', padding: '12px 0' }}>
                             {editId === faq.id ? (
@@ -965,10 +827,8 @@ function FaqsTab({ token, slug }: { token: string | null; slug: string }) {
                             )}
                         </div>
                     ))}
-
                     {adding && (
                         <div style={{ borderTop: faqs.length > 0 ? '1px solid var(--line)' : 'none', paddingTop: faqs.length > 0 ? 12 : 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                            <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-2)' }}>Nueva pregunta</p>
                             <input className="fg-field__input" value={newQ} onChange={e => setNewQ(e.target.value)} placeholder="¿Cuál es la pregunta?" />
                             <textarea className="fg-field__input" value={newA} onChange={e => setNewA(e.target.value)} rows={3} style={{ resize: 'vertical' }} placeholder="Respuesta..." />
                             <div style={{ display: 'flex', gap: 8 }}>
@@ -995,12 +855,7 @@ function ProductForm({ form, setForm }: { form: typeof emptyProduct; setForm: (f
                 <input className="fg-field__input" type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} placeholder="Precio" min={0} />
                 <input className="fg-field__input" value={form.badge} onChange={e => setForm({ ...form, badge: e.target.value })} placeholder="Badge (Ej: Nuevo)" />
             </div>
-            <ImageUpload
-                value={form.image_url}
-                onChange={url => setForm({ ...form, image_url: url })}
-                previewHeight={100}
-                placeholder="URL de imagen"
-            />
+            <ImageUpload value={form.image_url} onChange={url => setForm({ ...form, image_url: url })} previewHeight={100} placeholder="URL de imagen" />
             <textarea className="fg-field__input" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={2} style={{ resize: 'vertical' }} placeholder="Descripción corta" />
         </div>
     );
@@ -1018,11 +873,8 @@ function ProductsTab({ token, slug }: { token: string | null; slug: string }) {
     const load = useCallback(() => {
         if (!token) return;
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/products`, { headers: { Authorization: `Bearer ${token}` } })
-            .then(r => setProducts(r.data))
-            .catch(console.error)
-            .finally(() => setLoading(false));
+            .then(r => setProducts(r.data)).catch(console.error).finally(() => setLoading(false));
     }, [token]);
-
     useEffect(() => { load(); }, [load]);
 
     const handleAdd = async () => {
@@ -1030,50 +882,35 @@ function ProductsTab({ token, slug }: { token: string | null; slug: string }) {
         setSaving(true);
         try {
             const r = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/products`,
-                { ...newForm, price: newForm.price ? Number(newForm.price) : null },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            setProducts(p => [...p, r.data]);
-            setNewForm({ ...emptyProduct });
-            setAdding(false);
+                { ...newForm, price: newForm.price ? Number(newForm.price) : null }, { headers: { Authorization: `Bearer ${token}` } });
+            setProducts(p => [...p, r.data]); setNewForm({ ...emptyProduct }); setAdding(false);
             revalidatePublicPage(slug);
-        } catch (err) { console.error(err); }
-        finally { setSaving(false); }
+        } catch (err) { console.error(err); } finally { setSaving(false); }
     };
 
     const handleUpdate = async (id: number) => {
         setSaving(true);
         try {
             const r = await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/products/${id}`,
-                { ...editForm, price: editForm.price ? Number(editForm.price) : null },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            setProducts(p => p.map(x => x.id === id ? r.data : x));
-            setEditId(null);
+                { ...editForm, price: editForm.price ? Number(editForm.price) : null }, { headers: { Authorization: `Bearer ${token}` } });
+            setProducts(p => p.map(x => x.id === id ? r.data : x)); setEditId(null);
             revalidatePublicPage(slug);
-        } catch (err) { console.error(err); }
-        finally { setSaving(false); }
+        } catch (err) { console.error(err); } finally { setSaving(false); }
     };
 
     const handleToggleVisible = async (product: Product) => {
         try {
             const r = await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/products/${product.id}`,
-                { ...product, is_visible: !product.is_visible, price: product.price },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            setProducts(p => p.map(x => x.id === product.id ? r.data : x));
-            revalidatePublicPage(slug);
+                { ...product, is_visible: !product.is_visible, price: product.price }, { headers: { Authorization: `Bearer ${token}` } });
+            setProducts(p => p.map(x => x.id === product.id ? r.data : x)); revalidatePublicPage(slug);
         } catch (err) { console.error(err); }
     };
 
     const handleDelete = async (id: number) => {
         if (!confirm('¿Eliminar este producto?')) return;
         try {
-            await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/products/${id}`,
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            setProducts(p => p.filter(x => x.id !== id));
-            revalidatePublicPage(slug);
+            await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/products/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+            setProducts(p => p.filter(x => x.id !== id)); revalidatePublicPage(slug);
         } catch (err) { console.error(err); }
     };
 
@@ -1087,11 +924,7 @@ function ProductsTab({ token, slug }: { token: string | null; slug: string }) {
                     <button className="dbtn dbtn--primary dbtn--sm" onClick={() => setAdding(true)}>{IcoPlus}<span>Agregar</span></button>
                 </div>
                 <div className="gcard__body">
-                    {products.length === 0 && !adding && (
-                        <p style={{ fontSize: 13, color: 'var(--fg-3)', textAlign: 'center', padding: '20px 0' }}>
-                            Sin productos todavía.
-                        </p>
-                    )}
+                    {products.length === 0 && !adding && <p style={{ fontSize: 13, color: 'var(--fg-3)', textAlign: 'center', padding: '20px 0' }}>Sin productos todavía.</p>}
                     {products.map(p => (
                         <div key={p.id} style={{ borderBottom: '1px solid var(--line)', padding: '12px 0' }}>
                             {editId === p.id ? (
@@ -1105,11 +938,7 @@ function ProductsTab({ token, slug }: { token: string | null; slug: string }) {
                             ) : (
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
                                     <div style={{ display: 'flex', gap: 10, alignItems: 'center', flex: 1, minWidth: 0 }}>
-                                        {p.image_url && (
-                                            <img src={p.image_url} alt={p.name}
-                                                style={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 8, border: '1px solid var(--line)', flexShrink: 0 }}
-                                                onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                                        )}
+                                        {p.image_url && <img src={p.image_url} alt={p.name} style={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 8, border: '1px solid var(--line)', flexShrink: 0 }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
                                         <div style={{ minWidth: 0 }}>
                                             <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-0)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                                 {p.name}
@@ -1122,26 +951,16 @@ function ProductsTab({ token, slug }: { token: string | null; slug: string }) {
                                         </div>
                                     </div>
                                     <div style={{ display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' }}>
-                                        <button
-                                            className="dbtn dbtn--sm"
-                                            onClick={() => handleToggleVisible(p)}
-                                            title={p.is_visible ? 'Visible' : 'Oculto'}
-                                            style={{ opacity: p.is_visible ? 1 : 0.45 }}
-                                        >{IcoEye}</button>
-                                        <button className="dbtn dbtn--sm" onClick={() => {
-                                            setEditId(p.id);
-                                            setEditForm({ name: p.name, brand: p.brand ?? '', price: p.price != null ? String(p.price) : '', image_url: p.image_url ?? '', badge: p.badge ?? '', description: p.description ?? '' });
-                                        }}>{IcoPencil}</button>
+                                        <button className="dbtn dbtn--sm" onClick={() => handleToggleVisible(p)} title={p.is_visible ? 'Visible' : 'Oculto'} style={{ opacity: p.is_visible ? 1 : 0.45 }}>{IcoEye}</button>
+                                        <button className="dbtn dbtn--sm" onClick={() => { setEditId(p.id); setEditForm({ name: p.name, brand: p.brand ?? '', price: p.price != null ? String(p.price) : '', image_url: p.image_url ?? '', badge: p.badge ?? '', description: p.description ?? '' }); }}>{IcoPencil}</button>
                                         <button className="dbtn dbtn--sm dbtn--danger" onClick={() => handleDelete(p.id)}>{IcoTrash}</button>
                                     </div>
                                 </div>
                             )}
                         </div>
                     ))}
-
                     {adding && (
                         <div style={{ borderTop: products.length > 0 ? '1px solid var(--line)' : 'none', paddingTop: products.length > 0 ? 12 : 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                            <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-2)' }}>Nuevo producto</p>
                             <ProductForm form={newForm} setForm={setNewForm} />
                             <div style={{ display: 'flex', gap: 8 }}>
                                 <button className="dbtn dbtn--primary dbtn--sm" onClick={handleAdd} disabled={saving || !newForm.name.trim()}>{saving ? '…' : 'Agregar producto'}</button>
@@ -1163,18 +982,15 @@ function ReviewsTab({ token, slug }: { token: string | null; slug: string }) {
     const [loading, setLoading] = useState(true);
     const [editId, setEditId]   = useState<number | null>(null);
     const [editForm, setEditForm] = useState({ ...emptyReview });
-    const [newForm, setNewForm]  = useState({ ...emptyReview });
-    const [adding, setAdding]    = useState(false);
-    const [saving, setSaving]    = useState(false);
+    const [newForm, setNewForm]   = useState({ ...emptyReview });
+    const [adding, setAdding]     = useState(false);
+    const [saving, setSaving]     = useState(false);
 
     const load = useCallback(() => {
         if (!token) return;
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/reviews`, { headers: { Authorization: `Bearer ${token}` } })
-            .then(r => setReviews(r.data))
-            .catch(console.error)
-            .finally(() => setLoading(false));
+            .then(r => setReviews(r.data)).catch(console.error).finally(() => setLoading(false));
     }, [token]);
-
     useEffect(() => { load(); }, [load]);
 
     const handleAdd = async () => {
@@ -1182,59 +998,42 @@ function ReviewsTab({ token, slug }: { token: string | null; slug: string }) {
         setSaving(true);
         try {
             const r = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/reviews`,
-                { ...newForm, stars: Number(newForm.stars) },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            setReviews(rv => [r.data, ...rv]);
-            setNewForm({ ...emptyReview }); setAdding(false);
+                { ...newForm, stars: Number(newForm.stars) }, { headers: { Authorization: `Bearer ${token}` } });
+            setReviews(rv => [r.data, ...rv]); setNewForm({ ...emptyReview }); setAdding(false);
             revalidatePublicPage(slug);
-        } catch (err) { console.error(err); }
-        finally { setSaving(false); }
+        } catch (err) { console.error(err); } finally { setSaving(false); }
     };
 
     const handleUpdate = async (id: number) => {
         setSaving(true);
         try {
             const r = await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/reviews/${id}`,
-                { ...editForm, stars: Number(editForm.stars) },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            setReviews(rv => rv.map(x => x.id === id ? r.data : x));
-            setEditId(null);
+                { ...editForm, stars: Number(editForm.stars) }, { headers: { Authorization: `Bearer ${token}` } });
+            setReviews(rv => rv.map(x => x.id === id ? r.data : x)); setEditId(null);
             revalidatePublicPage(slug);
-        } catch (err) { console.error(err); }
-        finally { setSaving(false); }
+        } catch (err) { console.error(err); } finally { setSaving(false); }
     };
 
     const handleToggleVisible = async (review: Review) => {
         try {
             const r = await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/reviews/${review.id}`,
-                { ...review, is_visible: !review.is_visible },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            setReviews(rv => rv.map(x => x.id === review.id ? r.data : x));
-            revalidatePublicPage(slug);
+                { ...review, is_visible: !review.is_visible }, { headers: { Authorization: `Bearer ${token}` } });
+            setReviews(rv => rv.map(x => x.id === review.id ? r.data : x)); revalidatePublicPage(slug);
         } catch (err) { console.error(err); }
     };
 
     const handleDelete = async (id: number) => {
         if (!confirm('¿Eliminar esta reseña?')) return;
         try {
-            await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/reviews/${id}`,
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            setReviews(rv => rv.filter(x => x.id !== id));
-            revalidatePublicPage(slug);
+            await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/reviews/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+            setReviews(rv => rv.filter(x => x.id !== id)); revalidatePublicPage(slug);
         } catch (err) { console.error(err); }
     };
 
     const Stars = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
         <div style={{ display: 'flex', gap: 3 }}>
-            {[1, 2, 3, 4, 5].map(n => (
-                <button key={n} onClick={() => onChange(String(n))}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: n <= Number(value) ? '#fbbf24' : 'var(--line)', padding: 0, lineHeight: 1 }}>
-                    ★
-                </button>
+            {[1,2,3,4,5].map(n => (
+                <button key={n} onClick={() => onChange(String(n))} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: n <= Number(value) ? '#fbbf24' : 'var(--line)', padding: 0, lineHeight: 1 }}>★</button>
             ))}
         </div>
     );
@@ -1249,9 +1048,7 @@ function ReviewsTab({ token, slug }: { token: string | null; slug: string }) {
                     <button className="dbtn dbtn--primary dbtn--sm" onClick={() => setAdding(true)}>{IcoPlus}<span>Agregar</span></button>
                 </div>
                 <div className="gcard__body">
-                    {reviews.length === 0 && !adding && (
-                        <p style={{ fontSize: 13, color: 'var(--fg-3)', textAlign: 'center', padding: '20px 0' }}>Sin reseñas todavía.</p>
-                    )}
+                    {reviews.length === 0 && !adding && <p style={{ fontSize: 13, color: 'var(--fg-3)', textAlign: 'center', padding: '20px 0' }}>Sin reseñas todavía.</p>}
                     {reviews.map(rv => (
                         <div key={rv.id} style={{ borderBottom: '1px solid var(--line)', padding: '12px 0' }}>
                             {editId === rv.id ? (
@@ -1271,9 +1068,7 @@ function ReviewsTab({ token, slug }: { token: string | null; slug: string }) {
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
                                     <div style={{ flex: 1, minWidth: 0 }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                                            <span style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--glass-bg)', border: '1px solid var(--line)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'var(--fg-1)', flexShrink: 0 }}>
-                                                {rv.author_initial}
-                                            </span>
+                                            <span style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--glass-bg)', border: '1px solid var(--line)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'var(--fg-1)', flexShrink: 0 }}>{rv.author_initial}</span>
                                             <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-0)' }}>{rv.author_name}</span>
                                             <span style={{ color: '#fbbf24', fontSize: 12 }}>{'★'.repeat(rv.stars)}</span>
                                             {rv.date_label && <span style={{ fontSize: 11, color: 'var(--fg-3)' }}>{rv.date_label}</span>}
@@ -1289,25 +1084,13 @@ function ReviewsTab({ token, slug }: { token: string | null; slug: string }) {
                             )}
                         </div>
                     ))}
-
                     {adding && (
                         <div style={{ borderTop: reviews.length > 0 ? '1px solid var(--line)' : 'none', paddingTop: reviews.length > 0 ? 12 : 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                            <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-2)' }}>Nueva reseña</p>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                                 <input className="fg-field__input" value={newForm.author_name} onChange={e => setNewForm(f => ({ ...f, author_name: e.target.value }))} placeholder="Nombre del cliente *" />
                                 <input className="fg-field__input" value={newForm.date_label} onChange={e => setNewForm(f => ({ ...f, date_label: e.target.value }))} placeholder="Fecha (Ej: Enero 2024)" />
                             </div>
-                            <div>
-                                <p style={{ fontSize: 11, color: 'var(--fg-3)', marginBottom: 4 }}>Estrellas</p>
-                                <div style={{ display: 'flex', gap: 3 }}>
-                                    {[1, 2, 3, 4, 5].map(n => (
-                                        <button key={n} onClick={() => setNewForm(f => ({ ...f, stars: String(n) }))}
-                                            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: n <= Number(newForm.stars) ? '#fbbf24' : 'var(--line)', padding: 0, lineHeight: 1 }}>
-                                            ★
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
+                            <Stars value={newForm.stars} onChange={v => setNewForm(f => ({ ...f, stars: v }))} />
                             <textarea className="fg-field__input" value={newForm.text} onChange={e => setNewForm(f => ({ ...f, text: e.target.value }))} rows={3} style={{ resize: 'vertical' }} placeholder="Texto de la reseña *" />
                             <div style={{ display: 'flex', gap: 8 }}>
                                 <button className="dbtn dbtn--primary dbtn--sm" onClick={handleAdd} disabled={saving || !newForm.author_name.trim() || !newForm.text.trim()}>{saving ? '…' : 'Agregar reseña'}</button>
@@ -1321,24 +1104,21 @@ function ReviewsTab({ token, slug }: { token: string | null; slug: string }) {
     );
 }
 
-// ── GaleríaTab ────────────────────────────────────────────────────────────────
+// ── GaleriaTab ────────────────────────────────────────────────────────────────
 type GalleryItem = { id: number; image_url: string; caption: string };
 
 function GaleriaTab({ token, slug }: { token: string | null; slug: string }) {
     const [items, setItems]     = useState<GalleryItem[]>([]);
     const [loading, setLoading] = useState(true);
-    const [pending, setPending] = useState('');     // URL to add
+    const [pending, setPending] = useState('');
     const [adding, setAdding]   = useState(false);
     const [saving, setSaving]   = useState(false);
 
     const load = useCallback(() => {
         if (!token) return;
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/gallery`, { headers: { Authorization: `Bearer ${token}` } })
-            .then(r => setItems(r.data))
-            .catch(console.error)
-            .finally(() => setLoading(false));
+            .then(r => setItems(r.data)).catch(console.error).finally(() => setLoading(false));
     }, [token]);
-
     useEffect(() => { load(); }, [load]);
 
     const handleAdd = async () => {
@@ -1346,24 +1126,17 @@ function GaleriaTab({ token, slug }: { token: string | null; slug: string }) {
         setSaving(true);
         try {
             const r = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/gallery`,
-                { image_url: pending.trim() },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            setItems(it => [...it, r.data]);
-            setPending(''); setAdding(false);
+                { image_url: pending.trim() }, { headers: { Authorization: `Bearer ${token}` } });
+            setItems(it => [...it, r.data]); setPending(''); setAdding(false);
             revalidatePublicPage(slug);
-        } catch (err) { console.error(err); }
-        finally { setSaving(false); }
+        } catch (err) { console.error(err); } finally { setSaving(false); }
     };
 
     const handleDelete = async (id: number) => {
         if (!confirm('¿Eliminar esta foto?')) return;
         try {
-            await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/gallery/${id}`,
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            setItems(it => it.filter(x => x.id !== id));
-            revalidatePublicPage(slug);
+            await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/gallery/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+            setItems(it => it.filter(x => x.id !== id)); revalidatePublicPage(slug);
         } catch (err) { console.error(err); }
     };
 
@@ -1380,47 +1153,21 @@ function GaleriaTab({ token, slug }: { token: string | null; slug: string }) {
                     {adding && (
                         <div style={{ marginBottom: 16, padding: 14, borderRadius: 10, background: 'var(--glass-bg)', border: '1px solid var(--line)' }}>
                             <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-2)', marginBottom: 8 }}>Nueva foto</p>
-                            <ImageUpload
-                                value={pending}
-                                onChange={url => setPending(url)}
-                                previewHeight={140}
-                                placeholder="URL de la imagen"
-                            />
+                            <ImageUpload value={pending} onChange={url => setPending(url)} previewHeight={140} placeholder="URL de la imagen" />
                             <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-                                <button className="dbtn dbtn--primary dbtn--sm" onClick={handleAdd} disabled={saving || !pending.trim()}>
-                                    {saving ? '…' : 'Agregar a la galería'}
-                                </button>
+                                <button className="dbtn dbtn--primary dbtn--sm" onClick={handleAdd} disabled={saving || !pending.trim()}>{saving ? '…' : 'Agregar a la galería'}</button>
                                 <button className="dbtn dbtn--sm" onClick={() => { setAdding(false); setPending(''); }}>Cancelar</button>
                             </div>
                         </div>
                     )}
-
                     {items.length === 0 && !adding ? (
-                        <p style={{ fontSize: 13, color: 'var(--fg-3)', textAlign: 'center', padding: '20px 0' }}>
-                            Sin fotos todavía. Agregá tus mejores trabajos.
-                        </p>
+                        <p style={{ fontSize: 13, color: 'var(--fg-3)', textAlign: 'center', padding: '20px 0' }}>Sin fotos todavía.</p>
                     ) : (
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10 }}>
                             {items.map(item => (
                                 <div key={item.id} style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', aspectRatio: '1', background: 'var(--glass-bg)', border: '1px solid var(--line)' }}>
-                                    <img
-                                        src={item.image_url} alt={item.caption || 'Foto'}
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                        onError={e => { (e.target as HTMLImageElement).style.opacity = '0.3'; }}
-                                    />
-                                    <button
-                                        onClick={() => handleDelete(item.id)}
-                                        style={{
-                                            position: 'absolute', top: 6, right: 6,
-                                            width: 26, height: 26, borderRadius: '50%',
-                                            background: 'rgba(239,68,68,.85)', border: 'none',
-                                            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            color: '#fff',
-                                        }}
-                                        title="Eliminar"
-                                    >
-                                        {IcoTrash}
-                                    </button>
+                                    <img src={item.image_url} alt={item.caption || 'Foto'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { (e.target as HTMLImageElement).style.opacity = '0.3'; }} />
+                                    <button onClick={() => handleDelete(item.id)} style={{ position: 'absolute', top: 6, right: 6, width: 26, height: 26, borderRadius: '50%', background: 'rgba(239,68,68,.85)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }} title="Eliminar">{IcoTrash}</button>
                                 </div>
                             ))}
                         </div>
@@ -1446,15 +1193,10 @@ function EquipoTab({ token, slug }: { token: string | null; slug: string }) {
         if (!token) return;
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/team`, { headers: { Authorization: `Bearer ${token}` } })
             .then(r => setMembers(r.data.map((m: Record<string, unknown>) => ({
-                ...m,
-                avatar_url: (m.avatar_url as string) ?? '',
-                bio: (m.bio as string) ?? '',
+                ...m, avatar_url: (m.avatar_url as string) ?? '', bio: (m.bio as string) ?? '',
                 years_experience: m.years_experience != null ? String(m.years_experience) : '',
-                instagram_handle: (m.instagram_handle as string) ?? '',
-                is_public: m.is_public !== false,
-            }))))
-            .catch(console.error)
-            .finally(() => setLoading(false));
+                instagram_handle: (m.instagram_handle as string) ?? '', is_public: m.is_public !== false,
+            })))).catch(console.error).finally(() => setLoading(false));
     }, [token]);
 
     const handleSave = async (id: number) => {
@@ -1464,20 +1206,10 @@ function EquipoTab({ token, slug }: { token: string | null; slug: string }) {
                 { ...editForm, years_experience: editForm.years_experience ? Number(editForm.years_experience) : null },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-            setMembers(ms => ms.map(m => m.id === id ? {
-                ...r.data,
-                avatar_url: r.data.avatar_url ?? '',
-                bio: r.data.bio ?? '',
-                years_experience: r.data.years_experience != null ? String(r.data.years_experience) : '',
-                instagram_handle: r.data.instagram_handle ?? '',
-                is_public: r.data.is_public !== false,
-            } : m));
-            setEditId(null);
-            setSaved(id);
-            setTimeout(() => setSaved(null), 2000);
+            setMembers(ms => ms.map(m => m.id === id ? { ...r.data, avatar_url: r.data.avatar_url ?? '', bio: r.data.bio ?? '', years_experience: r.data.years_experience != null ? String(r.data.years_experience) : '', instagram_handle: r.data.instagram_handle ?? '', is_public: r.data.is_public !== false } : m));
+            setEditId(null); setSaved(id); setTimeout(() => setSaved(null), 2000);
             revalidatePublicPage(slug);
-        } catch (err) { console.error(err); }
-        finally { setSaving(false); }
+        } catch (err) { console.error(err); } finally { setSaving(false); }
     };
 
     if (loading) return <div className="skel-page"><span className="skel" style={{ height: 200 }} /></div>;
@@ -1487,14 +1219,10 @@ function EquipoTab({ token, slug }: { token: string | null; slug: string }) {
             <div className="gcard">
                 <div className="gcard__head">
                     <h3 className="gcard__title">Equipo</h3>
-                    <span style={{ fontSize: 11, color: 'var(--fg-3)' }}>Fotos y bios visibles en la página pública</span>
+                    <span style={{ fontSize: 11, color: 'var(--fg-3)' }}>Fotos y bios en la página pública</span>
                 </div>
                 <div className="gcard__body">
-                    {members.length === 0 && (
-                        <p style={{ fontSize: 13, color: 'var(--fg-3)', textAlign: 'center', padding: '20px 0' }}>
-                            No hay integrantes de equipo todavía.
-                        </p>
-                    )}
+                    {members.length === 0 && <p style={{ fontSize: 13, color: 'var(--fg-3)', textAlign: 'center', padding: '20px 0' }}>No hay integrantes de equipo.</p>}
                     {members.map(m => (
                         <div key={m.id} style={{ borderBottom: '1px solid var(--line)', padding: '16px 0' }}>
                             {editId === m.id ? (
@@ -1502,28 +1230,16 @@ function EquipoTab({ token, slug }: { token: string | null; slug: string }) {
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                                         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-0)' }}>{m.name}</span>
                                         <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--fg-3)', marginLeft: 'auto', cursor: 'pointer' }}>
-                                            <input type="checkbox" checked={editForm.is_public} onChange={e => setEditForm(f => ({ ...f, is_public: e.target.checked }))}
-                                                style={{ accentColor: 'var(--accent)', width: 14, height: 14 }} />
+                                            <input type="checkbox" checked={editForm.is_public} onChange={e => setEditForm(f => ({ ...f, is_public: e.target.checked }))} style={{ accentColor: 'var(--accent)', width: 14, height: 14 }} />
                                             Visible en página pública
                                         </label>
                                     </div>
-                                    <ImageUpload
-                                        label="Foto de perfil"
-                                        value={editForm.avatar_url}
-                                        onChange={url => setEditForm(f => ({ ...f, avatar_url: url }))}
-                                        previewHeight={120}
-                                    />
+                                    <ImageUpload label="Foto de perfil" value={editForm.avatar_url} onChange={url => setEditForm(f => ({ ...f, avatar_url: url }))} previewHeight={120} />
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                                        <Field label="Años de experiencia">
-                                            <input className="fg-field__input" type="number" min={0} max={60} value={editForm.years_experience} onChange={e => setEditForm(f => ({ ...f, years_experience: e.target.value }))} placeholder="Ej: 8" />
-                                        </Field>
-                                        <Field label="Instagram (sin @)">
-                                            <input className="fg-field__input" value={editForm.instagram_handle} onChange={e => setEditForm(f => ({ ...f, instagram_handle: e.target.value }))} placeholder="mi_usuario" />
-                                        </Field>
+                                        <Field label="Años de experiencia"><input className="fg-field__input" type="number" min={0} max={60} value={editForm.years_experience} onChange={e => setEditForm(f => ({ ...f, years_experience: e.target.value }))} placeholder="Ej: 8" /></Field>
+                                        <Field label="Instagram (sin @)"><input className="fg-field__input" value={editForm.instagram_handle} onChange={e => setEditForm(f => ({ ...f, instagram_handle: e.target.value }))} placeholder="mi_usuario" /></Field>
                                     </div>
-                                    <Field label="Bio">
-                                        <textarea className="fg-field__input" rows={2} style={{ resize: 'vertical' }} value={editForm.bio} onChange={e => setEditForm(f => ({ ...f, bio: e.target.value }))} placeholder="Contá un poco sobre este profesional…" />
-                                    </Field>
+                                    <Field label="Bio"><textarea className="fg-field__input" rows={2} style={{ resize: 'vertical' }} value={editForm.bio} onChange={e => setEditForm(f => ({ ...f, bio: e.target.value }))} placeholder="Contá un poco sobre este profesional…" /></Field>
                                     <div style={{ display: 'flex', gap: 8 }}>
                                         <button className="dbtn dbtn--primary dbtn--sm" onClick={() => handleSave(m.id)} disabled={saving}>{saving ? '…' : IcoCheck}<span>{saving ? 'Guardando…' : 'Guardar'}</span></button>
                                         <button className="dbtn dbtn--sm" onClick={() => setEditId(null)}>Cancelar</button>
@@ -1532,12 +1248,9 @@ function EquipoTab({ token, slug }: { token: string | null; slug: string }) {
                             ) : (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                                     {m.avatar_url ? (
-                                        <img src={m.avatar_url} alt={m.name} style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--line)', flexShrink: 0 }}
-                                            onError={e => { (e.target as HTMLImageElement).style.opacity = '0.3'; }} />
+                                        <img src={m.avatar_url} alt={m.name} style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--line)', flexShrink: 0 }} onError={e => { (e.target as HTMLImageElement).style.opacity = '0.3'; }} />
                                     ) : (
-                                        <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--glass-bg)', border: '2px solid var(--line)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700, color: 'var(--fg-3)', flexShrink: 0 }}>
-                                            {m.name.charAt(0).toUpperCase()}
-                                        </div>
+                                        <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--glass-bg)', border: '2px solid var(--line)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700, color: 'var(--fg-3)', flexShrink: 0 }}>{m.name.charAt(0).toUpperCase()}</div>
                                     )}
                                     <div style={{ flex: 1, minWidth: 0 }}>
                                         <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-0)' }}>{m.name}</p>
@@ -1548,10 +1261,7 @@ function EquipoTab({ token, slug }: { token: string | null; slug: string }) {
                                     </div>
                                     <div style={{ display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' }}>
                                         {saved === m.id && <span style={{ fontSize: 11, color: '#34d399' }}>{IcoCheck}</span>}
-                                        <button className="dbtn dbtn--sm" onClick={() => {
-                                            setEditId(m.id);
-                                            setEditForm({ avatar_url: m.avatar_url, bio: m.bio, years_experience: m.years_experience, instagram_handle: m.instagram_handle, is_public: m.is_public });
-                                        }}>{IcoPencil}</button>
+                                        <button className="dbtn dbtn--sm" onClick={() => { setEditId(m.id); setEditForm({ avatar_url: m.avatar_url, bio: m.bio, years_experience: m.years_experience, instagram_handle: m.instagram_handle, is_public: m.is_public }); }}>{IcoPencil}</button>
                                     </div>
                                 </div>
                             )}
@@ -1564,8 +1274,8 @@ function EquipoTab({ token, slug }: { token: string | null; slug: string }) {
 }
 
 // ── BranchesTab ───────────────────────────────────────────────────────────────
-type BranchItem    = { id: number; name: string; address: string | null; employee_count: number };
-type BranchMember  = { id: number; name: string | null; email: string; branch_id: number | null };
+type BranchItem   = { id: number; name: string; address: string | null; employee_count: number };
+type BranchMember = { id: number; name: string | null; email: string; branch_id: number | null };
 
 const IcoBranchPin = <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>;
 const IcoCopyLink  = <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>;
@@ -1590,49 +1300,40 @@ function BranchesTab({ token, slug }: { token: string | null; slug: string }) {
         Promise.all([
             axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/branches`, { headers: h }),
             axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/team`,     { headers: h }),
-        ]).then(([bRes, tRes]) => {
-            setBranches(bRes.data);
-            setEmployees(tRes.data);
-        }).catch(console.error).finally(() => setLoading(false));
+        ]).then(([bRes, tRes]) => { setBranches(bRes.data); setEmployees(tRes.data); })
+          .catch(console.error).finally(() => setLoading(false));
     }, [token]);
 
     const openCreate = () => { setEditBranch(null); setFormName(''); setFormAddr(''); setShowForm(true); };
     const openEdit   = (b: BranchItem) => { setEditBranch(b); setFormName(b.name); setFormAddr(b.address || ''); setShowForm(true); };
 
     const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setSubmitting(true);
+        e.preventDefault(); setSubmitting(true);
         const h = { Authorization: `Bearer ${token}` };
         try {
             if (editBranch) {
-                const res = await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/branches/${editBranch.id}`,
-                    { name: formName, address: formAddr || null }, { headers: h });
+                const res = await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/branches/${editBranch.id}`, { name: formName, address: formAddr || null }, { headers: h });
                 setBranches(prev => prev.map(b => b.id === editBranch.id ? { ...b, ...res.data } : b));
             } else {
-                const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/branches`,
-                    { name: formName, address: formAddr || null }, { headers: h });
+                const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/branches`, { name: formName, address: formAddr || null }, { headers: h });
                 setBranches(prev => [...prev, res.data]);
             }
             setShowForm(false);
-        } catch (err) { console.error(err); }
-        finally { setSubmitting(false); }
+        } catch (err) { console.error(err); } finally { setSubmitting(false); }
     };
 
     const handleDelete = async (id: number) => {
         setDeletingId(id);
         try {
-            await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/branches/${id}`,
-                { headers: { Authorization: `Bearer ${token}` } });
+            await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/branches/${id}`, { headers: { Authorization: `Bearer ${token}` } });
             setBranches(prev => prev.filter(b => b.id !== id));
             setEmployees(prev => prev.map(e => e.branch_id === id ? { ...e, branch_id: null } : e));
-        } catch (err) { console.error(err); }
-        finally { setDeletingId(null); }
+        } catch (err) { console.error(err); } finally { setDeletingId(null); }
     };
 
     const handleAssign = async (empId: number, branchId: number | null) => {
         try {
-            await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/branches/employees/${empId}`,
-                { branchId }, { headers: { Authorization: `Bearer ${token}` } });
+            await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/branches/employees/${empId}`, { branchId }, { headers: { Authorization: `Bearer ${token}` } });
             setEmployees(prev => prev.map(e => e.id === empId ? { ...e, branch_id: branchId } : e));
         } catch (err) { console.error(err); }
     };
@@ -1640,8 +1341,7 @@ function BranchesTab({ token, slug }: { token: string | null; slug: string }) {
     const copyUrl = (branchId: number) => {
         const base = process.env.NEXT_PUBLIC_APP_URL ?? (typeof window !== 'undefined' ? window.location.origin : '');
         navigator.clipboard.writeText(`${base}/public/${slug}?branch=${branchId}`);
-        setCopiedId(branchId);
-        setTimeout(() => setCopiedId(null), 2000);
+        setCopiedId(branchId); setTimeout(() => setCopiedId(null), 2000);
     };
 
     if (loading) return <div className="empty">Cargando sucursales…</div>;
@@ -1649,19 +1349,13 @@ function BranchesTab({ token, slug }: { token: string | null; slug: string }) {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <button className="dbtn dbtn--primary" onClick={openCreate}>
-                    {IcoPlus}<span>Nueva sucursal</span>
-                </button>
+                <button className="dbtn dbtn--primary" onClick={openCreate}>{IcoPlus}<span>Nueva sucursal</span></button>
             </div>
-
             {branches.length === 0 ? (
-                <div className="empty">
-                    No hay sucursales todavía.<br />
-                    <span style={{ color: 'var(--fg-3)', fontSize: 13 }}>Creá tu primera sucursal para organizar tu equipo por ubicación.</span>
-                </div>
+                <div className="empty">No hay sucursales todavía.<br/><span style={{ color: 'var(--fg-3)', fontSize: 13 }}>Creá tu primera sucursal para organizar tu equipo.</span></div>
             ) : branches.map(branch => {
-                const branchEmps  = employees.filter(e => e.branch_id === branch.id);
-                const unassigned  = employees.filter(e => !e.branch_id);
+                const branchEmps = employees.filter(e => e.branch_id === branch.id);
+                const unassigned = employees.filter(e => !e.branch_id);
                 return (
                     <div key={branch.id} className="gcard suc">
                         <div className="suc__head">
@@ -1671,10 +1365,7 @@ function BranchesTab({ token, slug }: { token: string | null; slug: string }) {
                                 {branch.address && <div style={{ fontSize: 12, color: 'var(--fg-3)', marginTop: 2 }}>{branch.address}</div>}
                             </div>
                             <div className="suc__actions">
-                                <button className="dbtn dbtn--sm" onClick={() => copyUrl(branch.id)}>
-                                    {copiedId === branch.id ? IcoCheck : IcoCopyLink}
-                                    <span>{copiedId === branch.id ? 'Copiado' : 'Link'}</span>
-                                </button>
+                                <button className="dbtn dbtn--sm" onClick={() => copyUrl(branch.id)}>{copiedId === branch.id ? IcoCheck : IcoCopyLink}<span>{copiedId === branch.id ? 'Copiado' : 'Link'}</span></button>
                                 <button className="dash-iconbtn" onClick={() => openEdit(branch)} style={{ width: 32, height: 32 }}>{IcoPencil}</button>
                                 <button className="dash-iconbtn" onClick={() => handleDelete(branch.id)} disabled={deletingId === branch.id} style={{ width: 32, height: 32 }}>{IcoTrash}</button>
                             </div>
@@ -1684,10 +1375,7 @@ function BranchesTab({ token, slug }: { token: string | null; slug: string }) {
                             {branchEmps.map(emp => (
                                 <span key={emp.id} className="suc__chip">
                                     {emp.name || emp.email}
-                                    <button onClick={() => handleAssign(emp.id, null)}
-                                        style={{ display: 'flex', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--fg-3)', padding: 0 }}>
-                                        {IcoXSmall}
-                                    </button>
+                                    <button onClick={() => handleAssign(emp.id, null)} style={{ display: 'flex', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--fg-3)', padding: 0 }}>{IcoXSmall}</button>
                                 </span>
                             ))}
                             {unassigned.map(emp => (
@@ -1695,15 +1383,12 @@ function BranchesTab({ token, slug }: { token: string | null; slug: string }) {
                                     style={{ padding: '4px 10px', background: 'none', border: '1px dashed var(--line)', borderRadius: 999, fontSize: 12, color: 'var(--fg-3)', cursor: 'pointer', transition: 'border-color 0.15s, color 0.15s' }}
                                     onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--accent)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--accent)'; }}
                                     onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--line)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--fg-3)'; }}
-                                >
-                                    + {emp.name || emp.email}
-                                </button>
+                                >+ {emp.name || emp.email}</button>
                             ))}
                         </div>
                     </div>
                 );
             })}
-
             {showForm && (
                 <div className="dash-modal-overlay">
                     <div className="dash-modal">
@@ -1717,16 +1402,12 @@ function BranchesTab({ token, slug }: { token: string | null; slug: string }) {
                                 <input className="dash-input" value={formName} onChange={e => setFormName(e.target.value)} placeholder="Ej: Sucursal Centro" required />
                             </div>
                             <div>
-                                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--fg-2)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                                    Dirección <span style={{ fontWeight: 400, opacity: 0.6 }}>(opcional)</span>
-                                </label>
+                                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--fg-2)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Dirección <span style={{ fontWeight: 400, opacity: 0.6 }}>(opcional)</span></label>
                                 <input className="dash-input" value={formAddr} onChange={e => setFormAddr(e.target.value)} placeholder="Ej: 18 de Julio 1234, Montevideo" />
                             </div>
                             <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
                                 <button type="button" className="dbtn" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setShowForm(false)}>Cancelar</button>
-                                <button type="submit" className="dbtn dbtn--primary" style={{ flex: 1, justifyContent: 'center' }} disabled={submitting}>
-                                    {submitting ? 'Guardando…' : editBranch ? 'Guardar' : 'Crear sucursal'}
-                                </button>
+                                <button type="submit" className="dbtn dbtn--primary" style={{ flex: 1, justifyContent: 'center' }} disabled={submitting}>{submitting ? 'Guardando…' : editBranch ? 'Guardar' : 'Crear sucursal'}</button>
                             </div>
                         </form>
                     </div>
@@ -1743,26 +1424,17 @@ function LockedTab({ required }: { required: 'pro' | 'negocio' }) {
     const bg    = isPro ? 'rgba(167,139,250,.1)' : 'rgba(192,132,252,.1)';
     return (
         <div className="gcard">
-            <div className="gcard__body" style={{ display:'flex', flexDirection:'column', alignItems:'center', textAlign:'center', padding:'52px 24px', gap:16 }}>
-                <div style={{ width:52, height:52, borderRadius:16, background:bg, display:'flex', alignItems:'center', justifyContent:'center', color }}>
-                    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-                        <rect x="4" y="10" width="14" height="11" rx="2" stroke="currentColor" strokeWidth="1.5"/>
-                        <path d="M7.5 10V7.5a3.5 3.5 0 0 1 7 0V10" stroke="currentColor" strokeWidth="1.5"/>
-                    </svg>
+            <div className="gcard__body" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '52px 24px', gap: 16 }}>
+                <div style={{ width: 52, height: 52, borderRadius: 16, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color }}>
+                    <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="4" y="10" width="14" height="11" rx="2" stroke="currentColor" strokeWidth="1.5"/><path d="M7.5 10V7.5a3.5 3.5 0 0 1 7 0V10" stroke="currentColor" strokeWidth="1.5"/></svg>
                 </div>
                 <div>
-                    <p style={{ fontSize:15, fontWeight:700, color:'var(--fg-0)', marginBottom:6 }}>
-                        Requiere plan {isPro ? 'Pro' : 'Negocio'}
-                    </p>
-                    <p style={{ fontSize:13, color:'var(--fg-3)', lineHeight:1.6, maxWidth:320 }}>
-                        {isPro
-                            ? 'Mejorá al plan Pro para gestionar Productos, Reseñas y FAQs en tu página pública.'
-                            : 'Con el plan Negocio podés mostrar tu Equipo y Galería de trabajos en tu página pública.'}
+                    <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--fg-0)', marginBottom: 6 }}>Requiere plan {isPro ? 'Pro' : 'Negocio'}</p>
+                    <p style={{ fontSize: 13, color: 'var(--fg-3)', lineHeight: 1.6, maxWidth: 320 }}>
+                        {isPro ? 'Mejorá al plan Pro para gestionar Productos, Reseñas y FAQs en tu página pública.' : 'Con el plan Negocio podés mostrar tu Equipo y Galería de trabajos en tu página pública.'}
                     </p>
                 </div>
-                <Link href="/dashboard/settings/billing" className="dbtn dbtn--primary" style={{ textDecoration:'none' }}>
-                    Ver planes y mejorar →
-                </Link>
+                <Link href="/dashboard/settings/billing" className="dbtn dbtn--primary" style={{ textDecoration: 'none' }}>Ver planes y mejorar →</Link>
             </div>
         </div>
     );
@@ -1770,16 +1442,37 @@ function LockedTab({ required }: { required: 'pro' | 'negocio' }) {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function LandingAdminPage() {
-    const { token } = useAuth();
+    const { token, role, profileLoading } = useAuth();
+    const router = useRouter();
     const { business } = useBusiness();
-    const [tab, setTab] = useState<Tab>('Perfil');
 
-    const slug    = business?.slug ?? '';
-    const plan    = (business?.subscription_plan ?? 'gratis') as PlanKey;
-    const rank    = PLAN_RANK[plan] ?? 0;
+    useEffect(() => {
+        if (profileLoading) return;
+        if (role === 'employee') router.replace('/dashboard');
+    }, [role, profileLoading, router]);
+    const [tab, setTab] = useState<Tab>('Identidad');
+
+    const slug       = business?.slug ?? '';
+    const plan       = (business?.subscription_plan ?? 'gratis') as PlanKey;
+    const isExpired  = business?.subscription_status === 'expired';
+    const rank       = isExpired ? 0 : (PLAN_RANK[plan] ?? 0);
+    const isPro      = rank >= PLAN_RANK['pro'];
     const publicUrl = slug
         ? `${process.env.NEXT_PUBLIC_APP_URL ?? (typeof window !== 'undefined' ? window.location.origin : '')}/public/${slug}`
         : '';
+
+    const TAB_DESCRIPTIONS: Record<Tab, string> = {
+        'Identidad':  'Nombre, descripción, fotos y logo',
+        'Diseño':     'Colores, tipografía y marca',
+        'Contacto':   'Dirección, teléfono y redes sociales',
+        'Horarios':   'Días y horarios de atención',
+        'FAQs':       'Preguntas frecuentes de clientes',
+        'Productos':  'Productos a la venta en tu página',
+        'Reseñas':    'Opiniones de tus clientes',
+        'Galería':    'Fotos de tus trabajos',
+        'Equipo':     'Bios y fotos de tu equipo',
+        'Sucursales': 'Locales y asignación de profesionales',
+    };
 
     return (
         <div className="dash-page">
@@ -1807,53 +1500,51 @@ export default function LandingAdminPage() {
                     const badgeColor = required === 'pro' ? '#a78bfa' : '#c084fc';
                     const badgeBg   = required === 'pro' ? 'rgba(167,139,250,.15)' : 'rgba(192,132,252,.15)';
                     return (
-                        <button
-                            key={t}
-                            onClick={() => setTab(t)}
-                            style={{
-                                display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0,
-                                padding: '8px 14px', background: 'none', border: 'none',
-                                cursor: unlocked ? 'pointer' : 'default',
-                                fontSize: 13, fontWeight: tab === t ? 600 : 400,
-                                color: tab === t ? 'var(--fg-0)' : unlocked ? 'var(--fg-3)' : 'var(--fg-3)',
-                                borderBottom: `2px solid ${tab === t ? 'var(--accent)' : 'transparent'}`,
-                                marginBottom: -1, transition: 'all .15s',
-                                opacity: unlocked ? 1 : 0.55,
-                                whiteSpace: 'nowrap',
-                            }}
-                        >
+                        <button key={t} onClick={() => setTab(t)} style={{
+                            display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0,
+                            padding: '8px 14px', background: 'none', border: 'none',
+                            cursor: 'pointer', fontSize: 13, fontWeight: tab === t ? 600 : 400,
+                            color: tab === t ? 'var(--fg-0)' : 'var(--fg-3)',
+                            borderBottom: `2px solid ${tab === t ? 'var(--accent)' : 'transparent'}`,
+                            marginBottom: -1, transition: 'all .15s',
+                            opacity: unlocked ? 1 : 0.55, whiteSpace: 'nowrap',
+                        }}>
                             {t}
                             {badge && (
-                                <span style={{ fontSize: 8, fontWeight: 700, padding: '1px 5px', borderRadius: 99, background: badgeBg, color: badgeColor, letterSpacing: '0.06em' }}>
-                                    {badge}
-                                </span>
+                                <span style={{ fontSize: 8, fontWeight: 700, padding: '1px 5px', borderRadius: 99, background: badgeBg, color: badgeColor, letterSpacing: '0.06em' }}>{badge}</span>
                             )}
                         </button>
                     );
                 })}
             </div>
 
-            {/* All tabs stay mounted — CSS hides inactive ones so unsaved state is never lost */}
-            <div style={{ display: tab === 'Perfil'    ? 'block' : 'none' }}><ProfileTab  token={token} slug={slug} /></div>
-            <div style={{ display: tab === 'Tema'      ? 'block' : 'none' }}><ThemeTab    token={token} slug={slug} /></div>
-            <div style={{ display: tab === 'Horarios'  ? 'block' : 'none' }}><HoursTab    token={token} slug={slug} /></div>
-            <div style={{ display: tab === 'FAQs'      ? 'block' : 'none' }}>
-                {rank >= PLAN_RANK['pro'] ? <FaqsTab token={token} slug={slug} /> : <LockedTab required="pro" />}
+            {/* Tab description */}
+            <p style={{ fontSize: 12, color: 'var(--fg-3)', marginBottom: 16, marginTop: -8 }}>
+                {TAB_DESCRIPTIONS[tab]}
+            </p>
+
+            {/* Tab content — all stay mounted to preserve unsaved state */}
+            <div style={{ display: tab === 'Identidad'  ? 'block' : 'none' }}><IdentidadTab  token={token} slug={slug} isPro={isPro} /></div>
+            <div style={{ display: tab === 'Diseño'     ? 'block' : 'none' }}><DisenoTab     token={token} slug={slug} /></div>
+            <div style={{ display: tab === 'Contacto'   ? 'block' : 'none' }}><ContactoTab   token={token} slug={slug} /></div>
+            <div style={{ display: tab === 'Horarios'   ? 'block' : 'none' }}><HoursTab      token={token} slug={slug} /></div>
+            <div style={{ display: tab === 'FAQs'       ? 'block' : 'none' }}>
+                {isPro ? <FaqsTab token={token} slug={slug} /> : <LockedTab required="pro" />}
             </div>
-            <div style={{ display: tab === 'Productos' ? 'block' : 'none' }}>
-                {rank >= PLAN_RANK['pro'] ? <ProductsTab token={token} slug={slug} /> : <LockedTab required="pro" />}
+            <div style={{ display: tab === 'Productos'  ? 'block' : 'none' }}>
+                {isPro ? <ProductsTab token={token} slug={slug} /> : <LockedTab required="pro" />}
             </div>
-            <div style={{ display: tab === 'Reseñas'   ? 'block' : 'none' }}>
-                {rank >= PLAN_RANK['pro'] ? <ReviewsTab token={token} slug={slug} /> : <LockedTab required="pro" />}
+            <div style={{ display: tab === 'Reseñas'    ? 'block' : 'none' }}>
+                {isPro ? <ReviewsTab token={token} slug={slug} /> : <LockedTab required="pro" />}
+            </div>
+            <div style={{ display: tab === 'Galería'    ? 'block' : 'none' }}>
+                {rank >= PLAN_RANK['negocio'] ? <GaleriaTab token={token} slug={slug} /> : <LockedTab required="negocio" />}
+            </div>
+            <div style={{ display: tab === 'Equipo'     ? 'block' : 'none' }}>
+                {rank >= PLAN_RANK['negocio'] ? <EquipoTab token={token} slug={slug} /> : <LockedTab required="negocio" />}
             </div>
             <div style={{ display: tab === 'Sucursales' ? 'block' : 'none' }}>
                 {rank >= PLAN_RANK['negocio'] ? <BranchesTab token={token} slug={slug} /> : <LockedTab required="negocio" />}
-            </div>
-            <div style={{ display: tab === 'Galería'   ? 'block' : 'none' }}>
-                {rank >= PLAN_RANK['negocio'] ? <GaleriaTab token={token} slug={slug} /> : <LockedTab required="negocio" />}
-            </div>
-            <div style={{ display: tab === 'Equipo'    ? 'block' : 'none' }}>
-                {rank >= PLAN_RANK['negocio'] ? <EquipoTab token={token} slug={slug} /> : <LockedTab required="negocio" />}
             </div>
         </div>
     );

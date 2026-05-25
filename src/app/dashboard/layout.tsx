@@ -218,7 +218,7 @@ function DashSidebar({
             {open.fin && (
               <div className="dash-nav-sub">
                 <Link href="/dashboard/analytics" className={navSubCls('/dashboard/analytics')}>Métricas</Link>
-                {showExpenses && (
+                {isOwner && showExpenses && (
                   <Link href="/dashboard/finances/expenses" className={navSubCls('/dashboard/finances/expenses')}>Gastos</Link>
                 )}
                 {isOwner && showCommissions && (
@@ -376,9 +376,9 @@ function DashSearch() {
 type NotifItem = { id: string; title: string; start: string; client_name?: string };
 type TopPanel = 'help' | 'notif' | 'profile' | null;
 
-function DashTopbar({ crumbs, initial, businessName, role, logout, token }: {
+function DashTopbar({ crumbs, initial, businessName, role, canSettings, logout, token }: {
   crumbs: string[]; initial: string; businessName: string;
-  role: string | null; logout: () => void; token: string | null;
+  role: string | null; canSettings: boolean; logout: () => void; token: string | null;
 }) {
   const [open, setOpen] = useState<TopPanel>(null);
   const [notifs, setNotifs] = useState<NotifItem[]>([]);
@@ -550,9 +550,11 @@ function DashTopbar({ crumbs, initial, businessName, role, logout, token }: {
               </div>
             </div>
             <div className="topbar-drop__sep" />
-            <Link href="/dashboard/settings" className="topbar-drop__item" onClick={() => setOpen(null)}>
-              {Icon.settings} Configuración
-            </Link>
+            {canSettings && (
+              <Link href="/dashboard/settings" className="topbar-drop__item" onClick={() => setOpen(null)}>
+                {Icon.settings} Configuración
+              </Link>
+            )}
             <div className="topbar-drop__sep" />
             <button className="topbar-drop__item topbar-drop__item--danger" onClick={() => { setOpen(null); logout(); }}>
               {Icon.logout} Cerrar sesión
@@ -629,7 +631,7 @@ function MobileSubNav({
     if (showTeamReports) items.push({ href: '/dashboard/team/reports', label: 'Reportes' });
   } else if (inFin && hasFinanzas) {
     items = [{ href: '/dashboard/analytics', label: 'Métricas' }];
-    if (showExpenses) items.push({ href: '/dashboard/finances/expenses', label: 'Gastos' });
+    if (isOwner && showExpenses) items.push({ href: '/dashboard/finances/expenses', label: 'Gastos' });
     if (isOwner && showCommissions) items.push({ href: '/dashboard/finances/commissions', label: 'Comisiones' });
   } else if (inCfg && canSettings) {
     items = [
@@ -756,6 +758,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
           initial={initial}
           businessName={business?.name ?? ''}
           role={role}
+          canSettings={canSettings}
           logout={logout}
           token={token}
         />

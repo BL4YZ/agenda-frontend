@@ -46,8 +46,8 @@ export default function FooterSection() {
           </p>
         </div>
         <div className="vc-footer-cols">
-          <FooterCol title="Producto"  links={[{label:'Características'},{label:'Precios'},{label:'Integraciones'},{label:'Cambios'}]} />
-          <FooterCol title="Recursos"  links={[{label:'Centro de ayuda'},{label:'Blog'},{label:'API'},{label:'Estado'}]} />
+          <FooterCol title="Producto"  links={[{label:'Características',href:'/features'},{label:'Precios',href:'/#pricing'},{label:'Integraciones',href:'/integraciones'},{label:'Cambios',href:'/changelog'}]} />
+          <FooterCol title="Recursos"  links={[{label:'Centro de ayuda',href:'/help'},{label:'Blog',href:'/blog'},{label:'Estado',href:'/status'}]} />
           <FooterCol title="Empresa"   links={[{label:'Sobre nosotros',href:'/about'},{label:'Contacto',href:'/contact'},{label:'Términos',href:'/terms'},{label:'Privacidad',href:'/privacy'}]} />
         </div>
       </div>

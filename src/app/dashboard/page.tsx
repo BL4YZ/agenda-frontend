@@ -1,11 +1,13 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import { EventClickArg } from '@fullcalendar/core';
+import { EventClickArg, EventDropArg } from '@fullcalendar/core';
+import type { EventResizeDoneArg } from '@fullcalendar/interaction';
 import axios from 'axios';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -81,6 +83,20 @@ function statusLabel(status?: string) {
   if (status === 'full_payment') return 'Pago completo';
   if (status === 'pending') return 'Pago pendiente';
   return 'Sin cobro';
+}
+
+// date-fns format() uses the browser's local timezone; this shifts an ISO string
+// to a "wall-clock" Date in America/Montevideo so HH:mm renders the correct local hour.
+function parseInMVD(iso: string): Date {
+  const d = new Date(iso);
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Montevideo',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    hour12: false,
+  }).formatToParts(d);
+  const get = (t: string) => parseInt(parts.find(p => p.type === t)?.value ?? '0');
+  return new Date(get('year'), get('month') - 1, get('day'), get('hour') % 24, get('minute'), get('second'));
 }
 
 /* ── Confirm modal ────────────────────────────────────────────────────────── */
@@ -364,7 +380,7 @@ function NewEntryModal({ initial, token, services, team, onClose, onCreated }: {
             </>
           )}
 
-          {error && <p style={{ color: '#fda4af', fontSize: 12 }}>{error}</p>}
+          {error && <p style={{ color: 'var(--color-error, #ef4444)', fontSize: 12 }}>{error}</p>}
 
           <button type="submit" disabled={saving}
             className={`dbtn ${mode === 'block' ? '' : 'dbtn--primary'}`}
@@ -418,7 +434,7 @@ function DaySheet({ date, dayEvents, onClose, onSelectEvent }: {
               <div style={{ flex: 1 }}>
                 <p style={{ fontWeight: 600, color: 'var(--fg-0)', fontSize: 13 }}>{e.title}</p>
                 <p style={{ fontSize: 11, color: 'var(--fg-3)', marginTop: 2 }}>
-                  {format(parseISO(e.start), 'HH:mm')} – {format(parseISO(e.end), 'HH:mm')}
+                  {format(parseInMVD(e.start), 'HH:mm')} – {format(parseInMVD(e.end), 'HH:mm')}
                 </p>
               </div>
             </button>
@@ -431,7 +447,8 @@ function DaySheet({ date, dayEvents, onClose, onSelectEvent }: {
 
 /* ── Main page ────────────────────────────────────────────────────────────── */
 export default function DashboardPage() {
-  const { token } = useAuth();
+  const { token, role } = useAuth();
+  const router = useRouter();
   const [events, setEvents] = useState<ApiEvent[]>([]);
   const [selected, setSelected] = useState<SelectedEvent | null>(null);
   const [popoverTarget, setPopoverTarget] = useState<HTMLElement | null>(null);
@@ -476,12 +493,18 @@ export default function DashboardPage() {
           id: `block-${b.id}`, title: b.reason || 'Bloqueado',
           start: b.start_time, end: b.end_time,
           backgroundColor: 'oklch(0.22 0.02 240 / 0.55)', borderColor: '#64748b', textColor: '#94a3b8',
-          isBlock: true, employee_id: b.employee_id, employee_name: b.employee_name,
+          isBlock: true, editable: false, employee_id: b.employee_id, employee_name: b.employee_name,
         })),
       ])).catch(console.error);
 
     axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/services`, { headers }).then(res => setServices(res.data)).catch(console.error);
-    axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/team`, { headers }).then(res => setTeam(res.data)).catch(console.error);
+    if (role === 'owner') {
+      axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/team`, { headers }).then(res => setTeam(res.data)).catch(console.error);
+    } else if (role === 'employee') {
+      axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/users/me`, { headers })
+        .then(res => setTeam([{ id: res.data.id, name: res.data.name, email: res.data.email, role: 'employee' }]))
+        .catch(console.error);
+    }
   }, [token]);
 
   const openNewEntry = (mode: 'block' | 'appointment', start?: Date, end?: Date) => {
@@ -493,10 +516,41 @@ export default function DashboardPage() {
   const openEventAsSelected = (e: ApiEvent, el?: HTMLElement) => {
     setPopoverTarget(el ?? null);
     setSelected({
-      id: e.id, title: e.title, start: parseISO(e.start), end: parseISO(e.end),
+      id: e.id, title: e.title, start: parseInMVD(e.start), end: parseInMVD(e.end),
       client_name: e.client_name, client_email: e.client_email,
       payment_status: e.payment_status, price: e.price, employee_name: e.employee_name,
     });
+  };
+
+  const handleEventDrop = async (info: EventDropArg) => {
+    if (info.event.extendedProps.isBlock) { info.revert(); return; }
+    try {
+      await axios.patch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/appointments/${info.event.id}/reschedule`,
+        { start_time: info.event.startStr, end_time: info.event.endStr },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      setEvents(prev => prev.map(e =>
+        e.id === info.event.id ? { ...e, start: info.event.startStr, end: info.event.endStr } : e
+      ));
+    } catch {
+      info.revert();
+    }
+  };
+
+  const handleEventResize = async (info: EventResizeDoneArg) => {
+    try {
+      await axios.patch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/appointments/${info.event.id}/reschedule`,
+        { start_time: info.event.startStr, end_time: info.event.endStr },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      setEvents(prev => prev.map(e =>
+        e.id === info.event.id ? { ...e, start: info.event.startStr, end: info.event.endStr } : e
+      ));
+    } catch {
+      info.revert();
+    }
   };
 
   const handleEventClick = (info: EventClickArg) => {
@@ -566,25 +620,25 @@ export default function DashboardPage() {
         </div>
       ) : (
         <div className="kpi-grid kpi-grid--5">
-          <div className="kpi">
+          <div className="kpi" style={{ cursor: 'pointer' }} onClick={() => router.push('/dashboard/appointments')}>
             <div className="kpi__icon">{Icon.cal}</div>
             <div className="kpi__value">{metrics.total_appointments}</div>
             <div className="kpi__label">Citas totales</div>
             <div className="kpi__hint">{metrics.this_month} este mes</div>
           </div>
-          <div className="kpi">
+          <div className="kpi" style={{ cursor: 'pointer' }} onClick={() => router.push('/dashboard/appointments?status=paid')}>
             <div className="kpi__icon kpi__icon--green">{Icon.bag}</div>
             <div className="kpi__value">{metrics.paid_count}</div>
             <div className="kpi__label">Señas cobradas</div>
             <div className="kpi__hint">pago parcial</div>
           </div>
-          <div className="kpi">
+          <div className="kpi" style={{ cursor: 'pointer' }} onClick={() => router.push('/dashboard/appointments?status=full_payment')}>
             <div className="kpi__icon kpi__icon--cyan">{Icon.bag}</div>
             <div className="kpi__value">{metrics.full_payment_count}</div>
             <div className="kpi__label">Pagos completos</div>
             <div className="kpi__hint">pago total</div>
           </div>
-          <div className="kpi">
+          <div className="kpi" style={{ cursor: 'pointer' }} onClick={() => router.push('/dashboard/analytics')}>
             <div className="kpi__icon">{Icon.trend}</div>
             <div className="kpi__value kpi__value--small">
               ${parseFloat(metrics.revenue_total).toLocaleString('es-UY', { minimumFractionDigits: 0 })}
@@ -592,7 +646,7 @@ export default function DashboardPage() {
             <div className="kpi__label">Ingresos totales</div>
             <div className="kpi__hint">${parseFloat(metrics.revenue_month).toLocaleString('es-UY', { minimumFractionDigits: 0 })} este mes</div>
           </div>
-          <div className="kpi">
+          <div className="kpi" style={{ cursor: 'pointer' }} onClick={() => router.push('/dashboard/appointments?status=pending')}>
             <div className="kpi__icon kpi__icon--orange">{Icon.alert}</div>
             <div className="kpi__value">{metrics.pending_count}</div>
             <div className="kpi__label">Pagos pendientes</div>
@@ -639,6 +693,7 @@ export default function DashboardPage() {
         <FullCalendar
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
           initialView="dayGridMonth"
+          timeZone="America/Montevideo"
           events={filteredEvents}
           locale="es"
           eventClick={handleEventClick}
@@ -655,7 +710,11 @@ export default function DashboardPage() {
             if (isMobile && isGrid) {
               return <span style={{ display: 'block', width: 8, height: 8, borderRadius: '50%', flexShrink: 0, backgroundColor: dotColor }} />;
             }
-            const timeStr = arg.event.start ? format(arg.event.start, 'HH:mm') : '';
+            // FullCalendar "shifted Date": UTC components = MVD wall-clock time.
+            // format() would re-apply the browser timezone — use getUTC* instead.
+            const timeStr = arg.event.start
+              ? `${String(arg.event.start.getUTCHours()).padStart(2, '0')}:${String(arg.event.start.getUTCMinutes()).padStart(2, '0')}`
+              : '';
             return (
               <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '1px 5px', overflow: 'hidden', width: '100%' }}>
                 <span style={{ width: 5, height: 5, borderRadius: '50%', background: dotColor, flexShrink: 0, opacity: 0.9 }} />
@@ -665,6 +724,9 @@ export default function DashboardPage() {
               </div>
             );
           }}
+          editable={!isMobile}
+          eventDrop={handleEventDrop}
+          eventResize={handleEventResize}
           selectable={!isMobile}
           select={handleCalendarSelect}
           headerToolbar={isMobile

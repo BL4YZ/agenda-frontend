@@ -12,6 +12,7 @@ const interTight = Inter_Tight({
     weight: ["500", "600", "700"],
     variable: "--font-inter-tight",
     display: "swap",
+    preload: false,
 });
 
 // Replaces the Google Fonts @import for JetBrains Mono in system.css.
@@ -22,6 +23,7 @@ const jetbrainsMono = JetBrains_Mono({
     weight: ["400", "500", "600"],
     variable: "--font-mono",
     display: "swap",
+    preload: false,
 });
 
 export const metadata: Metadata = {

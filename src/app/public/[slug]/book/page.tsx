@@ -45,6 +45,7 @@ function BookingContent() {
     const [error, setError] = useState('');
     const [business, setBusiness] = useState<Business | null>(null);
     const [unavailableDates, setUnavailableDates] = useState<Set<string>>(new Set());
+    const [closedDays, setClosedDays] = useState<Set<number>>(new Set());
     const [paymentMethod, setPaymentMethod] = useState<'mercadopago' | 'cash' | 'transfer' | ''>('');
 
     const brandColor = business?.brand_color || '#6366f1';
@@ -78,6 +79,16 @@ function BookingContent() {
                 .catch(console.error);
         }
     }, [slug, serviceId, branchId]);
+
+    // Fetch closed days of week for the selected employee to pre-disable them in the calendar
+    useEffect(() => {
+        if (!slug || !selectedEmployee) return;
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/public/businesses/${slug}/schedule-days`, {
+            params: { employeeId: selectedEmployee.id },
+        })
+            .then(res => setClosedDays(new Set(res.data.closedDays ?? [])))
+            .catch(() => setClosedDays(new Set()));
+    }, [slug, selectedEmployee]);
 
     const handleDateSelect = async (dateStr: string) => {
         setSelectedDate(dateStr);
@@ -246,7 +257,7 @@ function BookingContent() {
                                 <div className="space-y-2">
                                     {employees.map(emp => (
                                         <button key={emp.id}
-                                            onClick={() => { setSelectedEmployee(emp); setUnavailableDates(new Set()); setStep('datetime'); }}
+                                            onClick={() => { setSelectedEmployee(emp); setUnavailableDates(new Set()); setClosedDays(new Set()); setStep('datetime'); }}
                                             className="w-full flex items-center gap-4 p-4 rounded-2xl border border-slate-100 dark:border-white/8 hover:border-transparent transition-all duration-200 text-left group"
                                             style={{}}
                                             onMouseEnter={e => (e.currentTarget.style.boxShadow = `0 0 0 2px ${brandColor}50`, e.currentTarget.style.background = `${brandColor}08`)}
@@ -293,7 +304,8 @@ function BookingContent() {
                                     const isSelected = selectedDate === dateStr;
                                     const isPast = day < today;
                                     const isUnavailable = unavailableDates.has(dateStr);
-                                    const isDisabled = isPast || isUnavailable;
+                                    const isClosedDay = closedDays.has(day.getDay());
+                                    const isDisabled = isPast || isUnavailable || isClosedDay;
                                     return (
                                         <button key={dateStr} disabled={isDisabled} onClick={() => handleDateSelect(dateStr)}
                                             className="flex flex-col items-center py-2.5 rounded-xl transition-all duration-200"

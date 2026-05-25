@@ -207,6 +207,8 @@ export default function ServicesPage() {
     };
 
     const handleDelete = async (id: number) => {
+        const svc = services.find(s => s.id === id);
+        if (!window.confirm(`¿Eliminar "${svc?.name ?? 'este servicio'}"? Esta acción no se puede deshacer.`)) return;
         setDeletingId(id);
         try {
             await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/services/${id}`, {

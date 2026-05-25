@@ -3,6 +3,39 @@ export default function VariantCStyles() {
     <style>{`
       .vc-root { font-family: var(--font-body); }
 
+      /* ── Skip link ── */
+      .vc-skip-link {
+        position: fixed; top: -100%; left: 50%;
+        transform: translateX(-50%);
+        padding: 12px 24px;
+        background: var(--accent); color: white;
+        border-radius: 0 0 12px 12px;
+        font-size: 14px; font-weight: 600;
+        text-decoration: none; z-index: 1000;
+        transition: top 0.2s; white-space: nowrap;
+      }
+      .vc-skip-link:focus { top: 0; outline: 3px solid white; outline-offset: 2px; }
+
+      /* ── Badges accesibles ── */
+      .vc-badge-paid {
+        font-size: 11px; padding: 3px 8px; border-radius: 100px;
+        background: oklch(0.55 0.18 145 / 0.25);
+        color: oklch(0.88 0.18 145);
+        letter-spacing: 0.1em; font-family: var(--font-mono);
+      }
+      [data-theme="light"] .vc-badge-paid {
+        background: oklch(0.88 0.15 145 / 0.4);
+        color: oklch(0.25 0.15 145);
+      }
+      .vc-badge-live {
+        font-size: 11px; letter-spacing: 0.12em;
+        color: oklch(0.7 0.18 145);
+        font-family: var(--font-mono);
+      }
+      [data-theme="light"] .vc-badge-live {
+        color: oklch(0.32 0.18 145);
+      }
+
       /* ── Background ── */
       .vc-bg {
         position: absolute; inset: 0;

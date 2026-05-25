@@ -61,7 +61,7 @@ export default function NavBar({ rootRef }: NavBarProps) {
           Entrar
         </Link>
         <Link href="/register" className="btn btn-primary" style={{ padding: '10px 18px', fontSize: 13 }}>
-          Empezar →
+          Empezar <span aria-hidden="true">→</span>
         </Link>
       </div>
     </nav>

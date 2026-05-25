@@ -127,14 +127,6 @@ export default function PublicLanding({ shop }: Props) {
         style={accentOverride}
         id="top"
       >
-        {/* Animated background */}
-        <div className="pl-bg" aria-hidden="true">
-          <div className="pl-bg__blob pl-bg__blob--a"/>
-          <div className="pl-bg__blob pl-bg__blob--b"/>
-          <div className="pl-bg__blob pl-bg__blob--c"/>
-          <div className="pl-bg__noise"/>
-        </div>
-
         <PLNav shop={shop} sections={navSections} onReserve={() => openReserve()} />
         <PLHero shop={shop} onReserve={() => openReserve()} />
         <PLAbout shop={shop} />

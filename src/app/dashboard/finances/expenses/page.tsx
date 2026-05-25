@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useAuth } from '@/context/AuthContext';
 import { useBusiness } from '@/context/BusinessContext';
@@ -59,8 +60,15 @@ function UpgradeGate({ feature }: { feature: string }) {
 }
 
 export default function ExpensesPage() {
-    const { token } = useAuth();
+    const { token, role, profileLoading } = useAuth();
     const { business } = useBusiness();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (!profileLoading && role !== 'owner') {
+            router.replace('/dashboard');
+        }
+    }, [role, profileLoading, router]);
     const [expenses, setExpenses] = useState<Expense[]>([]);
     const [loading, setLoading]   = useState(true);
     const [{ from, to }, setRange] = useState(thisMonthRange());
@@ -110,6 +118,7 @@ export default function ExpensesPage() {
     };
 
     const handleDelete = async (id: number) => {
+        if (!window.confirm('¿Eliminar este gasto? Esta acción no se puede deshacer.')) return;
         setDeletingId(id);
         try {
             await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/expenses/${id}`, {
@@ -200,7 +209,7 @@ export default function ExpensesPage() {
                                         <div className="flex items-center gap-2 mb-0.5">
                                             <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${meta.color}`}>{meta.label}</span>
                                             <span className="text-xs text-slate-400 dark:text-slate-500">
-                                                {new Date(exp.date + 'T00:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                {new Date(exp.date.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })}
                                             </span>
                                         </div>
                                         {exp.description && (
@@ -240,7 +249,7 @@ export default function ExpensesPage() {
                                     onChange={e => setFCategory(e.target.value)}
                                     className="w-full px-4 py-2.5 bg-white/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-sm transition-all"
                                 >
-                                    {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                                    {CATEGORIES.map(c => <option key={c.value} value={c.value} style={{ color: '#1e293b', background: '#fff' }}>{c.label}</option>)}
                                 </select>
                             </div>
                             <div>

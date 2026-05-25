@@ -12,7 +12,7 @@ function FBookings() {
     <div className="vc-vis vc-vis-bookings glass">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
         <div style={{ fontFamily: 'var(--font-display)', fontSize: 17, fontWeight: 600 }}>Próximas reservas</div>
-        <span className="mono" style={{ fontSize: 10, color: 'oklch(0.7 0.18 145)', letterSpacing: '0.12em' }}>· EN VIVO</span>
+        <span className="vc-badge-live">· EN VIVO</span>
       </div>
       {rows.map((b, i) => (
         <div key={i} className="vc-book-row">
@@ -22,11 +22,7 @@ function FBookings() {
             <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-0)' }}>{b.s}</div>
             <div style={{ fontSize: 11, color: 'var(--fg-3)' }}>{b.c}</div>
           </div>
-          <span style={{
-            fontSize: 9.5, padding: '3px 8px', borderRadius: 100,
-            background: 'oklch(0.7 0.2 145 / 0.18)', color: 'oklch(0.85 0.18 145)',
-            letterSpacing: '0.1em', fontFamily: 'var(--font-mono)',
-          }}>PAGADO</span>
+          <span className="vc-badge-paid">PAGADO</span>
         </div>
       ))}
     </div>
@@ -96,7 +92,7 @@ function FInsights() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
         {kpis.map((k, i) => (
           <div key={i} style={{ padding: 14, borderRadius: 10, background: 'var(--glass-bg)', border: '1px solid var(--glass-border)' }}>
-            <div className="mono" style={{ fontSize: 9.5, color: 'var(--fg-3)', letterSpacing: '0.12em' }}>{k.l.toUpperCase()}</div>
+            <div className="mono" style={{ fontSize: 11, color: 'var(--fg-2)', letterSpacing: '0.12em' }}>{k.l.toUpperCase()}</div>
             <div style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 600, color: 'var(--fg-0)', marginTop: 4 }}>{k.v}</div>
             <div className="mono" style={{ fontSize: 10, color: 'oklch(0.7 0.18 145)' }}>{k.d}</div>
           </div>
@@ -164,9 +160,9 @@ export default function FeaturesSection() {
             <div className="mono vc-f-eb">{f.eb}</div>
             <h3 className="vc-feature-t">{f.t}</h3>
             <p className="vc-feature-d">{f.d}</p>
-            <button className="vc-link-btn">
+            <button className="vc-link-btn" aria-label={`Saber más sobre ${f.t}`}>
               Saber más
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                 <path d="M5 12h14M13 5l7 7-7 7" />
               </svg>
             </button>

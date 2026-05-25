@@ -36,6 +36,9 @@ export default function VariantC() {
 
   return (
     <div ref={rootRef} className="ma-root vc-root" data-theme="dark" style={{ width: '100%', position: 'relative' }}>
+      {/* Skip link */}
+      <a href="#main-content" className="vc-skip-link">Saltar al contenido principal</a>
+
       {/* Liquid background */}
       <div className="vc-bg" />
       <div className="vc-blobs">
@@ -57,27 +60,30 @@ export default function VariantC() {
       <div className="scroll-stage vc-stage">
         <NavBar rootRef={rootRef} />
 
-        <HeroSection heroRef={heroRef} mp={mp} />
+        <main id="main-content">
+          <HeroSection heroRef={heroRef} mp={mp} />
 
-        {/* Words marquee */}
-        <section className="vc-words">
-          <div className="vc-words-track">
-            <div className="vc-words-row">
-              {Array(2).fill(['reservas', 'pagos', 'recordatorios', 'agenda', 'clientes', 'reportes']).flat().map((w, i) => (
-                <span key={i} className="vc-word">
-                  {w}
-                  <span className="vc-word-star">✦</span>
-                </span>
-              ))}
+          {/* Words marquee — decorativo, oculto para lectores de pantalla */}
+          <section className="vc-words" aria-hidden="true">
+            <div className="vc-words-track">
+              <div className="vc-words-row">
+                {Array(2).fill(['reservas', 'pagos', 'recordatorios', 'agenda', 'clientes', 'reportes']).flat().map((w, i) => (
+                  <span key={i} className="vc-word">
+                    {w}
+                    <span className="vc-word-star">✦</span>
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        <FeaturesSection />
-        <StepsSection />
-        <PricingSection />
-        <FAQSection />
-        <CTASection />
+          <FeaturesSection />
+          <StepsSection />
+          <PricingSection />
+          <FAQSection />
+          <CTASection />
+        </main>
+
         <FooterSection />
       </div>
 

@@ -8,7 +8,7 @@ import Link from 'next/link';
 type Business = {
     id: number;
     subscription_plan: 'gratis' | 'pro' | 'negocio';
-    subscription_status: 'active' | 'pending' | 'paused' | 'cancelled';
+    subscription_status: 'active' | 'pending' | 'paused' | 'cancelled' | 'expired';
     subscription_ends_at?: string | null;
     trial_ends_at?: string | null;
     pending_plan?: 'pro' | 'negocio' | null;
@@ -147,6 +147,7 @@ const STATUS_META = {
     pending:   { label: 'Pendiente', dot: '#fbbf24' },
     paused:    { label: 'Pausado',   dot: '#fbbf24' },
     cancelled: { label: 'Cancelado', dot: '#f87171' },
+    expired:   { label: 'Vencido',   dot: '#f87171' },
 };
 
 // ── CancelModal ───────────────────────────────────────────────────────────────
@@ -225,6 +226,7 @@ export default function BillingPage() {
 
     const currentPlan   = business?.subscription_plan ?? 'gratis';
     const currentStatus = business?.subscription_status ?? 'active';
+    const effectivePlan = currentStatus === 'expired' ? 'gratis' : currentPlan;
     const pendingPlan   = business?.pending_plan ?? null;
     const statusMeta    = STATUS_META[currentStatus] ?? STATUS_META.active;
     const endsAt        = business?.subscription_ends_at;
@@ -256,16 +258,19 @@ export default function BillingPage() {
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                     <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-1)' }}>Plan actual:</span>
-                                    <span style={{ fontSize: 12, fontWeight: 700, color: PLANS.find(p => p.id === currentPlan)?.color ?? 'var(--fg-1)' }}>
-                                        {PLANS.find(p => p.id === currentPlan)?.label}
+                                    <span style={{ fontSize: 12, fontWeight: 700, color: PLANS.find(p => p.id === effectivePlan)?.color ?? 'var(--fg-1)' }}>
+                                        {PLANS.find(p => p.id === effectivePlan)?.label}
                                     </span>
                                 </div>
-                                {currentPlan !== 'gratis' && (
+                                {(effectivePlan !== 'gratis' || currentStatus === 'expired') && (
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--fg-3)' }}>
                                         <span style={{ width: 6, height: 6, borderRadius: '50%', background: statusMeta.dot, display: 'inline-block', flexShrink: 0 }} />
                                         {statusMeta.label}
+                                        {endsAt && currentStatus === 'active' && (
+                                            <> · se renueva el {new Date(endsAt).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}</>
+                                        )}
                                         {endsAt && currentStatus === 'cancelled' && (
-                                            <> · vence {new Date(endsAt).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}</>
+                                            <> · vence el {new Date(endsAt).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}</>
                                         )}
                                     </div>
                                 )}
@@ -280,6 +285,35 @@ export default function BillingPage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 10, background: 'rgba(251,191,36,.08)', border: '1px solid rgba(251,191,36,.2)', marginBottom: 28, fontSize: 12, color: '#fbbf24' }}>
                     <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#fbbf24', flexShrink: 0, display: 'inline-block' }} />
                     Suscripción a <strong style={{ marginLeft: 3 }}>{pendingPlan === 'pro' ? 'Pro' : 'Negocio'}</strong>&nbsp;pendiente de confirmación en MercadoPago.
+                </div>
+            )}
+
+            {/* Expired notice */}
+            {business && currentStatus === 'expired' && (
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, padding: '16px 20px', borderRadius: 12, background: 'rgba(239,68,68,.06)', border: '1px solid rgba(239,68,68,.2)', marginBottom: 28 }}>
+                    <div style={{ color: '#f87171', flexShrink: 0, marginTop: 2 }}>{IcoWarn}</div>
+                    <div style={{ flex: 1 }}>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: '#f87171', margin: '0 0 5px' }}>
+                            Tu plan venció
+                        </p>
+                        <p style={{ fontSize: 12, color: 'var(--fg-3)', margin: 0, lineHeight: 1.7 }}>
+                            Tu suscripción al plan{' '}
+                            <strong style={{ color: 'var(--fg-1)' }}>
+                                {PLANS.find(p => p.id === currentPlan)?.label ?? currentPlan}
+                            </strong>{' '}
+                            venció{endsAt ? <> el <strong style={{ color: 'var(--fg-1)' }}>{new Date(endsAt).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}</strong></> : ''}.
+                            {' '}Tu cuenta pasó al plan <strong style={{ color: 'var(--fg-1)' }}>Gratis</strong>.
+                            Suscribite nuevamente para recuperar el acceso.
+                        </p>
+                    </div>
+                    <button
+                        className="dbtn dbtn--primary dbtn--sm"
+                        onClick={() => handleSubscribe(currentPlan as 'pro' | 'negocio')}
+                        disabled={!!subscribing}
+                        style={{ flexShrink: 0, alignSelf: 'center' }}
+                    >
+                        {subscribing === currentPlan ? 'Redirigiendo…' : 'Suscribirme'}
+                    </button>
                 </div>
             )}
 
@@ -455,6 +489,44 @@ export default function BillingPage() {
                                         </li>
                                     ))}
                                 </ul>
+
+                                {/* Renewal / expiry info for current plan */}
+                                {isCurrent && isActive && plan.id !== 'gratis' && (
+                                    <div style={{
+                                        display: 'flex', alignItems: 'center', gap: 8,
+                                        padding: '9px 12px', borderRadius: 10, marginBottom: 10,
+                                        background: 'var(--plan-accent, rgba(255,255,255,.04))',
+                                        border: '1px solid var(--plan-border, var(--line))',
+                                        fontSize: 12,
+                                    }}>
+                                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0, color: 'var(--plan-color, var(--fg-3))' }}>
+                                            <path d="M12 2v3.5H8.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                                            <path d="M12 5.5A5 5 0 1 1 9 2.3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+                                        </svg>
+                                        <span style={{ color: 'var(--fg-2)' }}>
+                                            {endsAt
+                                                ? <>Se renueva el <strong style={{ color: 'var(--fg-1)' }}>{new Date(endsAt).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}</strong></>
+                                                : 'Suscripción mensual activa'
+                                            }
+                                        </span>
+                                    </div>
+                                )}
+                                {isCurrent && currentStatus === 'cancelled' && endsAt && plan.id !== 'gratis' && (
+                                    <div style={{
+                                        display: 'flex', alignItems: 'center', gap: 8,
+                                        padding: '9px 12px', borderRadius: 10, marginBottom: 10,
+                                        background: 'rgba(239,68,68,.06)', border: '1px solid rgba(239,68,68,.18)',
+                                        fontSize: 12,
+                                    }}>
+                                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0, color: '#f87171' }}>
+                                            <path d="M7 2L12.5 11.5H1.5L7 2z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
+                                            <path d="M7 6v2.5M7 10.5v.3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+                                        </svg>
+                                        <span style={{ color: 'var(--fg-2)' }}>
+                                            Acceso hasta el <strong style={{ color: '#f87171' }}>{new Date(endsAt).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}</strong>
+                                        </span>
+                                    </div>
+                                )}
 
                                 {/* CTA */}
                                 <button
