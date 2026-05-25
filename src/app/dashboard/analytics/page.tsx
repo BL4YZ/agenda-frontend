@@ -46,7 +46,7 @@ const IcoSpin     = (<span style={{ display:'inline-block', width:12, height:12,
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Plan = 'gratis' | 'pro' | 'negocio';
-type Business = { name: string; brand_color?: string | null; subscription_plan: string; logo_url?: string | null };
+type Business = { name: string; brand_color?: string | null; subscription_plan: string; subscription_status?: string; logo_url?: string | null };
 type Summary = { total_appointments: number; paid_count: number; full_payment_count: number; pending_count: number; free_count: number; revenue_total: number; avg_ticket: number };
 type PeriodData = { current: Summary; previous: { total_appointments: number; revenue_total: number } };
 type RevenuePoint = { period: string; appointments: number; revenue: number };
