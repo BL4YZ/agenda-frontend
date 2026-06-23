@@ -267,10 +267,10 @@ export default function BillingPage() {
                                         <span style={{ width: 6, height: 6, borderRadius: '50%', background: statusMeta.dot, display: 'inline-block', flexShrink: 0 }} />
                                         {statusMeta.label}
                                         {endsAt && currentStatus === 'active' && (
-                                            <> · se renueva el {new Date(endsAt).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}</>
+                                            <> · se renueva el {new Date(endsAt).toLocaleDateString('es-UY', { day: 'numeric', month: 'short' })}</>
                                         )}
                                         {endsAt && currentStatus === 'cancelled' && (
-                                            <> · vence el {new Date(endsAt).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}</>
+                                            <> · vence el {new Date(endsAt).toLocaleDateString('es-UY', { day: 'numeric', month: 'short' })}</>
                                         )}
                                     </div>
                                 )}
@@ -301,7 +301,7 @@ export default function BillingPage() {
                             <strong style={{ color: 'var(--fg-1)' }}>
                                 {PLANS.find(p => p.id === currentPlan)?.label ?? currentPlan}
                             </strong>{' '}
-                            venció{endsAt ? <> el <strong style={{ color: 'var(--fg-1)' }}>{new Date(endsAt).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}</strong></> : ''}.
+                            venció{endsAt ? <> el <strong style={{ color: 'var(--fg-1)' }}>{new Date(endsAt).toLocaleDateString('es-UY', { day: 'numeric', month: 'long', year: 'numeric' })}</strong></> : ''}.
                             {' '}Tu cuenta pasó al plan <strong style={{ color: 'var(--fg-1)' }}>Gratis</strong>.
                             Suscribite nuevamente para recuperar el acceso.
                         </p>
@@ -332,7 +332,7 @@ export default function BillingPage() {
                             </strong>{' '}
                             continúa hasta el{' '}
                             <strong style={{ color: 'var(--fg-1)' }}>
-                                {new Date(endsAt).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                                {new Date(endsAt).toLocaleDateString('es-UY', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                             </strong>.
                             {' '}A partir de esa fecha pasarás automáticamente al plan <strong style={{ color: 'var(--fg-1)' }}>Gratis</strong>.
                         </p>
@@ -361,7 +361,7 @@ export default function BillingPage() {
                             <strong style={{ color: 'var(--fg-1)' }}>{PLANS.find(p => p.id === currentPlan)?.label}</strong>{' '}
                             vence el{' '}
                             <strong style={{ color: 'var(--fg-1)' }}>
-                                {new Date(trialEndsAt).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                                {new Date(trialEndsAt).toLocaleDateString('es-UY', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                             </strong>.
                             {' '}A partir de ahí se facturará el costo mensual.
                         </p>
@@ -505,7 +505,7 @@ export default function BillingPage() {
                                         </svg>
                                         <span style={{ color: 'var(--fg-2)' }}>
                                             {endsAt
-                                                ? <>Se renueva el <strong style={{ color: 'var(--fg-1)' }}>{new Date(endsAt).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}</strong></>
+                                                ? <>Se renueva el <strong style={{ color: 'var(--fg-1)' }}>{new Date(endsAt).toLocaleDateString('es-UY', { day: 'numeric', month: 'long', year: 'numeric' })}</strong></>
                                                 : 'Suscripción mensual activa'
                                             }
                                         </span>
@@ -523,7 +523,7 @@ export default function BillingPage() {
                                             <path d="M7 6v2.5M7 10.5v.3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
                                         </svg>
                                         <span style={{ color: 'var(--fg-2)' }}>
-                                            Acceso hasta el <strong style={{ color: '#f87171' }}>{new Date(endsAt).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}</strong>
+                                            Acceso hasta el <strong style={{ color: '#f87171' }}>{new Date(endsAt).toLocaleDateString('es-UY', { day: 'numeric', month: 'long', year: 'numeric' })}</strong>
                                         </span>
                                     </div>
                                 )}

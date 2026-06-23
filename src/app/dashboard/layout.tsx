@@ -330,7 +330,7 @@ function DashSearch() {
   }
 
   function fmt(iso: string) {
-    return new Date(iso).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    return new Date(iso).toLocaleDateString('es-UY', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   }
 
   const showDrop = open && query.trim().length >= 2;
@@ -438,7 +438,7 @@ function DashTopbar({ crumbs, initial, businessName, role, canSettings, logout, 
 
   const formatNotifTime = (iso: string) => {
     const d = new Date(iso);
-    return d.toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric', month: 'short' }) +
+    return d.toLocaleDateString('es-UY', { weekday: 'short', day: 'numeric', month: 'short' }) +
       ' · ' + iso.slice(11, 16);
   };
 

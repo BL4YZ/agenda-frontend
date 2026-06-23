@@ -23,7 +23,7 @@ export default function StatusPage() {
   const allOk = SERVICES.every(s => s.status === 'Operacional');
 
   return (
-    <LegalLayout title="Estado del sistema" lastUpdated={new Date().toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}>
+    <LegalLayout title="Estado del sistema" lastUpdated={new Date().toLocaleDateString('es-UY', { day: 'numeric', month: 'long', year: 'numeric' })}>
       {/* Overall status banner */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 14, padding: '16px 20px', borderRadius: 14, marginBottom: 24,
@@ -36,7 +36,7 @@ export default function StatusPage() {
             {allOk ? 'Todos los sistemas operacionales' : 'Algunos sistemas degradados'}
           </p>
           <p style={{ fontSize: 12, color: 'var(--fg-3)', margin: 0 }}>
-            Última verificación: {new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
+            Última verificación: {new Date().toLocaleTimeString('es-UY', { hour: '2-digit', minute: '2-digit' })}
           </p>
         </div>
       </div>

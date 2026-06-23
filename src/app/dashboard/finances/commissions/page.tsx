@@ -33,7 +33,7 @@ const MODALITY_COLORS: Record<string, string> = {
 };
 
 const fmt = (n: string | number) =>
-    new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(Number(n));
+    new Intl.NumberFormat('es-UY', { style: 'currency', currency: 'UYU', maximumFractionDigits: 0 }).format(Number(n));
 
 function thisMonthRange() {
     const now = new Date();

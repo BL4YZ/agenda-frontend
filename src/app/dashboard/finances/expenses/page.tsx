@@ -28,7 +28,7 @@ const CATEGORIES = [
 const catMeta = (value: string) => CATEGORIES.find(c => c.value === value) ?? CATEGORIES[5];
 
 const fmt = (n: string | number) =>
-    new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(Number(n));
+    new Intl.NumberFormat('es-UY', { style: 'currency', currency: 'UYU', maximumFractionDigits: 0 }).format(Number(n));
 
 function thisMonthRange() {
     const now = new Date();
@@ -210,7 +210,7 @@ export default function ExpensesPage() {
                                         <div className="flex items-center gap-2 mb-0.5">
                                             <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${meta.color}`}>{meta.label}</span>
                                             <span className="text-xs text-slate-400 dark:text-slate-500">
-                                                {new Date(exp.date.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                {new Date(exp.date.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-UY', { day: 'numeric', month: 'short', year: 'numeric' })}
                                             </span>
                                         </div>
                                         {exp.description && (
