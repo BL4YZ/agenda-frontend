@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -633,6 +633,88 @@ function DisenoTab({ token, slug, profileData }: { token: string | null; slug: s
     );
 }
 
+// ── AddressAutocomplete ───────────────────────────────────────────────────────
+type NominatimResult = { place_id: number; display_name: string };
+
+function AddressAutocomplete({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+    const [suggestions, setSuggestions] = useState<NominatimResult[]>([]);
+    const [open, setOpen] = useState(false);
+    const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const wrapRef = useRef<HTMLDivElement>(null);
+
+    const fetchSuggestions = useCallback(async (q: string) => {
+        if (q.length < 3) { setSuggestions([]); setOpen(false); return; }
+        try {
+            const res = await fetch(
+                `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&addressdetails=0`,
+                { headers: { 'Accept-Language': 'es' } }
+            );
+            const data: NominatimResult[] = await res.json();
+            setSuggestions(data);
+            setOpen(data.length > 0);
+        } catch { /* ignore */ }
+    }, []);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const v = e.target.value;
+        onChange(v);
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        debounceRef.current = setTimeout(() => fetchSuggestions(v), 400);
+    };
+
+    const handleSelect = (name: string) => {
+        onChange(name);
+        setSuggestions([]);
+        setOpen(false);
+    };
+
+    useEffect(() => {
+        const handler = (e: MouseEvent) => {
+            if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, []);
+
+    return (
+        <div ref={wrapRef} style={{ position: 'relative' }}>
+            <input
+                className="fg-field__input"
+                value={value}
+                onChange={handleChange}
+                onFocus={() => suggestions.length > 0 && setOpen(true)}
+                placeholder="Ej: Av. 18 de Julio 1234, Montevideo"
+                autoComplete="off"
+            />
+            {open && (
+                <ul style={{
+                    position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, zIndex: 50,
+                    margin: 0, padding: '4px 0', listStyle: 'none',
+                    background: 'var(--card-bg)', border: '1px solid var(--border)',
+                    borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
+                    maxHeight: 220, overflowY: 'auto',
+                }}>
+                    {suggestions.map(s => (
+                        <li
+                            key={s.place_id}
+                            onMouseDown={() => handleSelect(s.display_name)}
+                            style={{
+                                padding: '9px 14px', fontSize: 13, cursor: 'pointer',
+                                borderBottom: '1px solid var(--border-subtle, var(--border))',
+                                lineHeight: 1.4, color: 'var(--fg)',
+                            }}
+                            onMouseEnter={e => (e.currentTarget.style.background = 'var(--hover-bg, rgba(255,255,255,0.05))')}
+                            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                        >
+                            {s.display_name}
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </div>
+    );
+}
+
 // ── ContactoTab ───────────────────────────────────────────────────────────────
 function ContactoTab({ token, slug, profileData }: { token: string | null; slug: string; profileData: LandingProfileData | null }) {
     const [form, setForm] = useState({ address: '', phone: '', whatsapp: '', instagram_url: '', tiktok_url: '', facebook_url: '' });
@@ -677,7 +759,7 @@ function ContactoTab({ token, slug, profileData }: { token: string | null; slug:
                 <div className="gcard__head"><h3 className="gcard__title">Información de contacto</h3></div>
                 <div className="gcard__body" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                     <Field label="Dirección">
-                        <input className="fg-field__input" value={form.address} onChange={set('address')} placeholder="Ej: Av. 18 de Julio 1234, Montevideo" />
+                        <AddressAutocomplete value={form.address} onChange={v => setForm(f => ({ ...f, address: v }))} />
                     </Field>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                         <Field label="Teléfono">
