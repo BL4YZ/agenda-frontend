@@ -693,7 +693,7 @@ export default function DashboardPage() {
         <FullCalendar
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
           initialView="dayGridMonth"
-          timeZone="America/Montevideo"
+          timeZone="local"
           events={filteredEvents}
           locale="es"
           eventClick={handleEventClick}
@@ -710,10 +710,8 @@ export default function DashboardPage() {
             if (isMobile && isGrid) {
               return <span style={{ display: 'block', width: 8, height: 8, borderRadius: '50%', flexShrink: 0, backgroundColor: dotColor }} />;
             }
-            // FullCalendar "shifted Date": UTC components = MVD wall-clock time.
-            // format() would re-apply the browser timezone — use getUTC* instead.
             const timeStr = arg.event.start
-              ? `${String(arg.event.start.getUTCHours()).padStart(2, '0')}:${String(arg.event.start.getUTCMinutes()).padStart(2, '0')}`
+              ? `${String(arg.event.start.getHours()).padStart(2, '0')}:${String(arg.event.start.getMinutes()).padStart(2, '0')}`
               : '';
             return (
               <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '1px 5px', overflow: 'hidden', width: '100%' }}>
