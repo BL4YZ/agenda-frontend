@@ -30,38 +30,42 @@ interface Props {
 }
 
 function MapEmbed({ shop }: { shop: Props['shop'] }) {
-  const mapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY;
   const mapsUrl = shop.lat && shop.lng
-    ? `https://maps.google.com/?q=${shop.lat},${shop.lng}`
+    ? `https://www.google.com/maps?q=${shop.lat},${shop.lng}`
     : shop.address
-      ? `https://maps.google.com/?q=${encodeURIComponent(shop.address)}`
+      ? `https://www.google.com/maps?q=${encodeURIComponent(shop.address)}`
       : null;
 
-  if (mapsKey && (shop.lat && shop.lng)) {
+  // OpenStreetMap embed — free, no API key needed
+  if (shop.lat && shop.lng) {
+    const lat = Number(shop.lat);
+    const lng = Number(shop.lng);
+    const delta = 0.007;
+    const osmSrc = `https://www.openstreetmap.org/export/embed.html?bbox=${lng - delta},${lat - delta},${lng + delta},${lat + delta}&layer=mapnik&marker=${lat},${lng}`;
     return (
-      <iframe
-        title={`Mapa de ${shop.name}`}
-        src={`https://www.google.com/maps/embed/v1/place?key=${mapsKey}&q=${shop.lat},${shop.lng}&zoom=15`}
-        allowFullScreen
-        loading="lazy"
-        referrerPolicy="no-referrer-when-downgrade"
-      />
+      <>
+        <iframe
+          title={`Mapa de ${shop.name}`}
+          src={osmSrc}
+          style={{ width: '100%', height: '100%', border: 0, display: 'block' }}
+          loading="lazy"
+        />
+        {mapsUrl && (
+          <a href={mapsUrl} target="_blank" rel="noopener noreferrer"
+            style={{
+              position: 'absolute', bottom: 18, right: 18, padding: '8px 14px', borderRadius: 999,
+              background: 'var(--pl-glass-strong)', border: '1px solid var(--pl-glass-border)',
+              color: 'var(--pl-fg)', fontSize: 12, textDecoration: 'none', backdropFilter: 'blur(16px)',
+              display: 'flex', alignItems: 'center', gap: 6,
+            }}>
+            Cómo llegar <ArrowIcon />
+          </a>
+        )}
+      </>
     );
   }
 
-  if (mapsKey && shop.address) {
-    return (
-      <iframe
-        title={`Mapa de ${shop.name}`}
-        src={`https://www.google.com/maps/embed/v1/place?key=${mapsKey}&q=${encodeURIComponent(shop.address)}&zoom=15`}
-        allowFullScreen
-        loading="lazy"
-        referrerPolicy="no-referrer-when-downgrade"
-      />
-    );
-  }
-
-  // Fallback: styled placeholder + "Cómo llegar" link
+  // No coordinates — placeholder with link
   return (
     <div className="pl-map__placeholder" aria-label={`Mapa de ubicación — ${shop.address ?? shop.name}`}>
       <svg width="100%" height="100%" viewBox="0 0 400 380" preserveAspectRatio="xMidYMid slice"
@@ -101,7 +105,7 @@ function MapEmbed({ shop }: { shop: Props['shop'] }) {
             color: 'var(--pl-fg)', fontSize: 12, textDecoration: 'none', backdropFilter: 'blur(16px)',
             display: 'flex', alignItems: 'center', gap: 6,
           }}>
-          Cómo llegar <ArrowIcon />
+        Cómo llegar <ArrowIcon />
         </a>
       )}
     </div>
