@@ -590,7 +590,7 @@ export default function DashboardPage() {
         </div>
         <div className="dash-page__actions">
           <button className="dbtn" onClick={() => openNewEntry('block')}>
-            {Icon.ban}<span>Bloquear</span>
+            {Icon.ban}<span>Bloquear horario</span>
           </button>
           <button className="dbtn dbtn--primary" onClick={() => openNewEntry('appointment')}>
             {Icon.plus}<span>Nueva cita</span>
