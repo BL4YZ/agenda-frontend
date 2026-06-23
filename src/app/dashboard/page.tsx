@@ -711,7 +711,9 @@ export default function DashboardPage() {
               return <span style={{ display: 'block', width: 8, height: 8, borderRadius: '50%', flexShrink: 0, backgroundColor: dotColor }} />;
             }
             const timeStr = arg.event.start
-              ? `${String(arg.event.start.getHours()).padStart(2, '0')}:${String(arg.event.start.getMinutes()).padStart(2, '0')}`
+              ? new Intl.DateTimeFormat('es-UY', {
+                  timeZone: 'America/Montevideo', hour: '2-digit', minute: '2-digit', hour12: false,
+                }).format(arg.event.start)
               : '';
             return (
               <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '1px 5px', overflow: 'hidden', width: '100%' }}>
