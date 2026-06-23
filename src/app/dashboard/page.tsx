@@ -618,7 +618,7 @@ export default function DashboardPage() {
           <div className="kpi" style={{ cursor: 'pointer' }} onClick={() => router.push('/dashboard/appointments')}>
             <div className="kpi__icon">{Icon.cal}</div>
             <div className="kpi__value">{metrics.total_appointments}</div>
-            <div className="kpi__label">Citas totales</div>
+            <div className="kpi__label">Citas históricas</div>
             <div className="kpi__hint">{metrics.this_month} este mes</div>
           </div>
           <div className="kpi" style={{ cursor: 'pointer' }} onClick={() => router.push('/dashboard/appointments?status=paid')}>
