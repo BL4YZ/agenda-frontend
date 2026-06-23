@@ -422,12 +422,12 @@
   position: absolute;
   top: calc(100% + 10px);
   min-width: 200px;
-  background: var(--glass-bg-strong);
+  background: oklch(0.18 0.04 280);
   backdrop-filter: blur(28px);
   -webkit-backdrop-filter: blur(28px);
   border: 1px solid var(--glass-border);
   border-radius: 14px;
-  box-shadow: 0 16px 48px oklch(0 0 0 / 0.35), 0 2px 8px oklch(0 0 0 / 0.15);
+  box-shadow: 0 16px 48px oklch(0 0 0 / 0.5), 0 2px 8px oklch(0 0 0 / 0.25);
   padding: 6px;
   z-index: 200;
   animation: dropIn 0.18s var(--ease-out) both;
