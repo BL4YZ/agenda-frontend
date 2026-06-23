@@ -230,14 +230,6 @@ function DashSidebar({
           </div>
         )}
 
-        {/* Integraciones */}
-        {canSettings && (
-          <Link href="/dashboard/integraciones" className={navItemCls('/dashboard/integraciones')}>
-            <span className="dash-nav-item__icon">{Icon.plug}</span>
-            <span>Integraciones</span>
-          </Link>
-        )}
-
         {/* Configuración */}
         {canSettings && (
           <div className="dash-nav-group">
