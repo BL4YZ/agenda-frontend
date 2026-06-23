@@ -74,15 +74,15 @@ export default function HeroSection({ heroRef, mp }: HeroSectionProps) {
               <path d="M5 12h14M13 5l7 7-7 7" />
             </svg>
           </Link>
-          <Link href="/register" className="vc-play-btn">
+          <a href="#producto" onClick={e => { e.preventDefault(); document.getElementById('producto')?.scrollIntoView({ behavior: 'smooth' }); }} className="vc-play-btn">
             <span className="vc-play-icon">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z" /></svg>
             </span>
             <div style={{ textAlign: 'left' }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-0)' }}>Mira la demo</div>
-              <div className="mono" style={{ fontSize: 10, color: 'var(--fg-3)' }}>1 MIN 24 SEG</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-0)' }}>Ver funciones</div>
+              <div className="mono" style={{ fontSize: 10, color: 'var(--fg-3)' }}>AGENDA · PAGOS · MÉTRICAS</div>
             </div>
-          </Link>
+          </a>
         </div>
       </div>
 

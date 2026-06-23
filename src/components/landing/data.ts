@@ -21,8 +21,8 @@ const TOOLTIPS = {
   expenses: 'Registrá alquiler, insumos, servicios e impuestos por categoría. Comparalos con tus ingresos para ver el flujo real de caja de tu negocio.',
   commissions: 'Vista consolidada de cuánto le corresponde cobrar a cada integrante en el período, basada en su modalidad y la facturación generada.',
   teamReports: 'Rendimiento detallado de cada profesional: cantidad de citas atendidas, ingresos generados, ticket promedio y monto a pagar.',
-  brand: 'Personalizá la página pública de reservas con tu propio logo y color de marca. Tus clientes verán tu identidad, no la nuestra.',
-  publicPage: 'Tu negocio tiene una página pública donde los clientes reservan online. El plan define las secciones disponibles: Gratis incluye Servicios y Contacto; Pro suma Tienda, Reseñas y FAQs; Negocio agrega Equipo y Galería.',
+  brand: 'Personalizá tu página pública con logo, color de marca, tipografía y hasta 5 temas visuales. URL personalizable: novu.uy/public/tu-negocio.',
+  publicPage: 'Editor completo con 10 pestañas: Identidad, Diseño, Contacto, Horarios, FAQs, Productos, Reseñas, Galería, Equipo y Sucursales. Las secciones disponibles dependen del plan.',
 };
 
 export const PLANS: Plan[] = [

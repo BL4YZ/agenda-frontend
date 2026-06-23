@@ -142,7 +142,7 @@ function LockedOverlay({ required }: { required: 'pro' | 'negocio' }) {
 }
 
 // ── IdentidadTab ──────────────────────────────────────────────────────────────
-function IdentidadTab({ token, slug, isPro }: { token: string | null; slug: string; isPro: boolean }) {
+function IdentidadTab({ token, slug: slugProp, isPro }: { token: string | null; slug: string; isPro: boolean }) {
     const [tagline, setTagline]       = useState('');
     const [lede, setLede]             = useState('');
     const [aboutQuote, setAboutQuote] = useState('');
@@ -160,12 +160,22 @@ function IdentidadTab({ token, slug, isPro }: { token: string | null; slug: stri
     const [savedLogo, setSavedLogo]   = useState(false);
     const [logoError, setLogoError]   = useState('');
 
+    // ── Slug editor ──────────────────────────────────────────────────────────
+    const [currentSlug, setCurrentSlug] = useState('');
+    const [slugInput, setSlugInput]     = useState('');
+    const [slugStatus, setSlugStatus]   = useState<'idle' | 'checking' | 'available' | 'taken' | 'invalid'>('idle');
+    const [savingSlug, setSavingSlug]   = useState(false);
+    const [slugSaved, setSlugSaved]     = useState(false);
+
+    const slugChanged = slugInput !== currentSlug && slugInput.length >= 3;
+
     useEffect(() => {
         if (!token) return;
         Promise.all([
             axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/profile`, { headers: { Authorization: `Bearer ${token}` } }),
             axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/me`,   { headers: { Authorization: `Bearer ${token}` } }),
-        ]).then(([profileRes, bizRes]) => {
+            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/slug`,    { headers: { Authorization: `Bearer ${token}` } }),
+        ]).then(([profileRes, bizRes, slugRes]) => {
             setTagline(profileRes.data.tagline ?? '');
             setLede(profileRes.data.lede ?? '');
             setAboutQuote(profileRes.data.about_quote ?? '');
@@ -176,8 +186,48 @@ function IdentidadTab({ token, slug, isPro }: { token: string | null; slug: stri
             const lu = bizRes.data?.logo_url ?? '';
             setLogoUrl(lu);
             setSavedLogoUrl(lu);
+            const s = slugRes.data?.slug ?? '';
+            setCurrentSlug(s);
+            setSlugInput(s);
         }).catch(console.error).finally(() => setLoading(false));
     }, [token]);
+
+    // Debounced slug availability check
+    useEffect(() => {
+        if (!token || slugInput === currentSlug || slugInput.length < 3) {
+            setSlugStatus('idle');
+            return;
+        }
+        if (!/^[a-z0-9-]+$/.test(slugInput)) {
+            setSlugStatus('invalid');
+            return;
+        }
+        setSlugStatus('checking');
+        const t = setTimeout(async () => {
+            try {
+                const r = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/slug/check`,
+                    { params: { slug: slugInput }, headers: { Authorization: `Bearer ${token}` } });
+                setSlugStatus(r.data.available ? 'available' : 'taken');
+            } catch { setSlugStatus('idle'); }
+        }, 600);
+        return () => clearTimeout(t);
+    }, [slugInput, currentSlug, token]);
+
+    const handleSaveSlug = async () => {
+        if (!token || slugStatus !== 'available') return;
+        setSavingSlug(true);
+        try {
+            await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/slug`,
+                { slug: slugInput },
+                { headers: { Authorization: `Bearer ${token}` } });
+            setCurrentSlug(slugInput);
+            setSlugStatus('idle');
+            setSlugSaved(true);
+            setTimeout(() => setSlugSaved(false), 2500);
+        } catch (err) {
+            setSlugStatus('taken');
+        } finally { setSavingSlug(false); }
+    };
 
     const handleSave = async () => {
         setSaving(true); setSaveError('');
@@ -187,7 +237,7 @@ function IdentidadTab({ token, slug, isPro }: { token: string | null; slug: stri
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             setSaved(true); setTimeout(() => setSaved(false), 2500);
-            revalidatePublicPage(slug);
+            revalidatePublicPage(currentSlug);
         } catch (err) {
             setSaveError(axios.isAxiosError(err) ? (err.response?.data?.message ?? 'Error al guardar.') : 'Error al guardar.');
         } finally { setSaving(false); }
@@ -202,7 +252,7 @@ function IdentidadTab({ token, slug, isPro }: { token: string | null; slug: stri
             );
             setSavedLogoUrl(logoUrl); setSavedLogo(true);
             setTimeout(() => setSavedLogo(false), 3000);
-            revalidatePublicPage(slug);
+            revalidatePublicPage(currentSlug);
         } catch (err) {
             setLogoError(axios.isAxiosError(err) ? (err.response?.data?.message ?? 'Error al guardar.') : 'Error al guardar.');
         } finally { setSavingLogo(false); }
@@ -212,6 +262,39 @@ function IdentidadTab({ token, slug, isPro }: { token: string | null; slug: stri
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {/* URL pública editable */}
+            <div className="gcard">
+                <div className="gcard__head"><h3 className="gcard__title">URL de tu página pública</h3></div>
+                <div className="gcard__body" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <div style={{ fontSize: 12, color: 'var(--fg-3)', background: 'var(--surface-2)', borderRadius: 8, padding: '7px 12px', fontFamily: 'monospace' }}>
+                        novu.uy/public/<span style={{ color: 'var(--accent)', fontWeight: 600 }}>{slugInput || currentSlug}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                        <input
+                            className="fg-field__input"
+                            value={slugInput}
+                            onChange={e => setSlugInput(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                            placeholder={currentSlug}
+                            maxLength={60}
+                            style={{ flex: 1 }}
+                        />
+                        <button
+                            className="btn btn--primary"
+                            onClick={handleSaveSlug}
+                            disabled={savingSlug || slugStatus !== 'available'}
+                            style={{ flexShrink: 0, minWidth: 90 }}
+                        >
+                            {slugSaved ? '✓ Guardado' : savingSlug ? 'Guardando…' : 'Guardar URL'}
+                        </button>
+                    </div>
+                    {slugStatus === 'checking' && <span style={{ fontSize: 11, color: 'var(--fg-3)' }}>Verificando disponibilidad…</span>}
+                    {slugStatus === 'available' && <span style={{ fontSize: 11, color: '#34d399' }}>✓ Disponible</span>}
+                    {slugStatus === 'taken'     && <span style={{ fontSize: 11, color: '#f87171' }}>✗ Ya está en uso, elegí otro</span>}
+                    {slugStatus === 'invalid'   && <span style={{ fontSize: 11, color: '#f87171' }}>Solo letras minúsculas, números y guiones (sin espacios)</span>}
+                    <span style={{ fontSize: 11, color: 'var(--fg-3)' }}>Solo letras minúsculas, números y guiones. Mínimo 3 caracteres.</span>
+                </div>
+            </div>
+
             {/* Toggle sección Sobre nosotros */}
             <div className="gcard">
                 <div className="gcard__head" style={{ justifyContent: 'space-between' }}>
@@ -664,9 +747,15 @@ function HoursTab({ token, slug }: { token: string | null; slug: string }) {
     useEffect(() => {
         if (!token) return;
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/hours`, { headers: { Authorization: `Bearer ${token}` } })
-            .then(r => {
+            .then(async r => {
                 if (r.data.length === 0) {
-                    setNeverSaved(true);
+                    // Auto-save defaults so the public page shows hours immediately
+                    try {
+                        await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/hours`,
+                            { hours: DEFAULT_HOURS },
+                            { headers: { Authorization: `Bearer ${token}` } }
+                        );
+                    } catch { setNeverSaved(true); }
                     return;
                 }
                 const map = new Map(r.data.map((h: Hour) => [h.day_of_week, h]));

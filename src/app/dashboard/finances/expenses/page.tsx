@@ -61,7 +61,7 @@ function UpgradeGate({ feature }: { feature: string }) {
 
 export default function ExpensesPage() {
     const { token, role, profileLoading } = useAuth();
-    const { business } = useBusiness();
+    const { business, loading: businessLoading } = useBusiness();
     const router = useRouter();
 
     useEffect(() => {
@@ -139,8 +139,9 @@ export default function ExpensesPage() {
         total: expenses.filter(e => e.category === cat.value).reduce((s, e) => s + Number(e.amount), 0),
     })).filter(c => c.total > 0);
 
-    const isPro = business?.subscription_plan === 'pro' || business?.subscription_plan === 'negocio';
-    if (!isPro) return <UpgradeGate feature="Gastos" />;
+    const isPro = (business?.subscription_plan === 'pro' || business?.subscription_plan === 'negocio')
+        && business?.subscription_status !== 'expired';
+    if (!businessLoading && !isPro) return <UpgradeGate feature="Gastos" />;
 
     return (
         <div className="flex flex-col flex-1 overflow-y-auto">

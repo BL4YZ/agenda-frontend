@@ -1,9 +1,9 @@
 'use client';
 
 const STEPS = [
-  { n: '01', t: 'Configura',  d: 'Servicios, horarios y staff. Wizard guiado, plantillas listas.' },
-  { n: '02', t: 'Comparte',   d: 'Tu link novu.app/tu-negocio. En tu web, bio o WhatsApp.' },
-  { n: '03', t: 'Cobra',      d: 'Calendario lleno, pagos automáticos. Tu trabajo es lo único que haces.' },
+  { n: '01', t: 'Configura',  d: 'Servicios, horarios y staff. Wizard guiado, en menos de 5 minutos.' },
+  { n: '02', t: 'Comparte',   d: 'Tu link novu.uy/public/tu-negocio. En tu web, bio o WhatsApp.' },
+  { n: '03', t: 'Cobra',      d: 'Calendario lleno, recordatorios automáticos y pagos con MercadoPago.' },
 ];
 
 export default function StepsSection() {

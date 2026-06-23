@@ -26,10 +26,10 @@ function StatVC({ v, s = '', p = '', dec = 0, l, d, triggerRef }: StatProps) {
 }
 
 const STATS: Omit<StatProps, 'triggerRef'>[] = [
-  { v: 73,   s: '%', l: 'Reducción de no-shows', d: 'Promedio en Pro' },
-  { v: 2400, p: '+', l: 'Negocios activos',      d: 'En 14 países' },
-  { v: 186,  s: 'K', p: '+', l: 'Citas / mes',   d: 'Y subiendo' },
-  { v: 4.9,  dec: 1, l: 'Calificación',          d: 'En App Store' },
+  { v: 73,  s: '%', l: 'Reducción de no-shows',       d: 'Con recordatorios automáticos' },
+  { v: 0,   s: '%', l: 'Comisiones adicionales',       d: 'El dinero va directo a vos' },
+  { v: 24,  s: '/7', l: 'Reservas online',             d: 'Sin que estés presente' },
+  { v: 5,   l: 'Minutos para configurar',              d: 'Wizard guiado paso a paso' },
 ];
 
 export default function StatsSection() {

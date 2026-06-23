@@ -15,7 +15,7 @@ export default function CTASection() {
         </h2>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 40, flexWrap: 'wrap' }}>
           <Link href="/register" className="btn btn-primary">Empezar gratis</Link>
-          <Link href="/register" className="btn btn-ghost">Agendar demo</Link>
+          <a href="mailto:hola@novu.uy" className="btn btn-ghost">Hablar con nosotros</a>
         </div>
         <div className="mono" style={{ marginTop: 32, fontSize: 12, letterSpacing: '0.14em', color: 'var(--fg-2)' }}>
           PLAN FREE SIEMPRE GRATIS · 14 DÍAS DE PRUEBA EN PLAN PRO · CANCELÁ CUANDO QUIERAS

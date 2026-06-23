@@ -212,8 +212,6 @@ function SettingsContent() {
     const [transferInfo, setTransferInfo] = useState('');
     const [savingPayment, setSavingPayment] = useState(false);
     const [paymentSaved, setPaymentSaved] = useState(false);
-    const [manualToken, setManualToken] = useState('');
-    const [savingToken, setSavingToken] = useState(false);
 
     const [bizName, setBizName] = useState('');
     const [bizAddress, setBizAddress] = useState('');
@@ -293,17 +291,6 @@ function SettingsContent() {
         } catch (err) { console.error('Error al desconectar MercadoPago', err); alert('No se pudo desconectar. Revisá la consola.'); }
     };
 
-    const handleConnectManual = async () => {
-        if (!manualToken.trim()) return;
-        setSavingToken(true);
-        try {
-            await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/mp/manual`, { access_token: manualToken.trim() }, { headers: { Authorization: `Bearer ${token}` } });
-            setBusiness(prev => prev ? { ...prev, mp_connected: true } : prev);
-            setMpStatus('connected');
-            setManualToken('');
-        } catch (err) { console.error('Error al conectar:', err); alert('Token inválido o error al conectar.'); }
-        finally { setSavingToken(false); }
-    };
 
     const handleSavePayment = async () => {
         setSavingPayment(true);
@@ -588,16 +575,6 @@ function SettingsContent() {
                                             </div>
                                         </div>
 
-                                        {/* Sandbox token */}
-                                        <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
-                                            <p style={{ fontSize:11, color:'var(--fg-3)', fontWeight:500 }}>Modo sandbox (testing)</p>
-                                            <input value={manualToken} onChange={e => setManualToken(e.target.value)}
-                                                placeholder="Pegar Access Token TEST-..."
-                                                className="fg-field__input" style={{ fontSize:12 }} />
-                                            <button onClick={handleConnectManual} disabled={savingToken || !manualToken.trim()} className="dbtn" style={{ fontSize:12 }}>
-                                                {savingToken ? 'Conectando…' : 'Usar token de prueba'}
-                                            </button>
-                                        </div>
                                     </div>
                                 )}
 

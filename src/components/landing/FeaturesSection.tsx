@@ -33,18 +33,18 @@ function FReminders() {
   return (
     <div className="vc-vis vc-vis-reminders">
       <div className="vc-bubble vc-bubble-r1 glass">
-        <div className="mono" style={{ fontSize: 10, color: 'var(--fg-3)', marginBottom: 4 }}>WHATSAPP · 09:00</div>
+        <div className="mono" style={{ fontSize: 10, color: 'var(--fg-3)', marginBottom: 4 }}>EMAIL · CONFIRMACIÓN</div>
         <div style={{ fontSize: 13, color: 'var(--fg-1)', lineHeight: 1.4 }}>
-          Hola Andrea 👋 Te recordamos tu cita HOY a las <b>15:30</b>.
+          Hola Andrea 👋 Tu cita fue confirmada para el <b>lunes a las 15:30</b>.
         </div>
       </div>
       <div className="vc-bubble vc-bubble-r2 glass">
-        <div className="mono" style={{ fontSize: 10, color: 'var(--fg-3)', marginBottom: 4 }}>SMS · 14:30</div>
-        <div style={{ fontSize: 13, color: 'var(--fg-1)' }}>1 hora para tu cita en Studio Norte.</div>
+        <div className="mono" style={{ fontSize: 10, color: 'var(--fg-3)', marginBottom: 4 }}>EMAIL · 24H ANTES</div>
+        <div style={{ fontSize: 13, color: 'var(--fg-1)' }}>Recordatorio: mañana a las 15:30 en Barber Shop Buceo.</div>
       </div>
       <div className="vc-bubble vc-bubble-r3 glass">
-        <div className="mono" style={{ fontSize: 10, color: 'var(--fg-3)', marginBottom: 4 }}>EMAIL · CONFIRMADO</div>
-        <div style={{ fontSize: 13, color: 'var(--fg-1)' }}>Tu reserva ha sido confirmada.</div>
+        <div className="mono" style={{ fontSize: 10, color: 'var(--fg-3)', marginBottom: 4 }}>AUTOMÁTICO · SIN ACCIÓN</div>
+        <div style={{ fontSize: 13, color: 'var(--fg-1)' }}>Novu lo envía solo. Vos seguís trabajando.</div>
       </div>
     </div>
   );
@@ -128,7 +128,7 @@ const FEATURES: Feature[] = [
   },
   {
     eb: '02 — RECORDATORIOS', t: 'Adiós inasistencias.',
-    d: 'WhatsApp, SMS y email automáticos a la hora que elijas. Reduce las no-asistencias hasta un 73% — sin levantar el teléfono.',
+    d: 'Recordatorios automáticos por email 24 horas antes de cada cita. Tu cliente llega, vos no haces nada.',
     visual: <FReminders />, side: 'l',
   },
   {

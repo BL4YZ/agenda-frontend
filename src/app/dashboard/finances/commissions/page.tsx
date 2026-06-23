@@ -74,7 +74,7 @@ function UpgradeGate({ feature }: { feature: string }) {
 
 export default function CommissionsPage() {
     const { token } = useAuth();
-    const { business } = useBusiness();
+    const { business, loading: businessLoading } = useBusiness();
     const [rows, setRows]             = useState<Row[]>([]);
     const [loading, setLoading]       = useState(true);
     const [{ from, to }, setRange]    = useState(thisMonthRange());
@@ -95,8 +95,9 @@ export default function CommissionsPage() {
     const totalRevenue = rows.reduce((s, r) => s + Number(r.total_revenue), 0);
     const totalPayout  = rows.reduce((s, r) => s + Number(r.payout), 0);
 
-    const isPro = business?.subscription_plan === 'pro' || business?.subscription_plan === 'negocio';
-    if (!isPro) return <UpgradeGate feature="Comisiones y alquileres" />;
+    const isPro = (business?.subscription_plan === 'pro' || business?.subscription_plan === 'negocio')
+        && business?.subscription_status !== 'expired';
+    if (!businessLoading && !isPro) return <UpgradeGate feature="Comisiones y alquileres" />;
 
     return (
         <div className="flex flex-col flex-1 overflow-y-auto">
