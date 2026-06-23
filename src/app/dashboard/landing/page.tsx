@@ -646,8 +646,9 @@ function splitAddress(display_name: string): { main: string; secondary: string }
 function AddressAutocomplete({ value, onChange }: { value: string; onChange: (v: string) => void }) {
     const [suggestions, setSuggestions] = useState<NominatimResult[]>([]);
     const [open, setOpen] = useState(false);
+    const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const wrapRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
 
     const fetchSuggestions = useCallback(async (q: string) => {
         if (q.length < 3) { setSuggestions([]); setOpen(false); return; }
@@ -658,7 +659,21 @@ function AddressAutocomplete({ value, onChange }: { value: string; onChange: (v:
             );
             const data: NominatimResult[] = await res.json();
             setSuggestions(data);
-            setOpen(data.length > 0);
+            if (data.length > 0) {
+                const rect = inputRef.current?.getBoundingClientRect();
+                if (rect) {
+                    setDropdownStyle({
+                        position: 'fixed',
+                        top: rect.bottom + 6,
+                        left: rect.left,
+                        width: rect.width,
+                        zIndex: 9999,
+                    });
+                }
+                setOpen(true);
+            } else {
+                setOpen(false);
+            }
         } catch { /* ignore */ }
     }, []);
 
@@ -678,15 +693,16 @@ function AddressAutocomplete({ value, onChange }: { value: string; onChange: (v:
 
     useEffect(() => {
         const handler = (e: MouseEvent) => {
-            if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+            if (inputRef.current && !inputRef.current.contains(e.target as Node)) setOpen(false);
         };
         document.addEventListener('mousedown', handler);
         return () => document.removeEventListener('mousedown', handler);
     }, []);
 
     return (
-        <div ref={wrapRef} style={{ position: 'relative' }}>
+        <>
             <input
+                ref={inputRef}
                 className="fg-field__input"
                 value={value}
                 onChange={handleChange}
@@ -696,7 +712,7 @@ function AddressAutocomplete({ value, onChange }: { value: string; onChange: (v:
             />
             {open && (
                 <ul style={{
-                    position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, zIndex: 9999,
+                    ...dropdownStyle,
                     margin: 0, padding: '6px 0', listStyle: 'none',
                     background: 'var(--card-bg, #1a1a2e)', border: '1px solid var(--border)',
                     borderRadius: 12, boxShadow: '0 12px 32px rgba(0,0,0,0.35)',
@@ -735,7 +751,7 @@ function AddressAutocomplete({ value, onChange }: { value: string; onChange: (v:
                     })}
                 </ul>
             )}
-        </div>
+        </>
     );
 }
 
