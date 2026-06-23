@@ -710,11 +710,15 @@ export default function DashboardPage() {
             if (isMobile && isGrid) {
               return <span style={{ display: 'block', width: 8, height: 8, borderRadius: '50%', flexShrink: 0, backgroundColor: dotColor }} />;
             }
-            const timeStr = arg.event.start
-              ? new Intl.DateTimeFormat('es-UY', {
-                  timeZone: 'America/Montevideo', hour: '2-digit', minute: '2-digit', hour12: false,
-                }).format(arg.event.start)
-              : '';
+            const timeStr = (() => {
+              if (!arg.event.start) return '';
+              const parts = new Intl.DateTimeFormat('en-US', {
+                timeZone: 'America/Montevideo', hour: '2-digit', minute: '2-digit', hour12: false,
+              }).formatToParts(arg.event.start);
+              const h = parts.find(p => p.type === 'hour')?.value ?? '00';
+              const m = parts.find(p => p.type === 'minute')?.value ?? '00';
+              return `${h === '24' ? '00' : h}:${m}`;
+            })();
             return (
               <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '1px 5px', overflow: 'hidden', width: '100%' }}>
                 <span style={{ width: 5, height: 5, borderRadius: '50%', background: dotColor, flexShrink: 0, opacity: 0.9 }} />
