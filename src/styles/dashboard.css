@@ -1899,6 +1899,14 @@
   .dash-page__head { margin-bottom: 16px; }
   .trial-banner__text { display: none; }
   .settings-header-info { display: none; }
+  /* Calendar: edge-to-edge on mobile */
+  .dash-fc-wrap {
+    margin: 0 0 16px;
+    padding: 12px 8px;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
 }
 
 /* ── Mobile sub-nav ── */
