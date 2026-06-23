@@ -1514,6 +1514,14 @@
   border-color: rgba(0, 0, 0, 0.1);
   background: #fff;
 }
+.event-popup {
+  background: oklch(0.18 0.04 280);
+}
+[data-theme="light"] .event-popup {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.14);
+}
 [data-theme="light"] .dash-modal {
   background: #ffffff;
   border-color: rgba(0, 0, 0, 0.1);
