@@ -636,6 +636,13 @@ function DisenoTab({ token, slug, profileData }: { token: string | null; slug: s
 // ── AddressAutocomplete ───────────────────────────────────────────────────────
 type NominatimResult = { place_id: number; display_name: string };
 
+function splitAddress(display_name: string): { main: string; secondary: string } {
+    const parts = display_name.split(', ');
+    const main = parts.slice(0, 2).join(', ');
+    const secondary = parts.slice(2).join(', ');
+    return { main, secondary };
+}
+
 function AddressAutocomplete({ value, onChange }: { value: string; onChange: (v: string) => void }) {
     const [suggestions, setSuggestions] = useState<NominatimResult[]>([]);
     const [open, setOpen] = useState(false);
@@ -662,8 +669,9 @@ function AddressAutocomplete({ value, onChange }: { value: string; onChange: (v:
         debounceRef.current = setTimeout(() => fetchSuggestions(v), 400);
     };
 
-    const handleSelect = (name: string) => {
-        onChange(name);
+    const handleSelect = (displayName: string) => {
+        const { main, secondary } = splitAddress(displayName);
+        onChange(secondary ? `${main}, ${secondary.split(', ').slice(-1)[0]}` : main);
         setSuggestions([]);
         setOpen(false);
     };
@@ -688,27 +696,43 @@ function AddressAutocomplete({ value, onChange }: { value: string; onChange: (v:
             />
             {open && (
                 <ul style={{
-                    position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, zIndex: 50,
-                    margin: 0, padding: '4px 0', listStyle: 'none',
-                    background: 'var(--card-bg)', border: '1px solid var(--border)',
-                    borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
-                    maxHeight: 220, overflowY: 'auto',
+                    position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, zIndex: 9999,
+                    margin: 0, padding: '6px 0', listStyle: 'none',
+                    background: 'var(--card-bg, #1a1a2e)', border: '1px solid var(--border)',
+                    borderRadius: 12, boxShadow: '0 12px 32px rgba(0,0,0,0.35)',
+                    overflow: 'hidden',
                 }}>
-                    {suggestions.map(s => (
-                        <li
-                            key={s.place_id}
-                            onMouseDown={() => handleSelect(s.display_name)}
-                            style={{
-                                padding: '9px 14px', fontSize: 13, cursor: 'pointer',
-                                borderBottom: '1px solid var(--border-subtle, var(--border))',
-                                lineHeight: 1.4, color: 'var(--fg)',
-                            }}
-                            onMouseEnter={e => (e.currentTarget.style.background = 'var(--hover-bg, rgba(255,255,255,0.05))')}
-                            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                        >
-                            {s.display_name}
-                        </li>
-                    ))}
+                    {suggestions.map((s, i) => {
+                        const { main, secondary } = splitAddress(s.display_name);
+                        return (
+                            <li
+                                key={s.place_id}
+                                onMouseDown={() => handleSelect(s.display_name)}
+                                style={{
+                                    display: 'flex', alignItems: 'flex-start', gap: 10,
+                                    padding: '10px 14px', cursor: 'pointer',
+                                    borderBottom: i < suggestions.length - 1 ? '1px solid var(--border)' : 'none',
+                                    transition: 'background 0.1s',
+                                }}
+                                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.06)')}
+                                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                            >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent, #818cf8)" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0, marginTop: 2 }}>
+                                    <path d="M12 21s-7-7-7-12a7 7 0 0114 0c0 5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/>
+                                </svg>
+                                <div style={{ minWidth: 0 }}>
+                                    <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--fg)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                        {main}
+                                    </div>
+                                    {secondary && (
+                                        <div style={{ fontSize: 11, color: 'var(--fg-3, #888)', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                            {secondary}
+                                        </div>
+                                    )}
+                                </div>
+                            </li>
+                        );
+                    })}
                 </ul>
             )}
         </div>
