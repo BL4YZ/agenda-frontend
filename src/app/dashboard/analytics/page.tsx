@@ -384,7 +384,14 @@ export default function AnalyticsPage() {
         if (!token) return;
         const currentPlan = (business?.subscription_plan as Plan) || 'gratis';
         const expired = business?.subscription_status === 'expired';
-        if (currentPlan === 'gratis' || expired) { setLoadingMain(false); setLoadingCharts(false); return; }
+        if (currentPlan === 'gratis' || expired) {
+            // Free plan: fetch summary only (all-time), no advanced charts
+            try {
+                const sumRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/analytics/summary`, { headers: h, params: { range: 'all' } });
+                setPeriodData(sumRes.data);
+            } catch { /* ignore */ }
+            setLoadingMain(false); setLoadingCharts(false); return;
+        }
         setLoadingCharts(true);
         const p = queryParams();
         const gbp = { ...p, groupBy };
