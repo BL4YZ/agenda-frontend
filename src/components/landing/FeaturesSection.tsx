@@ -52,18 +52,18 @@ function FReminders() {
 
 function FPayments() {
   const rows = [
-    { l: 'Pagos completos', v: '$ 5.200.000', p: 62 },
-    { l: 'Depósitos',       v: '$ 2.100.000', p: 25 },
-    { l: 'Suscripciones',   v: '$ 1.120.500', p: 13 },
+    { l: 'Pagos completos', v: '$ 78.600', p: 62 },
+    { l: 'Depósitos',       v: '$ 31.200', p: 25 },
+    { l: 'Suscripciones',   v: '$ 17.600', p: 13 },
   ];
   return (
     <div className="vc-vis vc-vis-pay glass">
       <div style={{ marginBottom: 18 }}>
         <div className="mono" style={{ fontSize: 10, color: 'var(--fg-3)', letterSpacing: '0.12em' }}>INGRESOS · ABR 2026</div>
         <div style={{ fontFamily: 'var(--font-display)', fontSize: 36, fontWeight: 700, marginTop: 6, color: 'var(--fg-0)', letterSpacing: '-0.03em' }}>
-          $ 8.420.500
+          $ 127.400
         </div>
-        <div style={{ fontSize: 12, color: 'oklch(0.7 0.18 145)', marginTop: 4 }}>↑ 18% vs mes anterior</div>
+        <div style={{ fontSize: 12, color: 'oklch(0.7 0.18 145)', marginTop: 4 }}>↑ 23% vs mes anterior</div>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {rows.map((r, i) => (
