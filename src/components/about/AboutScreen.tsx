@@ -155,7 +155,7 @@ export default function AboutScreen() {
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
             </Link>
-            <a href="mailto:soporte@novu.app" className="about-cta-secondary">
+            <a href="mailto:hola@novu.uy" className="about-cta-secondary">
               Hablar con el equipo
             </a>
           </div>

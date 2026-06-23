@@ -43,7 +43,7 @@ export default function HelpPage() {
   return (
     <LegalLayout title="Centro de ayuda" lastUpdated="Mayo 2026">
       <div className="legal-highlight">
-        Encontrá respuestas a las preguntas más frecuentes sobre Novu. Si no encontrás lo que buscás, escribinos a <strong>hola@novu.app</strong>.
+        Encontrá respuestas a las preguntas más frecuentes sobre Novu. Si no encontrás lo que buscás, escribinos a <strong>hola@novu.uy</strong>.
       </div>
       {FAQS.map(section => (
         <div key={section.section} className="legal-section">
@@ -60,7 +60,7 @@ export default function HelpPage() {
       ))}
       <div className="legal-section">
         <h2>¿Necesitás más ayuda?</h2>
-        <p>Escribinos a <strong>hola@novu.app</strong> y te respondemos a la brevedad.</p>
+        <p>Escribinos a <strong>hola@novu.uy</strong> y te respondemos a la brevedad.</p>
       </div>
     </LegalLayout>
   );

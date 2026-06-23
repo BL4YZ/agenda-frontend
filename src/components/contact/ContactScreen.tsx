@@ -20,7 +20,7 @@ export default function ContactScreen() {
     e.preventDefault();
     const subject = encodeURIComponent(`Consulta de ${name}`);
     const body = encodeURIComponent(`Nombre: ${name}\nEmail: ${email}\n\n${message}`);
-    window.location.href = `mailto:soporte@novu.app?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:hola@novu.uy?subject=${subject}&body=${body}`;
     setSent(true);
   }
 
@@ -68,8 +68,8 @@ export default function ContactScreen() {
             </div>
             <div>
               <p className="contact-channel__label">Email</p>
-              <a className="contact-channel__value" href="mailto:soporte@novu.app">
-                soporte@novu.app
+              <a className="contact-channel__value" href="mailto:hola@novu.uy">
+                hola@novu.uy
               </a>
               <p className="contact-channel__meta">Respondemos en menos de 24 hs hábiles</p>
             </div>
@@ -107,7 +107,7 @@ export default function ContactScreen() {
                 <path d="M22 4 12 14.01l-3-3" />
               </svg>
               Tu cliente de correo se abrió con el mensaje listo. También podés escribirnos directamente a{' '}
-              <a href="mailto:soporte@novu.app" style={{ color: 'var(--accent)' }}>soporte@novu.app</a>.
+              <a href="mailto:hola@novu.uy" style={{ color: 'var(--accent)' }}>hola@novu.uy</a>.
             </div>
           ) : (
             <form className="contact-form" onSubmit={handleSubmit}>

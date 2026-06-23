@@ -145,7 +145,7 @@ export default function ForgotPasswordScreen() {
             <span>·</span>
             <Link href="/privacy">Privacidad</Link>
             <span>·</span>
-            <a href="mailto:soporte@novu.app">Soporte</a>
+            <a href="mailto:hola@novu.uy">Soporte</a>
           </div>
         </section>
       </main>

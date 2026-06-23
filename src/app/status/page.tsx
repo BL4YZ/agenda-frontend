@@ -73,7 +73,7 @@ export default function StatusPage() {
 
       <div className="legal-section">
         <h2>Reportar un problema</h2>
-        <p>Si experimentás algún inconveniente, escribinos a <strong>soporte@novu.app</strong> o contactanos por nuestros canales de soporte.</p>
+        <p>Si experimentás algún inconveniente, escribinos a <strong>hola@novu.uy</strong> o contactanos por nuestros canales de soporte.</p>
       </div>
     </LegalLayout>
   );

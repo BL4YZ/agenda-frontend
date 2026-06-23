@@ -16,7 +16,7 @@ export default function PrivacyPage() {
         <p>
           El responsable del tratamiento de tus datos personales es <strong>Novu</strong>,
           con domicilio en la República Oriental del Uruguay. Para cualquier consulta sobre privacidad
-          contactanos en <a href="mailto:privacidad@novu.app">privacidad@novu.app</a>.
+          contactanos en <a href="mailto:hola@novu.uy">hola@novu.uy</a>.
         </p>
       </div>
 
@@ -152,7 +152,7 @@ export default function PrivacyPage() {
         </ul>
         <p>
           Para ejercer cualquiera de estos derechos escribinos a{' '}
-          <a href="mailto:privacidad@novu.app">privacidad@novu.app</a>.
+          <a href="mailto:hola@novu.uy">hola@novu.uy</a>.
           Responderemos en un plazo máximo de 15 días hábiles.
         </p>
       </div>
@@ -187,10 +187,10 @@ export default function PrivacyPage() {
         <h2>11. Contacto</h2>
         <p>
           Consultas sobre privacidad:{' '}
-          <a href="mailto:privacidad@novu.app">privacidad@novu.app</a>
+          <a href="mailto:hola@novu.uy">hola@novu.uy</a>
           <br />
           Consultas generales:{' '}
-          <a href="mailto:soporte@novu.app">soporte@novu.app</a>
+          <a href="mailto:hola@novu.uy">hola@novu.uy</a>
           <br />
           También podés contactarnos a través de nuestra <a href="/contact">página de contacto</a>.
         </p>

@@ -83,7 +83,7 @@ export default function IntegracionesPage() {
       </div>
       <div className="legal-section">
         <h2>¿Querés sugerir una integración?</h2>
-        <p>Escribinos a <strong>hola@novu.app</strong> contándonos con qué herramientas trabajás y lo evaluamos para una próxima versión.</p>
+        <p>Escribinos a <strong>hola@novu.uy</strong> contándonos con qué herramientas trabajás y lo evaluamos para una próxima versión.</p>
       </div>
     </LegalLayout>
   );

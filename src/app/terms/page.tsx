@@ -146,7 +146,7 @@ export default function TermsPage() {
         <h2>11. Contacto</h2>
         <p>
           Para consultas sobre estos términos escribinos a{' '}
-          <a href="mailto:soporte@novu.app">soporte@novu.app</a>{' '}
+          <a href="mailto:hola@novu.uy">hola@novu.uy</a>{' '}
           o visitá nuestra <a href="/contact">página de contacto</a>.
         </p>
       </div>
