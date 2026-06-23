@@ -687,16 +687,16 @@ function MobileNav({ isOwner, hasFinanzas, canSettings, logout }: {
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
         Agenda
       </Link>
-      {hasFinanzas && (
-        <Link href="/dashboard/analytics" className={`dash-mobile-nav__item${active('/dashboard/analytics') || active('/dashboard/finances') ? ' is-active' : ''}`}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>
-          Métricas
-        </Link>
-      )}
       {isOwner && (
         <Link href="/dashboard/team" className={`dash-mobile-nav__item${active('/dashboard/team') ? ' is-active' : ''}`}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87M16 3.13A4 4 0 0119 7a4 4 0 01-3 3.87"/></svg>
           Equipo
+        </Link>
+      )}
+      {hasFinanzas && (
+        <Link href="/dashboard/analytics" className={`dash-mobile-nav__item${active('/dashboard/analytics') || active('/dashboard/finances') ? ' is-active' : ''}`}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>
+          Métricas
         </Link>
       )}
       {canSettings && (
