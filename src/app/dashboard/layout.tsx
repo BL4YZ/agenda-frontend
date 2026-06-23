@@ -386,10 +386,32 @@ function DashTopbar({ crumbs, initial, businessName, role, canSettings, logout, 
   const [notifSeen, setNotifSeen] = useState(true);
   const [notifLoading, setNotifLoading] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
+  const notifFetchedAt = useRef<number>(0);
 
   const markNotifsRead = (count: number) => {
     setNotifSeen(true);
     localStorage.setItem('notif_seen_count', String(count));
+  };
+
+  const fetchNotifs = (opts?: { markRead?: boolean; showLoader?: boolean }) => {
+    if (!token) return;
+    if (opts?.showLoader) setNotifLoading(true);
+    const today = new Date().toISOString().slice(0, 10);
+    axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/appointments?from=${today}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }).then(res => {
+      const data = res.data.slice(0, 6);
+      notifFetchedAt.current = Date.now();
+      setNotifs(data);
+      setNotifCount(data.length);
+      if (opts?.markRead) {
+        markNotifsRead(data.length);
+      } else {
+        const seenCount = parseInt(localStorage.getItem('notif_seen_count') ?? '-1', 10);
+        setNotifSeen(data.length <= seenCount);
+      }
+    }).catch(() => {})
+      .finally(() => { if (opts?.showLoader) setNotifLoading(false); });
   };
 
   useEffect(() => {
@@ -400,38 +422,20 @@ function DashTopbar({ crumbs, initial, businessName, role, canSettings, logout, 
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  // Fetch count on mount — compare with last seen count to decide if dot shows
-  useEffect(() => {
-    if (!token) return;
-    const today = new Date().toISOString().slice(0, 10);
-    axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/appointments?from=${today}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    }).then(res => {
-      const data = res.data.slice(0, 6);
-      setNotifs(data);
-      setNotifCount(data.length);
-      const seenCount = parseInt(localStorage.getItem('notif_seen_count') ?? '-1', 10);
-      setNotifSeen(data.length <= seenCount);
-    }).catch(() => {});
-  }, [token]);
+  // Fetch on mount to show the notification dot
+  useEffect(() => { fetchNotifs(); }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Mark as seen and refresh list when panel is opened
+  // When panel opens: re-fetch only if data is older than 60s, otherwise show instantly
   useEffect(() => {
     if (open !== 'notif') return;
-    if (!token) return;
-    setNotifLoading(true);
-    const today = new Date().toISOString().slice(0, 10);
-    axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/appointments?from=${today}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    }).then(res => {
-      const data = res.data.slice(0, 6);
-      setNotifs(data);
-      setNotifCount(data.length);
-      markNotifsRead(data.length);
-    }).catch(() => {})
-      .finally(() => setNotifLoading(false));
+    const stale = Date.now() - notifFetchedAt.current > 60_000;
+    if (stale) {
+      fetchNotifs({ markRead: true, showLoader: true });
+    } else {
+      markNotifsRead(notifCount);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, token]);
+  }, [open]);
 
   const toggle = (panel: NonNullable<TopPanel>) =>
     setOpen(prev => prev === panel ? null : panel);
