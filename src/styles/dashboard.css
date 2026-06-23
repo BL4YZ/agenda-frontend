@@ -1517,6 +1517,15 @@
 .event-popup {
   background: oklch(0.18 0.04 280);
 }
+.cal-select-drop {
+  background: oklch(0.18 0.04 280);
+  box-shadow: 0 8px 32px oklch(0 0 0 / 0.5);
+}
+[data-theme="light"] .cal-select-drop {
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border-color: rgba(0, 0, 0, 0.1);
+}
 [data-theme="light"] .event-popup {
   background: #ffffff;
   border-color: rgba(0, 0, 0, 0.1);
