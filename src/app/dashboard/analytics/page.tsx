@@ -61,6 +61,7 @@ type Employee = { id: number; name: string | null; email: string };
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 const RANGES = [
+    { key: 'all',        label: 'Todo' },
     { key: 'this_month', label: 'Este mes' },
     { key: '7d',         label: 'Últimos 7 días' },
     { key: '30d',        label: 'Últimos 30 días' },
@@ -328,7 +329,7 @@ export default function AnalyticsPage() {
     const [loadingMain, setLoadingMain]     = useState(true);
     const [loadingCharts, setLoadingCharts] = useState(false);
 
-    const [range, setRange]                       = useState('this_month');
+    const [range, setRange]                       = useState('all');
     const [customFrom, setCustomFrom]             = useState('');
     const [customTo, setCustomTo]                 = useState('');
     const [groupBy, setGroupBy]                   = useState('day');
