@@ -16,6 +16,14 @@ type Hour = { day_of_week: number; open_time: string; close_time: string; is_clo
 type Faq     = { id: number; question: string; answer: string; sort_order: number };
 type Product = { id: number; name: string; brand: string; price: number | null; image_url: string; badge: string; description: string; is_visible: boolean };
 type Review  = { id: number; author_name: string; author_initial: string; stars: number; text: string; date_label: string; is_visible: boolean };
+type LandingProfileData = {
+    tagline: string | null; lede: string | null; about_quote: string | null;
+    founded_year: number | null; about_hidden: boolean;
+    cover_url: string | null; about_image_url: string | null;
+    theme: string | null; font: string | null;
+    address: string | null; phone: string | null; whatsapp: string | null;
+    instagram_url: string | null; tiktok_url: string | null; facebook_url: string | null;
+};
 
 const DAY_LABELS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
@@ -142,7 +150,7 @@ function LockedOverlay({ required }: { required: 'pro' | 'negocio' }) {
 }
 
 // ── IdentidadTab ──────────────────────────────────────────────────────────────
-function IdentidadTab({ token, slug: slugProp, isPro }: { token: string | null; slug: string; isPro: boolean }) {
+function IdentidadTab({ token, slug: slugProp, isPro, profileData }: { token: string | null; slug: string; isPro: boolean; profileData: LandingProfileData | null }) {
     const [tagline, setTagline]       = useState('');
     const [lede, setLede]             = useState('');
     const [aboutQuote, setAboutQuote] = useState('');
@@ -167,30 +175,34 @@ function IdentidadTab({ token, slug: slugProp, isPro }: { token: string | null; 
     const [savingSlug, setSavingSlug]   = useState(false);
     const [slugSaved, setSlugSaved]     = useState(false);
 
-    const slugChanged = slugInput !== currentSlug && slugInput.length >= 3;
+    const { business, updateBusiness } = useBusiness();
 
+    // Initialize fields from profile fetched once by parent
     useEffect(() => {
-        if (!token) return;
-        Promise.all([
-            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/profile`, { headers: { Authorization: `Bearer ${token}` } }),
-            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/me`,   { headers: { Authorization: `Bearer ${token}` } }),
-            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/slug`,    { headers: { Authorization: `Bearer ${token}` } }),
-        ]).then(([profileRes, bizRes, slugRes]) => {
-            setTagline(profileRes.data.tagline ?? '');
-            setLede(profileRes.data.lede ?? '');
-            setAboutQuote(profileRes.data.about_quote ?? '');
-            setFoundedYear(profileRes.data.founded_year ? String(profileRes.data.founded_year) : '');
-            setAboutHidden(profileRes.data.about_hidden ?? false);
-            setCoverUrl(profileRes.data.cover_url ?? '');
-            setAboutImageUrl(profileRes.data.about_image_url ?? '');
-            const lu = bizRes.data?.logo_url ?? '';
-            setLogoUrl(lu);
-            setSavedLogoUrl(lu);
-            const s = slugRes.data?.slug ?? '';
-            setCurrentSlug(s);
-            setSlugInput(s);
-        }).catch(console.error).finally(() => setLoading(false));
-    }, [token]);
+        if (!profileData) return;
+        setTagline(profileData.tagline ?? '');
+        setLede(profileData.lede ?? '');
+        setAboutQuote(profileData.about_quote ?? '');
+        setFoundedYear(profileData.founded_year ? String(profileData.founded_year) : '');
+        setAboutHidden(profileData.about_hidden ?? false);
+        setCoverUrl(profileData.cover_url ?? '');
+        setAboutImageUrl(profileData.about_image_url ?? '');
+        setLoading(false);
+    }, [profileData]);
+
+    // Logo from BusinessContext (already fetched app-wide)
+    const businessLogoUrl = business?.logo_url ?? '';
+    useEffect(() => {
+        setLogoUrl(businessLogoUrl);
+        setSavedLogoUrl(businessLogoUrl);
+    }, [businessLogoUrl]);
+
+    // Slug from parent prop — same value as /api/landing/slug (reads businesses.slug)
+    useEffect(() => {
+        if (!slugProp) return;
+        setCurrentSlug(slugProp);
+        setSlugInput(slugProp);
+    }, [slugProp]);
 
     // Debounced slug availability check
     useEffect(() => {
@@ -246,15 +258,12 @@ function IdentidadTab({ token, slug: slugProp, isPro }: { token: string | null; 
     const handleSaveLogo = async () => {
         setSavingLogo(true); setLogoError('');
         try {
-            await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/me`,
-                { logo_url: logoUrl || null },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            await updateBusiness({ logo_url: logoUrl || null });
             setSavedLogoUrl(logoUrl); setSavedLogo(true);
             setTimeout(() => setSavedLogo(false), 3000);
             revalidatePublicPage(currentSlug);
-        } catch (err) {
-            setLogoError(axios.isAxiosError(err) ? (err.response?.data?.message ?? 'Error al guardar.') : 'Error al guardar.');
+        } catch {
+            setLogoError('Error al guardar.');
         } finally { setSavingLogo(false); }
     };
 
@@ -299,7 +308,7 @@ function IdentidadTab({ token, slug: slugProp, isPro }: { token: string | null; 
             <div className="gcard">
                 <div className="gcard__head" style={{ justifyContent: 'space-between' }}>
                     <div>
-                        <h3 className="gcard__title">Sección "Sobre nosotros"</h3>
+                        <h3 className="gcard__title">Sección &ldquo;Sobre nosotros&rdquo;</h3>
                         <span style={{ fontSize: 11, color: 'var(--fg-3)' }}>Bloque de presentación bajo el hero</span>
                     </div>
                     <button
@@ -354,7 +363,7 @@ function IdentidadTab({ token, slug: slugProp, isPro }: { token: string | null; 
                         <ImageUpload value={coverUrl} onChange={setCoverUrl} previewHeight={140} />
                     </div>
                     <div>
-                        <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-2)', marginBottom: 8 }}>Foto "Sobre nosotros"</p>
+                        <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-2)', marginBottom: 8 }}>Foto &ldquo;Sobre nosotros&rdquo;</p>
                         <p style={{ fontSize: 11, color: 'var(--fg-3)', marginBottom: 8 }}>Sección de presentación</p>
                         <ImageUpload value={aboutImageUrl} onChange={setAboutImageUrl} previewHeight={140} />
                     </div>
@@ -394,8 +403,8 @@ function IdentidadTab({ token, slug: slugProp, isPro }: { token: string | null; 
 }
 
 // ── DiseñoTab ─────────────────────────────────────────────────────────────────
-function DisenoTab({ token, slug }: { token: string | null; slug: string }) {
-    const { business } = useBusiness();
+function DisenoTab({ token, slug, profileData }: { token: string | null; slug: string; profileData: LandingProfileData | null }) {
+    const { business, updateBusiness } = useBusiness();
     const plan      = (business?.subscription_plan ?? 'gratis') as PlanKey;
     const isNegocio = business?.subscription_status !== 'expired' && (PLAN_RANK[plan] ?? 0) >= PLAN_RANK['negocio'];
 
@@ -414,18 +423,17 @@ function DisenoTab({ token, slug }: { token: string | null; slug: string }) {
     const publicUrl = slug ? `${typeof window !== 'undefined' ? window.location.origin : ''}/public/${slug}` : '';
 
     useEffect(() => {
-        if (!token) return;
-        Promise.all([
-            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/profile`, { headers: { Authorization: `Bearer ${token}` } }),
-            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/me`,   { headers: { Authorization: `Bearer ${token}` } }),
-        ]).then(([profileRes, bizRes]) => {
-            setSelected(profileRes.data.theme ?? 'violet');
-            setFont(profileRes.data.font ?? null);
-            const bc: string | null = bizRes.data?.brand_color ?? null;
-            setBrandColor(bc);
-            if (bc) setBrandInput(bc);
-        }).catch(console.error).finally(() => setLoading(false));
-    }, [token]);
+        if (!profileData) return;
+        setSelected((profileData.theme as ShopTheme) ?? 'violet');
+        setFont((profileData.font as ShopFont | null) ?? null);
+        setLoading(false);
+    }, [profileData]);
+
+    const businessBrandColor = business?.brand_color ?? null;
+    useEffect(() => {
+        setBrandColor(businessBrandColor);
+        if (businessBrandColor) setBrandInput(businessBrandColor);
+    }, [businessBrandColor]);
 
     const handleSaveThemeFont = async () => {
         setSaving(true); setSaveError('');
@@ -444,28 +452,24 @@ function DisenoTab({ token, slug }: { token: string | null; slug: string }) {
     const handleSaveBrand = async () => {
         setSavingBrand(true); setBrandError('');
         try {
-            await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/me`,
-                { brand_color: brandInput }, { headers: { Authorization: `Bearer ${token}` } }
-            );
+            await updateBusiness({ brand_color: brandInput });
             setBrandColor(brandInput); setSavedBrand(true);
             setTimeout(() => setSavedBrand(false), 3000);
             revalidatePublicPage(slug);
-        } catch (err) {
-            setBrandError(axios.isAxiosError(err) ? (err.response?.data?.message ?? 'Error.') : 'Error.');
+        } catch {
+            setBrandError('Error.');
         } finally { setSavingBrand(false); }
     };
 
     const handleClearBrand = async () => {
         setSavingBrand(true); setBrandError('');
         try {
-            await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/me`,
-                { brand_color: null }, { headers: { Authorization: `Bearer ${token}` } }
-            );
+            await updateBusiness({ brand_color: null });
             setBrandColor(null); setBrandInput('#6366f1'); setSavedBrand(true);
             setTimeout(() => setSavedBrand(false), 3000);
             revalidatePublicPage(slug);
-        } catch (err) {
-            setBrandError(axios.isAxiosError(err) ? (err.response?.data?.message ?? 'Error.') : 'Error.');
+        } catch {
+            setBrandError('Error.');
         } finally { setSavingBrand(false); }
     };
 
@@ -629,7 +633,7 @@ function DisenoTab({ token, slug }: { token: string | null; slug: string }) {
 }
 
 // ── ContactoTab ───────────────────────────────────────────────────────────────
-function ContactoTab({ token, slug }: { token: string | null; slug: string }) {
+function ContactoTab({ token, slug, profileData }: { token: string | null; slug: string; profileData: LandingProfileData | null }) {
     const [form, setForm] = useState({ address: '', phone: '', whatsapp: '', instagram_url: '', tiktok_url: '', facebook_url: '' });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving]   = useState(false);
@@ -637,19 +641,17 @@ function ContactoTab({ token, slug }: { token: string | null; slug: string }) {
     const [saveError, setSaveError] = useState('');
 
     useEffect(() => {
-        if (!token) return;
-        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/profile`, { headers: { Authorization: `Bearer ${token}` } })
-            .then(r => setForm({
-                address:       r.data.address ?? '',
-                phone:         r.data.phone ?? '',
-                whatsapp:      r.data.whatsapp ?? '',
-                instagram_url: r.data.instagram_url ?? '',
-                tiktok_url:    r.data.tiktok_url ?? '',
-                facebook_url:  r.data.facebook_url ?? '',
-            }))
-            .catch(console.error)
-            .finally(() => setLoading(false));
-    }, [token]);
+        if (!profileData) return;
+        setForm({
+            address:       profileData.address ?? '',
+            phone:         profileData.phone ?? '',
+            whatsapp:      profileData.whatsapp ?? '',
+            instagram_url: profileData.instagram_url ?? '',
+            tiktok_url:    profileData.tiktok_url ?? '',
+            facebook_url:  profileData.facebook_url ?? '',
+        });
+        setLoading(false);
+    }, [profileData]);
 
     const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
         setForm(f => ({ ...f, [k]: e.target.value }));
@@ -1541,6 +1543,24 @@ export default function LandingAdminPage() {
     }, [role, profileLoading, router]);
     const [tab, setTab] = useState<Tab>('Identidad');
 
+    // Fetch profile once here; pass to tabs to avoid 3× duplicate requests.
+    // On error we set an empty object so the consuming tabs stop their skeletons
+    // instead of spinning forever.
+    const [profileData, setProfileData] = useState<LandingProfileData | null>(null);
+    useEffect(() => {
+        if (!token) return;
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/profile`, { headers: { Authorization: `Bearer ${token}` } })
+            .then(r => setProfileData(r.data))
+            .catch(() => setProfileData({} as LandingProfileData));
+    }, [token]);
+
+    // Lazy-mount tabs: a tab only mounts (and fetches its data) once visited.
+    // Once mounted it stays mounted to preserve unsaved edits.
+    const [visited, setVisited] = useState<Set<Tab>>(() => new Set<Tab>(['Identidad']));
+    useEffect(() => {
+        setVisited(prev => prev.has(tab) ? prev : new Set(prev).add(tab));
+    }, [tab]);
+
     const slug       = business?.slug ?? '';
     const plan       = (business?.subscription_plan ?? 'gratis') as PlanKey;
     const isExpired  = business?.subscription_status === 'expired';
@@ -1612,28 +1632,30 @@ export default function LandingAdminPage() {
                 {TAB_DESCRIPTIONS[tab]}
             </p>
 
-            {/* Tab content — all stay mounted to preserve unsaved state */}
-            <div style={{ display: tab === 'Identidad'  ? 'block' : 'none' }}><IdentidadTab  token={token} slug={slug} isPro={isPro} /></div>
-            <div style={{ display: tab === 'Diseño'     ? 'block' : 'none' }}><DisenoTab     token={token} slug={slug} /></div>
-            <div style={{ display: tab === 'Contacto'   ? 'block' : 'none' }}><ContactoTab   token={token} slug={slug} /></div>
-            <div style={{ display: tab === 'Horarios'   ? 'block' : 'none' }}><HoursTab      token={token} slug={slug} /></div>
+            {/* Tab content — a tab mounts (and fetches) only once visited, then
+                stays mounted to preserve unsaved edits. Identidad/Diseño/Contacto
+                share the single profileData fetch, so they mount up front. */}
+            <div style={{ display: tab === 'Identidad'  ? 'block' : 'none' }}><IdentidadTab  token={token} slug={slug} isPro={isPro} profileData={profileData} /></div>
+            <div style={{ display: tab === 'Diseño'     ? 'block' : 'none' }}><DisenoTab     token={token} slug={slug} profileData={profileData} /></div>
+            <div style={{ display: tab === 'Contacto'   ? 'block' : 'none' }}><ContactoTab   token={token} slug={slug} profileData={profileData} /></div>
+            <div style={{ display: tab === 'Horarios'   ? 'block' : 'none' }}>{visited.has('Horarios') && <HoursTab token={token} slug={slug} />}</div>
             <div style={{ display: tab === 'FAQs'       ? 'block' : 'none' }}>
-                {isPro ? <FaqsTab token={token} slug={slug} /> : <LockedTab required="pro" />}
+                {visited.has('FAQs') && (isPro ? <FaqsTab token={token} slug={slug} /> : <LockedTab required="pro" />)}
             </div>
             <div style={{ display: tab === 'Productos'  ? 'block' : 'none' }}>
-                {isPro ? <ProductsTab token={token} slug={slug} /> : <LockedTab required="pro" />}
+                {visited.has('Productos') && (isPro ? <ProductsTab token={token} slug={slug} /> : <LockedTab required="pro" />)}
             </div>
             <div style={{ display: tab === 'Reseñas'    ? 'block' : 'none' }}>
-                {isPro ? <ReviewsTab token={token} slug={slug} /> : <LockedTab required="pro" />}
+                {visited.has('Reseñas') && (isPro ? <ReviewsTab token={token} slug={slug} /> : <LockedTab required="pro" />)}
             </div>
             <div style={{ display: tab === 'Galería'    ? 'block' : 'none' }}>
-                {rank >= PLAN_RANK['negocio'] ? <GaleriaTab token={token} slug={slug} /> : <LockedTab required="negocio" />}
+                {visited.has('Galería') && (rank >= PLAN_RANK['negocio'] ? <GaleriaTab token={token} slug={slug} /> : <LockedTab required="negocio" />)}
             </div>
             <div style={{ display: tab === 'Equipo'     ? 'block' : 'none' }}>
-                {rank >= PLAN_RANK['negocio'] ? <EquipoTab token={token} slug={slug} /> : <LockedTab required="negocio" />}
+                {visited.has('Equipo') && (rank >= PLAN_RANK['negocio'] ? <EquipoTab token={token} slug={slug} /> : <LockedTab required="negocio" />)}
             </div>
             <div style={{ display: tab === 'Sucursales' ? 'block' : 'none' }}>
-                {rank >= PLAN_RANK['negocio'] ? <BranchesTab token={token} slug={slug} /> : <LockedTab required="negocio" />}
+                {visited.has('Sucursales') && (rank >= PLAN_RANK['negocio'] ? <BranchesTab token={token} slug={slug} /> : <LockedTab required="negocio" />)}
             </div>
         </div>
     );
