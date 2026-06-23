@@ -213,7 +213,7 @@ export default function CommissionsPage() {
                             </div>
                         </div>
                         <p className="text-xs text-slate-400 dark:text-slate-500">
-                            * Los alquileres se muestran como monto fijo configurado. Los integrantes tipo "Empleado" no generan pago automático.
+                            * Los alquileres se muestran como monto fijo configurado. Los integrantes tipo &ldquo;Empleado&rdquo; no generan pago automático.
                         </p>
                     </>
                 )}
