@@ -17,7 +17,7 @@ const CalendarIcon = () => (
 
 function GoogleCalendarCard({ token }: { token: string | null }) {
     const params = useSearchParams();
-    const [connected, setConnected] = useState<boolean | null>(null);
+    const [connected, setConnected] = useState(false);
     const [loading, setLoading]     = useState(false);
     const [toast, setToast]         = useState('');
 
@@ -25,7 +25,7 @@ function GoogleCalendarCard({ token }: { token: string | null }) {
         if (!token) return;
         axios.get(`${API}/api/integrations/google/status`, { headers: { Authorization: `Bearer ${token}` } })
             .then(r => setConnected(r.data.connected))
-            .catch(() => setConnected(false));
+            .catch(() => {});
     }, [token]);
 
     useEffect(() => {
@@ -85,15 +85,13 @@ function GoogleCalendarCard({ token }: { token: string | null }) {
                 <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <h3 className="gcard__title" style={{ margin: 0 }}>Google Calendar</h3>
-                        {connected !== null && (
-                            <span style={{
-                                fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 99,
-                                background: connected ? 'rgba(52,211,153,.15)' : 'rgba(255,255,255,.06)',
-                                color:      connected ? '#34d399' : 'var(--fg-3)',
-                            }}>
-                                {connected ? 'Conectado' : 'Desconectado'}
-                            </span>
-                        )}
+                        <span style={{
+                            fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 99,
+                            background: connected ? 'rgba(52,211,153,.15)' : 'rgba(255,255,255,.06)',
+                            color:      connected ? '#34d399' : 'var(--fg-3)',
+                        }}>
+                            {connected ? 'Conectado' : 'Desconectado'}
+                        </span>
                     </div>
                     <p style={{ margin: '2px 0 0', fontSize: 13, color: 'var(--fg-3)' }}>
                         Tus citas se sincronizan automáticamente con tu Google Calendar.
@@ -118,9 +116,7 @@ function GoogleCalendarCard({ token }: { token: string | null }) {
                     ))}
                 </div>
 
-                {connected === null ? (
-                    <div style={{ height: 38, background: 'var(--hover-bg)', borderRadius: 10, width: 160, animation: 'pulse 1.5s ease infinite' }} />
-                ) : connected ? (
+                {connected ? (
                     <button
                         onClick={handleDisconnect}
                         disabled={loading}
