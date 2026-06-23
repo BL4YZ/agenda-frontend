@@ -677,6 +677,12 @@ function MobileNav({ isOwner, hasFinanzas, canSettings, logout }: {
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
         Inicio
       </Link>
+      {isOwner && (
+        <Link href="/dashboard/landing" className={`dash-mobile-nav__item${active('/dashboard/landing') ? ' is-active' : ''}`}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+          Página
+        </Link>
+      )}
       <Link href="/dashboard/appointments" className={`dash-mobile-nav__item${active('/dashboard/appointments') ? ' is-active' : ''}`}>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
         Agenda
@@ -691,12 +697,6 @@ function MobileNav({ isOwner, hasFinanzas, canSettings, logout }: {
         <Link href="/dashboard/team" className={`dash-mobile-nav__item${active('/dashboard/team') ? ' is-active' : ''}`}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87M16 3.13A4 4 0 0119 7a4 4 0 01-3 3.87"/></svg>
           Equipo
-        </Link>
-      )}
-      {isOwner && (
-        <Link href="/dashboard/landing" className={`dash-mobile-nav__item${active('/dashboard/landing') ? ' is-active' : ''}`}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
-          Página
         </Link>
       )}
       {canSettings && (
