@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import axios from 'axios';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -710,12 +711,12 @@ function AddressAutocomplete({ value, onChange }: { value: string; onChange: (v:
                 placeholder="Ej: Av. 18 de Julio 1234, Montevideo"
                 autoComplete="off"
             />
-            {open && (
+            {open && typeof document !== 'undefined' && createPortal(
                 <ul style={{
                     ...dropdownStyle,
                     margin: 0, padding: '6px 0', listStyle: 'none',
                     background: 'var(--card-bg, #1a1a2e)', border: '1px solid var(--border)',
-                    borderRadius: 12, boxShadow: '0 12px 32px rgba(0,0,0,0.35)',
+                    borderRadius: 12, boxShadow: '0 16px 40px rgba(0,0,0,0.5)',
                     overflow: 'hidden',
                 }}>
                     {suggestions.map((s, i) => {
@@ -749,7 +750,8 @@ function AddressAutocomplete({ value, onChange }: { value: string; onChange: (v:
                             </li>
                         );
                     })}
-                </ul>
+                </ul>,
+                document.body
             )}
         </>
     );
