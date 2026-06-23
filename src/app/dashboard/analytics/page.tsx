@@ -387,7 +387,7 @@ export default function AnalyticsPage() {
         if (currentPlan === 'gratis' || expired) {
             // Free plan: fetch summary only (all-time), no advanced charts
             try {
-                const sumRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/analytics/summary`, { headers: h, params: { range: 'all' } });
+                const sumRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/analytics/summary-free`, { headers: h, params: { range: 'all' } });
                 setPeriodData(sumRes.data);
             } catch { /* ignore */ }
             setLoadingMain(false); setLoadingCharts(false); return;
