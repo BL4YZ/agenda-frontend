@@ -638,7 +638,7 @@ export default function DashboardPage() {
             <div className="kpi__value kpi__value--small">
               ${parseFloat(metrics.revenue_total).toLocaleString('es-UY', { minimumFractionDigits: 0 })}
             </div>
-            <div className="kpi__label">Ingresos totales</div>
+            <div className="kpi__label">Ingresos históricos</div>
             <div className="kpi__hint">${parseFloat(metrics.revenue_month).toLocaleString('es-UY', { minimumFractionDigits: 0 })} este mes</div>
           </div>
           <div className="kpi" style={{ cursor: 'pointer' }} onClick={() => router.push('/dashboard/appointments?status=pending')}>
