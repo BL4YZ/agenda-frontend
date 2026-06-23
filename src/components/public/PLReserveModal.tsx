@@ -168,7 +168,7 @@ export default function PLReserveModal({ open, onClose, shop, initialServiceId, 
   while (calendarDays.length % 7 !== 0) calendarDays.push(null);
 
   const handleSubmit = async () => {
-    if (!svc || !selectedDate || !slot || !clientName || !clientPhone) return;
+    if (!svc || !selectedDate || !slot || !clientName || !clientPhone || !clientEmail) return;
     const availableMethods = getAvailableMethods(shop);
     if (availableMethods.length > 1 && !paymentMethod) {
       setError('Seleccioná un método de pago.');
@@ -184,7 +184,7 @@ export default function PLReserveModal({ open, onClose, shop, initialServiceId, 
         startTime: `${selectedDate}T${slot}:00`,
         clientName,
         clientPhone,
-        clientEmail: clientEmail || undefined,
+        clientEmail,
         paymentMethod: method || undefined,
       });
       setStep(3);
@@ -411,12 +411,13 @@ export default function PLReserveModal({ open, onClose, shop, initialServiceId, 
               />
             </div>
             <div className="pl-modal__field">
-              <label className="pl-modal__label" htmlFor="modal-email">EMAIL (OPCIONAL)</label>
+              <label className="pl-modal__label" htmlFor="modal-email">EMAIL *</label>
               <input
                 id="modal-email"
                 className="pl-modal__input"
                 type="email"
                 placeholder="email@ejemplo.com"
+                required
                 autoComplete="email"
                 value={clientEmail}
                 onChange={e => setClientEmail(e.target.value)}
@@ -502,7 +503,7 @@ export default function PLReserveModal({ open, onClose, shop, initialServiceId, 
               <button
                 className="pl-btn pl-btn--primary"
                 style={{ flex: 2, justifyContent: 'center' }}
-                disabled={submitting || !clientName || !clientPhone}
+                disabled={submitting || !clientName || !clientPhone || !clientEmail}
                 onClick={handleSubmit}
                 aria-busy={submitting}
               >
@@ -527,10 +528,7 @@ export default function PLReserveModal({ open, onClose, shop, initialServiceId, 
               margin: 0, fontWeight: 500,
             }}>¡Reserva confirmada!</h3>
             <p style={{ color: 'var(--pl-fg-soft)', fontSize: 14, margin: '8px 0 18px' }}>
-              {clientPhone
-                ? 'Te enviamos la confirmación por WhatsApp.'
-                : 'Tu reserva fue registrada correctamente.'}
-              {' '}¡Te esperamos!
+              Te enviamos la confirmación a <strong>{clientEmail}</strong>. Desde ese email podés cancelar si necesitás. ¡Te esperamos!
             </p>
             <button className="pl-btn pl-btn--primary" style={{ justifyContent: 'center' }} onClick={onClose}>
               Volver al inicio
