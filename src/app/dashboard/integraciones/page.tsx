@@ -125,7 +125,7 @@ function GoogleCalendarCard({ token }: { token: string | null }) {
                         onClick={handleDisconnect}
                         disabled={loading}
                         style={{
-                            padding: '9px 20px', borderRadius: 10, border: '1px solid rgba(239,68,68,.3)',
+                            padding: '9px 20px', borderRadius: 999, border: '1px solid rgba(239,68,68,.3)',
                             background: 'rgba(239,68,68,.08)', color: '#f87171', fontSize: 13, fontWeight: 600,
                             cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1,
                         }}
@@ -137,7 +137,7 @@ function GoogleCalendarCard({ token }: { token: string | null }) {
                         onClick={handleConnect}
                         disabled={loading}
                         className="btn-primary"
-                        style={{ padding: '9px 20px', fontSize: 13, fontWeight: 600, opacity: loading ? 0.7 : 1 }}
+                        style={{ padding: '9px 20px', fontSize: 13, fontWeight: 600, opacity: loading ? 0.7 : 1, borderRadius: 999 }}
                     >
                         {loading ? 'Redirigiendo…' : 'Conectar Google Calendar'}
                     </button>
