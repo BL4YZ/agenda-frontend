@@ -356,7 +356,7 @@ function IdentidadTab({ token, slug: slugProp, isPro, profileData }: { token: st
             {/* Fotos */}
             <div className="gcard" style={{ opacity: aboutHidden ? 0.45 : 1, pointerEvents: aboutHidden ? 'none' : undefined, transition: 'opacity .2s' }}>
                 <div className="gcard__head"><h3 className="gcard__title">Fotos</h3></div>
-                <div className="gcard__body" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                <div className="gcard__body" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
                     <div>
                         <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-2)', marginBottom: 8 }}>Foto de portada</p>
                         <p style={{ fontSize: 11, color: 'var(--fg-3)', marginBottom: 8 }}>Imagen de fondo del hero</p>
