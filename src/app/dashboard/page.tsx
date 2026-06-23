@@ -225,7 +225,7 @@ function CustomSelect({ value, onChange, options }: {
         <span style={{ flexShrink: 0, marginLeft: 8, opacity: 0.6 }}>{Icon.chevDown}</span>
       </button>
       {open && (
-        <div className="gcard" style={{ position: 'absolute', zIndex: 10, marginTop: 4, width: '100%', padding: 4 }}>
+        <div className="gcard" style={{ position: 'absolute', zIndex: 10, marginTop: 4, width: '100%', padding: 4, background: 'oklch(0.18 0.04 280)', boxShadow: '0 8px 32px oklch(0 0 0 / 0.5)' }}>
           {options.map(opt => (
             <button key={opt.value} type="button"
               onClick={() => { onChange(opt.value); setOpen(false); }}
