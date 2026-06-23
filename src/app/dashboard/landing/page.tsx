@@ -635,7 +635,7 @@ function DisenoTab({ token, slug, profileData }: { token: string | null; slug: s
 
 // ── ContactoTab ───────────────────────────────────────────────────────────────
 function ContactoTab({ token, slug, profileData }: { token: string | null; slug: string; profileData: LandingProfileData | null }) {
-    const [form, setForm] = useState({ address: '', phone: '', whatsapp: '', instagram_url: '', tiktok_url: '', facebook_url: '', lat: '', lng: '' });
+    const [form, setForm] = useState({ address: '', phone: '', whatsapp: '', instagram_url: '', tiktok_url: '', facebook_url: '' });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving]   = useState(false);
     const [saved, setSaved]     = useState(false);
@@ -650,8 +650,6 @@ function ContactoTab({ token, slug, profileData }: { token: string | null; slug:
             instagram_url: profileData.instagram_url ?? '',
             tiktok_url:    profileData.tiktok_url ?? '',
             facebook_url:  profileData.facebook_url ?? '',
-            lat:           profileData.lat != null ? String(profileData.lat) : '',
-            lng:           profileData.lng != null ? String(profileData.lng) : '',
         });
         setLoading(false);
     }, [profileData]);
@@ -681,19 +679,6 @@ function ContactoTab({ token, slug, profileData }: { token: string | null; slug:
                     <Field label="Dirección">
                         <input className="fg-field__input" value={form.address} onChange={set('address')} placeholder="Ej: Av. 18 de Julio 1234, Montevideo" />
                     </Field>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                        <Field label="Latitud">
-                            <input className="fg-field__input" value={form.lat} onChange={set('lat')} placeholder="Ej: -34.9011" />
-                        </Field>
-                        <Field label="Longitud">
-                            <input className="fg-field__input" value={form.lng} onChange={set('lng')} placeholder="Ej: -56.1645" />
-                        </Field>
-                    </div>
-                    <p style={{ fontSize: 11, color: 'var(--fg-3)', margin: 0 }}>
-                        Para obtener las coordenadas, buscá tu negocio en{' '}
-                        <a href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)' }}>Google Maps</a>,
-                        hacé clic derecho sobre el punto exacto y copiá las coordenadas que aparecen.
-                    </p>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                         <Field label="Teléfono">
                             <input className="fg-field__input" value={form.phone} onChange={set('phone')} placeholder="+598 99 123 456" />
