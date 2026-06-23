@@ -734,50 +734,49 @@ export default function AnalyticsPage() {
                 </div>
             )}
 
-            {/* Filter bar */}
-            <div style={{ position:'relative' }}>
-                <div className="filter-form" style={{ opacity: !isPro ? 0.6 : 1, pointerEvents: !isPro ? 'none' : undefined }}>
-                    <div className="fg-field">
-                        <span className="fg-field__label">Período</span>
-                        <CustomSelect value={range} onChange={v => { setRange(v); if (v !== 'custom') { setCustomFrom(''); setCustomTo(''); } }} options={RANGES} />
-                    </div>
-                    {range === 'custom' && (<>
+            {/* Filter bar — Pro only */}
+            {isPro && (
+                <div style={{ position:'relative' }}>
+                    <div className="filter-form">
                         <div className="fg-field">
-                            <span className="fg-field__label">Desde</span>
-                            <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)} className="fg-field__input" />
+                            <span className="fg-field__label">Período</span>
+                            <CustomSelect value={range} onChange={v => { setRange(v); if (v !== 'custom') { setCustomFrom(''); setCustomTo(''); } }} options={RANGES} />
                         </div>
+                        {range === 'custom' && (<>
+                            <div className="fg-field">
+                                <span className="fg-field__label">Desde</span>
+                                <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)} className="fg-field__input" />
+                            </div>
+                            <div className="fg-field">
+                                <span className="fg-field__label">Hasta</span>
+                                <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)} className="fg-field__input" />
+                            </div>
+                        </>)}
                         <div className="fg-field">
-                            <span className="fg-field__label">Hasta</span>
-                            <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)} className="fg-field__input" />
+                            <span className="fg-field__label">Agrupar</span>
+                            <CustomSelect value={groupBy} onChange={setGroupBy} options={GROUP_BY} />
                         </div>
-                    </>)}
-                    <div className="fg-field">
-                        <span className="fg-field__label">Agrupar</span>
-                        <CustomSelect value={groupBy} onChange={setGroupBy} options={GROUP_BY} />
-                    </div>
-                    {isNegocio && employees.length > 0 && (
+                        {isNegocio && employees.length > 0 && (
+                            <div className="fg-field">
+                                <span className="fg-field__label">Profesional</span>
+                                <CustomSelect value={selectedEmployee} onChange={setSelectedEmployee}
+                                    options={[{ key:'', label:'Todos' },...employees.map(e => ({ key:String(e.id), label:e.name||e.email }))]} />
+                            </div>
+                        )}
                         <div className="fg-field">
-                            <span className="fg-field__label">Profesional</span>
-                            <CustomSelect value={selectedEmployee} onChange={setSelectedEmployee}
-                                options={[{ key:'', label:'Todos' },...employees.map(e => ({ key:String(e.id), label:e.name||e.email }))]} />
+                            <span className="fg-field__label">Estado pago</span>
+                            <CustomSelect value={paymentType} onChange={setPaymentType}
+                                options={[{key:'',label:'Todos'},{key:'paid',label:'Cobrado'},{key:'full_payment',label:'Pago completo'},{key:'pending',label:'Pendiente'},{key:'free',label:'Sin cobro'}]} />
                         </div>
-                    )}
-                    <div className="fg-field">
-                        <span className="fg-field__label">Estado pago</span>
-                        <CustomSelect value={paymentType} onChange={setPaymentType}
-                            options={[{key:'',label:'Todos'},{key:'paid',label:'Cobrado'},{key:'full_payment',label:'Pago completo'},{key:'pending',label:'Pendiente'},{key:'free',label:'Sin cobro'}]} />
-                    </div>
-                    {isPro && (
                         <button className="dbtn dbtn--primary" onClick={fetchData} style={{ alignSelf:'flex-end' }}>
                             Aplicar
                         </button>
-                    )}
+                    </div>
                 </div>
-                {!isPro && <LockOverlay label="Plan Pro" />}
-            </div>
+            )}
 
             {/* KPI Cards */}
-            <div ref={kpiRef} className="kpi-grid kpi-grid--3">
+            <div ref={kpiRef} className={`kpi-grid ${isPro ? 'kpi-grid--3' : 'kpi-grid--2'}`}>
                 <KPICard label="Total citas" icon={IcoCalendar} tone="purple"
                     value={loadingMain ? '–' : String(curr?.total_appointments ?? 0)}
                     delta={curr && prev ? { val:curr.total_appointments, ref:prev.total_appointments } : null}
@@ -786,24 +785,26 @@ export default function AnalyticsPage() {
                     value={loadingMain ? '–' : fmtMoney(curr?.revenue_total ?? 0)}
                     delta={curr && prev ? { val:curr.revenue_total, ref:prev.revenue_total } : null}
                     onClick={isPro ? () => { setTableStatusFilter('paid'); setShowTable(true); setTimeout(() => tableRef.current?.scrollIntoView({behavior:'smooth',block:'start'}),100); } : undefined} />
-                <KPICard label="Ticket promedio" icon={IcoTrendingUp} tone="cyan"
-                    value={loadingMain ? '–' : fmtMoney(curr?.avg_ticket ?? 0)} locked={!isPro} />
-                <KPICard label="Tasa de cobro" icon={IcoBarChart} tone="purple"
-                    value={loadingMain ? '–' : `${conversionRate.toFixed(0)}%`}
-                    sub={!loadingMain ? `${(curr?.paid_count??0)+(curr?.full_payment_count??0)} de ${curr?.total_appointments??0} cobradas` : undefined}
-                    locked={!isPro} />
-                <KPICard label="Proyección del mes" icon={IcoZap} tone="orange"
-                    value={loadingMain ? '–' : projectedRevenue != null ? fmtMoney(projectedRevenue) : '—'}
-                    sub={projectedRevenue != null ? 'Estimado al fin de mes' : 'Solo disponible en "Este mes"'}
-                    locked={!isPro} />
-                <KPICard label="Clientes únicos" icon={IcoUserPlus} tone="rose"
-                    value={loadingMain ? '–' : String(clientStats?.total_unique_clients ?? 0)}
-                    sub={!loadingMain && clientStats ? `${clientStats.new_clients} nuevos · ${clientStats.returning_clients} recurrentes` : undefined}
-                    locked={!isPro} />
+                {isPro && <>
+                    <KPICard label="Ticket promedio" icon={IcoTrendingUp} tone="cyan"
+                        value={loadingMain ? '–' : fmtMoney(curr?.avg_ticket ?? 0)} />
+                    <KPICard label="Tasa de cobro" icon={IcoBarChart} tone="purple"
+                        value={loadingMain ? '–' : `${conversionRate.toFixed(0)}%`}
+                        sub={!loadingMain ? `${(curr?.paid_count??0)+(curr?.full_payment_count??0)} de ${curr?.total_appointments??0} cobradas` : undefined} />
+                    <KPICard label="Proyección del mes" icon={IcoZap} tone="orange"
+                        value={loadingMain ? '–' : projectedRevenue != null ? fmtMoney(projectedRevenue) : '—'}
+                        sub={projectedRevenue != null ? 'Estimado al fin de mes' : 'Solo disponible en "Este mes"'} />
+                    <KPICard label="Clientes únicos" icon={IcoUserPlus} tone="rose"
+                        value={loadingMain ? '–' : String(clientStats?.total_unique_clients ?? 0)}
+                        sub={!loadingMain && clientStats ? `${clientStats.new_clients} nuevos · ${clientStats.returning_clients} recurrentes` : undefined} />
+                </>}
             </div>
 
+            {/* Pro-only sections */}
+            {isPro && <>
+
             {/* Insights */}
-            {isPro && insights.length > 0 && (
+            {insights.length > 0 && (
                 <div style={{ marginBottom:24 }}>
                     <div className="dash-page__eyebrow" style={{ marginBottom:10 }}>
                         <span style={{ color:'#fbbf24' }}>{IcoLightbulb}</span>
@@ -831,13 +832,12 @@ export default function AnalyticsPage() {
 
             {/* Time series chart */}
             <div ref={revenueRef} className="gcard" style={{ position:'relative', overflow:'hidden', marginBottom:24 }}>
-                {!isPro && <LockOverlay label="Plan Pro" />}
                 <div className="gcard__head">
                     <div>
                         <h3 className="gcard__title">Ingresos en el tiempo</h3>
                         <p className="gcard__sub">
                             {RANGES.find(r => r.key === range)?.label}
-                            {isPro && <span> · Clic en barra para filtrar ese período</span>}
+                            <span> · Clic en barra para filtrar ese período</span>
                         </p>
                     </div>
                     <div className="tab-pills">
@@ -906,11 +906,10 @@ export default function AnalyticsPage() {
             <div ref={chartsRowRef} className="two-col">
                 {/* Donut */}
                 <div className="gcard" style={{ position:'relative', overflow:'hidden' }}>
-                    {!isPro && <LockOverlay label="Plan Pro" />}
                     <div className="gcard__head">
                         <div>
                             <h3 className="gcard__title">Estado de pagos</h3>
-                            <p className="gcard__sub">Distribución del período{isPro && <span> · Clic en segmento para filtrar</span>}</p>
+                            <p className="gcard__sub">Distribución del período<span> · Clic en segmento para filtrar</span></p>
                         </div>
                     </div>
                     <div className="gcard__body">
@@ -964,7 +963,7 @@ export default function AnalyticsPage() {
                     <div className="gcard__head">
                         <div>
                             <h3 className="gcard__title">Por profesional</h3>
-                            <p className="gcard__sub">Ingresos por persona{isNegocio && <span> · Clic para filtrar</span>}</p>
+                            <p className="gcard__sub">Ingresos por persona{isNegocio ? <span> · Clic para filtrar</span> : null}</p>
                         </div>
                     </div>
                     <div className="gcard__body">
@@ -995,7 +994,6 @@ export default function AnalyticsPage() {
 
             {/* Heatmap */}
             <div ref={heatmapRef} className="gcard" style={{ position:'relative', overflow:'hidden', marginBottom:24 }}>
-                {!isPro && <LockOverlay label="Plan Pro" />}
                 <div className="gcard__head">
                     <div>
                         <h3 className="gcard__title">Mapa de ocupación</h3>
@@ -1042,13 +1040,12 @@ export default function AnalyticsPage() {
             <div ref={topRowRef} className="two-col">
                 {/* Top clients */}
                 <div className="gcard" style={{ position:'relative', overflow:'hidden' }}>
-                    {!isPro && <LockOverlay label="Plan Pro" />}
                     <div className="gcard__head">
                         <div>
                             <h3 className="gcard__title">Top clientes</h3>
                             <p className="gcard__sub">
                                 {topClientsSortBy === 'appointments' ? 'Por cantidad de citas' : 'Por ingresos generados'}
-                                {isPro && <span> · Clic para filtrar citas</span>}
+                                <span> · Clic para filtrar citas</span>
                             </p>
                         </div>
                         <div className="tab-pills">
@@ -1099,7 +1096,7 @@ export default function AnalyticsPage() {
                     </div>
                 </div>
 
-                {/* By branch */}
+                {/* By branch — Negocio only within Pro block */}
                 <div className="gcard" style={{ position:'relative', overflow:'hidden' }}>
                     {!isNegocio && <LockOverlay label="Plan Negocio" />}
                     <div className="gcard__head">
@@ -1144,7 +1141,7 @@ export default function AnalyticsPage() {
 
             {/* By service */}
             <div className="gcard" style={{ position:'relative', overflow:'hidden', marginBottom:24 }}>
-                {!isNegocio && <LockOverlay label="Plan Negocio" />}
+                {!isNegocio && <LockOverlay label="Plan Negocio" />} {/* Negocio within Pro block */}
                 <div className="gcard__head">
                     <div>
                         <h3 className="gcard__title">Por servicio</h3>
@@ -1174,7 +1171,6 @@ export default function AnalyticsPage() {
 
             {/* Data table */}
             <div ref={tableRef} className="gcard" style={{ position:'relative', padding:0, overflow:'hidden' }}>
-                {!isPro && <LockOverlay label="Plan Pro" />}
                 <div className="gcard__head" style={{ borderBottom:'1px solid var(--line)' }}>
                     <div>
                         <h3 className="gcard__title">Detalle de citas</h3>
@@ -1245,6 +1241,8 @@ export default function AnalyticsPage() {
                     </p>
                 )}
             </div>
+
+            </>} {/* end isPro sections */}
         </div>
     );
 }
