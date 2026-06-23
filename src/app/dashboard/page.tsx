@@ -85,18 +85,13 @@ function statusLabel(status?: string) {
   return 'Sin cobro';
 }
 
-// date-fns format() uses the browser's local timezone; this shifts an ISO string
-// to a "wall-clock" Date in America/Montevideo so HH:mm renders the correct local hour.
+// Uruguay is always UTC-3 (no DST since 2015). Subtract 3h from UTC then read
+// UTC components as local — getHours() returns the correct MVD wall-clock hour
+// regardless of the browser's own timezone setting.
 function parseInMVD(iso: string): Date {
-  const d = new Date(iso);
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'America/Montevideo',
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', second: '2-digit',
-    hour12: false,
-  }).formatToParts(d);
-  const get = (t: string) => parseInt(parts.find(p => p.type === t)?.value ?? '0');
-  return new Date(get('year'), get('month') - 1, get('day'), get('hour') % 24, get('minute'), get('second'));
+  const mvd = new Date(new Date(iso).getTime() - 3 * 60 * 60 * 1000);
+  return new Date(mvd.getUTCFullYear(), mvd.getUTCMonth(), mvd.getUTCDate(),
+                  mvd.getUTCHours(), mvd.getUTCMinutes(), mvd.getUTCSeconds());
 }
 
 /* ── Confirm modal ────────────────────────────────────────────────────────── */
@@ -712,12 +707,8 @@ export default function DashboardPage() {
             }
             const timeStr = (() => {
               if (!arg.event.start) return '';
-              const parts = new Intl.DateTimeFormat('en-US', {
-                timeZone: 'America/Montevideo', hour: '2-digit', minute: '2-digit', hour12: false,
-              }).formatToParts(arg.event.start);
-              const h = parts.find(p => p.type === 'hour')?.value ?? '00';
-              const m = parts.find(p => p.type === 'minute')?.value ?? '00';
-              return `${h === '24' ? '00' : h}:${m}`;
+              const mvd = new Date(arg.event.start.getTime() - 3 * 60 * 60 * 1000);
+              return `${String(mvd.getUTCHours()).padStart(2, '0')}:${String(mvd.getUTCMinutes()).padStart(2, '0')}`;
             })();
             return (
               <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '1px 5px', overflow: 'hidden', width: '100%' }}>
