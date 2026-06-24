@@ -5,6 +5,19 @@ export const metadata: Metadata = { title: 'Cambios — Novu' };
 
 const ENTRIES = [
   {
+    version: 'v2.1',
+    date: 'Junio 2026',
+    tag: 'Mejora',
+    tagColor: '#60a5fa',
+    items: [
+      'Autocompletado de dirección — mientras escribís, aparecen sugerencias para elegir tu ubicación exacta.',
+      'El mapa de tu página pública se actualiza solo al guardar tu dirección. Sin pasos extra.',
+      'Las métricas del plan gratis ahora muestran tus citas e ingresos reales (historial completo), no ceros.',
+      'Recordatorios automáticos enviados 2 horas antes de cada cita en lugar de 24 horas.',
+      'Menús y popups del calendario más legibles: sin transparencia en modo claro y modo oscuro.',
+    ],
+  },
+  {
     version: 'v2.0',
     date: 'Mayo 2026',
     tag: 'Nuevo',
@@ -96,7 +109,7 @@ const ENTRIES = [
 
 export default function ChangelogPage() {
   return (
-    <LegalLayout title="Cambios" lastUpdated="21 de mayo de 2026">
+    <LegalLayout title="Cambios" lastUpdated="23 de junio de 2026">
       <div className="legal-highlight">
         Todas las novedades, mejoras y correcciones de Novu, ordenadas por versión.
       </div>

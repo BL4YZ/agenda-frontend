@@ -39,8 +39,8 @@ function FReminders() {
         </div>
       </div>
       <div className="vc-bubble vc-bubble-r2 glass">
-        <div className="mono" style={{ fontSize: 10, color: 'var(--fg-3)', marginBottom: 4 }}>EMAIL · 24H ANTES</div>
-        <div style={{ fontSize: 13, color: 'var(--fg-1)' }}>Recordatorio: mañana a las 15:30 en Barber Shop Buceo.</div>
+        <div className="mono" style={{ fontSize: 10, color: 'var(--fg-3)', marginBottom: 4 }}>EMAIL · 2H ANTES</div>
+        <div style={{ fontSize: 13, color: 'var(--fg-1)' }}>Recordatorio: hoy a las 15:30 en Barber Shop Buceo.</div>
       </div>
       <div className="vc-bubble vc-bubble-r3 glass">
         <div className="mono" style={{ fontSize: 10, color: 'var(--fg-3)', marginBottom: 4 }}>AUTOMÁTICO · SIN ACCIÓN</div>
@@ -128,7 +128,7 @@ const FEATURES: Feature[] = [
   },
   {
     eb: '02 — RECORDATORIOS', t: 'Adiós inasistencias.',
-    d: 'Recordatorios automáticos por email 24 horas antes de cada cita. Tu cliente llega, vos no haces nada.',
+    d: 'Recordatorios automáticos por email 2 horas antes de cada cita. Tu cliente llega, vos no haces nada.',
     visual: <FReminders />, side: 'l',
   },
   {
