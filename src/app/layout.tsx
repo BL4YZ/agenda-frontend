@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono, Inter_Tight } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
@@ -43,6 +42,12 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                         __html: `(function(){try{var t=localStorage.getItem('theme'),p=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';if((t||p)==='dark')document.documentElement.classList.add('dark')}catch(e){}})()`,
                     }}
                 />
+                {/* Microsoft Clarity */}
+                <script
+                    dangerouslySetInnerHTML={{
+                        __html: `(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script","xc5dpoqb96");`,
+                    }}
+                />
             </head>
             <body className={`${inter.className} ${jetbrainsMono.variable} ${interTight.variable} bg-slate-50 dark:bg-[#07090f] text-slate-900 dark:text-white antialiased transition-colors duration-300`}>
                 {/* Ambient glow orbs */}
@@ -57,8 +62,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                         </ThemeProvider>
                     </AuthProvider>
                 </GoogleProvider>
-                {/* Microsoft Clarity — heatmaps & session recordings */}
-                <Script id="clarity" strategy="afterInteractive">{`if(!window.clarity){(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script","xc5dpoqb96");}`}</Script>
             </body>
         </html>
     );
