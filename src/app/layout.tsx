@@ -58,7 +58,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                     </AuthProvider>
                 </GoogleProvider>
                 {/* Microsoft Clarity — heatmaps & session recordings */}
-                <Script id="clarity" strategy="afterInteractive" src="https://www.clarity.ms/tag/xc5dpoqb96" />
+                <Script id="clarity" strategy="afterInteractive">{`if(!window.clarity){(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script","xc5dpoqb96");}`}</Script>
             </body>
         </html>
     );
