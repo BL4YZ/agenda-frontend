@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode } from 'react';
+import Link from 'next/link';
 
 function FBookings() {
   const rows = [
@@ -116,6 +117,7 @@ interface Feature {
   eb: string;
   t: string;
   d: string;
+  href: string;
   visual: ReactNode;
   side: 'l' | 'r';
 }
@@ -124,22 +126,22 @@ const FEATURES: Feature[] = [
   {
     eb: '01 — RESERVAS', t: 'Tu agenda nunca duerme.',
     d: 'Tus clientes reservan a las 3am, en domingo, durante un corte de luz. Tú te enteras al despertar — con todo confirmado y pagado.',
-    visual: <FBookings />, side: 'r',
+    href: '/features/reservas', visual: <FBookings />, side: 'r',
   },
   {
     eb: '02 — RECORDATORIOS', t: 'Adiós inasistencias.',
     d: 'Recordatorios automáticos por email 2 horas antes de cada cita. Tu cliente llega, vos no haces nada.',
-    visual: <FReminders />, side: 'l',
+    href: '/features/recordatorios', visual: <FReminders />, side: 'l',
   },
   {
     eb: '03 — PAGOS', t: 'Cobra antes de empezar.',
     d: 'MercadoPago conectado en 2 minutos. Cobra el total, un depósito o paquetes. Sin comisiones adicionales de nuestra parte.',
-    visual: <FPayments />, side: 'r',
+    href: '/features/pagos', visual: <FPayments />, side: 'r',
   },
   {
     eb: '04 — INSIGHTS', t: 'Tu negocio en una pantalla.',
     d: 'Ingresos del mes, ocupación, retención y proyecciones — sin abrir una hoja de cálculo. Toma decisiones con datos reales.',
-    visual: <FInsights />, side: 'l',
+    href: '/features/metricas', visual: <FInsights />, side: 'l',
   },
 ];
 
@@ -160,12 +162,12 @@ export default function FeaturesSection() {
             <div className="mono vc-f-eb">{f.eb}</div>
             <h3 className="vc-feature-t">{f.t}</h3>
             <p className="vc-feature-d">{f.d}</p>
-            <button className="vc-link-btn" aria-label={`Saber más sobre ${f.t}`}>
+            <Link href={f.href} className="vc-link-btn" aria-label={`Saber más sobre ${f.t}`}>
               Saber más
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                 <path d="M5 12h14M13 5l7 7-7 7" />
               </svg>
-            </button>
+            </Link>
           </div>
           <div className="vc-feature-visual">{f.visual}</div>
         </div>
