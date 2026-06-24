@@ -64,10 +64,10 @@ const POSTS = [
 ];
 
 const TAG_COLORS: Record<string, string> = {
-  'Consejos':   '#60a5fa',
-  'Crecimiento':'#34d399',
-  'Gestión':    '#a78bfa',
-  'Finanzas':   '#fbbf24',
+  'Consejos':    '#60a5fa',
+  'Crecimiento': '#34d399',
+  'Gestión':     '#a78bfa',
+  'Finanzas':    '#fbbf24',
 };
 
 export default function BlogPage() {
@@ -80,15 +80,7 @@ export default function BlogPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {POSTS.map((post) => (
             <Link key={post.slug} href={`/blog/${post.slug}`} style={{ textDecoration: 'none' }}>
-              <div style={{
-                padding: '20px 22px', borderRadius: 14,
-                border: '1px solid var(--line)', background: 'rgba(255,255,255,.02)',
-                display: 'flex', flexDirection: 'column', gap: 10,
-                cursor: 'pointer', transition: 'border-color .15s, background .15s',
-              }}
-                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(167,139,250,.4)'; (e.currentTarget as HTMLDivElement).style.background = 'rgba(167,139,250,.04)'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--line)'; (e.currentTarget as HTMLDivElement).style.background = 'rgba(255,255,255,.02)'; }}
-              >
+              <div className="blog-card">
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={{
                     fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 99,
