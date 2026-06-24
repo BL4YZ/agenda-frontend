@@ -4,7 +4,7 @@ export const metadata = { title: 'Política de Privacidad — Novu' };
 
 export default function PrivacyPage() {
   return (
-    <LegalLayout title="Política de Privacidad" lastUpdated="6 de mayo de 2026">
+    <LegalLayout title="Política de Privacidad" lastUpdated="23 de junio de 2026">
       <div className="legal-highlight">
         Tu privacidad es importante para nosotros. Esta política explica qué datos recopilamos,
         cómo los usamos y cuáles son tus derechos, conforme a la Ley 18.331 de Protección de
@@ -105,6 +105,23 @@ export default function PrivacyPage() {
               neon.tech/privacy-policy
             </a>.
           </li>
+          <li>
+            <strong>Vercel</strong> — plataforma de hosting donde se sirve la interfaz web de Novu.
+            Procesa las solicitudes HTTP del navegador y entrega el contenido de la aplicación.
+            Actúa como encargado del tratamiento. Política:{' '}
+            <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer">
+              vercel.com/legal/privacy-policy
+            </a>.
+          </li>
+          <li>
+            <strong>Cloudflare</strong> — servicio de DNS y protección de red que actúa como intermediario
+            entre el visitante y los servidores de Novu. Puede procesar direcciones IP y metadatos de
+            conexión para proteger la plataforma contra ataques y garantizar la disponibilidad del servicio.
+            Política:{' '}
+            <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer">
+              cloudflare.com/privacypolicy
+            </a>.
+          </li>
         </ul>
         <p>
           Todos los terceros están contractualmente obligados a tratar tus datos únicamente
@@ -115,7 +132,7 @@ export default function PrivacyPage() {
       <div className="legal-section">
         <h2>5. Almacenamiento y seguridad</h2>
         <ul>
-          <li>Los servidores de la aplicación se alojan en Railway. La base de datos se aloja en Neon (PostgreSQL serverless).</li>
+          <li>La interfaz web se sirve desde Vercel. Los servidores de la aplicación se alojan en Railway. La base de datos se aloja en Neon (PostgreSQL serverless). El tráfico de red pasa por Cloudflare.</li>
           <li>Las contraseñas se almacenan con hash bcrypt (factor de trabajo 10); nunca en texto plano.</li>
           <li>Los tokens OAuth de Mercado Pago se almacenan cifrados con AES-256-GCM.</li>
           <li>Todas las comunicaciones entre tu navegador y nuestros servidores usan HTTPS/TLS.</li>
