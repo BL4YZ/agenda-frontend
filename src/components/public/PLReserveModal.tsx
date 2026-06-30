@@ -174,9 +174,13 @@ export default function PLReserveModal({ open, onClose, shop, initialServiceId, 
       setError('Seleccioná un método de pago.');
       return;
     }
+    const resolvedEmployeeId = employeeId || employees[0]?.id;
+    if (!resolvedEmployeeId) {
+      setError('No hay profesionales disponibles para este servicio. Contactá al negocio.');
+      return;
+    }
     setError(''); setSubmitting(true);
     try {
-      const resolvedEmployeeId = employeeId || employees[0]?.id;
       const method = availableMethods.length === 1 ? availableMethods[0].value : paymentMethod;
       await axios.post(`${API}/api/public/businesses/${shop.slug}/appointments`, {
         serviceId: svc.id,
