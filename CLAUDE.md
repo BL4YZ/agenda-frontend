@@ -183,6 +183,38 @@ for this class of tool.
 
 ---
 
+## Security headers & CSP (`next.config.ts`) ⚠️
+
+`headers()` applies a CSP plus `X-Frame-Options: DENY`, `nosniff`,
+`Referrer-Policy`, HSTS, and `Permissions-Policy` to **every** route. `helmet()` in the
+backend only covers API JSON responses — it never touched the HTML Vercel serves, which
+is what these headers protect.
+
+Third-party domains are an **explicit allowlist**, not a blanket `https:`: Clarity,
+Google (OAuth + Maps + Fonts), Fontshare (loaded by an `@import` in `system.css`), and
+Mercado Pago. **Adding a new third-party script, iframe, font, or API call requires
+adding its domain here** — otherwise the browser silently blocks it. That is the single
+most likely way this file breaks a feature.
+
+⚠️ **`connect-src` is baked at build time from `NEXT_PUBLIC_API_URL`.** If that variable
+is missing or wrong in Vercel, the CSP pins `connect-src` to `localhost` and **every API
+call fails in production**. It is now a second failure mode for that variable, not just
+a wrong base URL.
+
+⚠️ `frame-ancestors 'none'` + `X-Frame-Options: DENY` block embedding anywhere. If
+businesses should ever be able to embed their booking page in their own site, those two
+lines are what to relax — and only for `/public/*`.
+
+`'unsafe-inline' 'unsafe-eval'` in `script-src` is a known App Router concession
+(hydration injects inline scripts without nonces in this setup). The real protection is
+the third-party allowlist, `object-src 'none'`, and `frame-ancestors`.
+
+**Never add a CSP change blind** — build, serve, and confirm with
+`curl -D - -o /dev/null <url>` plus a real browser pass over login (Google OAuth popup)
+and a public booking page.
+
+---
+
 ## Security rules (follow these)
 
 - **Never commit `.env*`** — `.gitignore` covers it. Values live in Vercel.
@@ -213,6 +245,8 @@ for this class of tool.
 | 8 | Free-plan Pro sections are removed from the DOM, by design |
 | 9 | Dynamic route `params` are a Promise (async) |
 | 10 | `useSearchParams` needs a `<Suspense>` boundary |
+| 11 | New third-party script/iframe/font/API needs its domain in the CSP allowlist |
+| 12 | `NEXT_PUBLIC_API_URL` missing in Vercel now also breaks CSP `connect-src` |
 
 **Reference case — the `employee_id` bug.** `components/public/PLReserveModal.tsx` fell
 back to `employees[0]?.id`; when a service had no employees assigned the array was empty →

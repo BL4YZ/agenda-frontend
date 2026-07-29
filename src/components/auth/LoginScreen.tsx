@@ -197,6 +197,12 @@ export default function LoginScreen() {
                 </button>
               </div>
 
+              {/* Pista fija, igual para todos: el backend ya no revela si una cuenta
+                  concreta usa Google, porque eso confirmaba que el email existe. */}
+              <p style={{ marginTop: 12, fontSize: 12, color: 'var(--fg-3)', textAlign: 'center', lineHeight: 1.6 }}>
+                Si creaste tu cuenta con Google, ingresá con el botón de arriba.
+              </p>
+
               <div className="auth-foot">
                 ¿No tienes cuenta?{' '}
                 <Link href="/register">Crea una gratis</Link>
