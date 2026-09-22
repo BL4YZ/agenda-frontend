@@ -2255,8 +2255,11 @@
         var(--glass-bg);
 }
 .lp-editor-cta > div { display: grid; gap: 4px; min-width: 0; }
-.lp-editor-cta strong { font-size: 14px; color: var(--fg-0); }
-.lp-editor-cta span { font-size: 12px; color: var(--fg-3); line-height: 1.5; }
+/* ⚠️ Con el combinador de hijo, no descendiente: el botón de la derecha lleva
+   su etiqueta dentro de un <span>, y un `.lp-editor-cta span` suelto le pisaba
+   el `color: white` de .dbtn--primary y lo dejaba gris sobre violeta. */
+.lp-editor-cta > div > strong { font-size: 14px; color: var(--fg-0); }
+.lp-editor-cta > div > span   { font-size: 12px; color: var(--fg-3); line-height: 1.5; }
 
 @media (max-width: 680px) {
     .lp-editor-cta { flex-direction: column; align-items: stretch; }
