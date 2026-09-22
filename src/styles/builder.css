@@ -187,6 +187,7 @@
 .pb-nav__inner {
   display: flex; align-items: center; gap: 24px;
   padding-block: 16px;
+  flex-wrap: nowrap;
 }
 .pb-nav--split .pb-nav__links { margin-inline: auto; }
 .pb-nav--center .pb-nav__inner { justify-content: center; text-align: center; }
@@ -212,13 +213,16 @@
   color: inherit; text-decoration: none; flex-shrink: 0;
 }
 .pb-nav__logo { height: 32px; width: auto; object-fit: contain; }
-.pb-nav__links { display: flex; gap: 26px; }
+/* min-width:0 + overflow para que enlaces largos (o muchos) se recorten en vez
+   de empujar el botón de reserva fuera de la barra. */
+.pb-nav__links { display: flex; gap: 26px; min-width: 0; overflow: hidden; }
 .pb-nav__links a {
   color: var(--pb-fg-soft); text-decoration: none; font-size: 0.9rem;
+  white-space: nowrap;
   transition: color .15s ease;
 }
 .pb-nav__links a:hover { color: var(--pb-fg); }
-.pb-nav__right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+.pb-nav__right { display: flex; align-items: center; gap: 12px; margin-left: auto; flex-shrink: 0; }
 .pb-nav__burger { display: none; background: none; border: 0; cursor: pointer; padding: 8px; }
 .pb-nav__burger span { display: block; width: 20px; height: 2px; background: currentColor; margin: 3px 0; }
 

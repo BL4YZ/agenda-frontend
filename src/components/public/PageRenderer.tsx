@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
-import type { PageDoc, PageSection } from '@/types/builder';
+import type { PageDoc, PageSection, BlockType } from '@/types/builder';
 import type { Shop } from '@/types/public';
 import { BLOCK_RENDERERS } from './blocks';
 import type { BlockCtx } from './blocks';
@@ -9,11 +9,30 @@ import { designToCssVars } from '@/lib/builder/design';
 import { sectionCss, sectionClass, resolveCta, safeImg, DAY_NAMES } from '@/lib/builder/runtime';
 import '@/styles/builder.css';
 
-/** Types that earn a slot in the nav when links are auto-derived. */
-const NAV_TYPES = new Set([
-  'services', 'products', 'team', 'gallery', 'reviews', 'faq',
-  'location', 'branches', 'pricing', 'hours', 'contact',
-]);
+/**
+ * Short labels for the auto-derived nav.
+ *
+ * ⚠️ Deliberately NOT the section's own title. A block's heading is a sentence
+ * ("Quiénes te atienden", "Vení a vernos"); nine of those wrap the bar onto two
+ * lines and push the reserve button off screen. The map doubles as the list of
+ * types that earn a nav slot at all.
+ */
+const NAV_LABELS: Partial<Record<BlockType, string>> = {
+  services: 'Servicios',
+  products: 'Tienda',
+  pricing:  'Paquetes',
+  branches: 'Sucursales',
+  team:     'Equipo',
+  gallery:  'Galería',
+  reviews:  'Reseñas',
+  faq:      'Preguntas',
+  hours:    'Horarios',
+  location: 'Contacto',
+  contact:  'Contacto',
+};
+
+/** Beyond this the bar gets cramped even with short labels. */
+const MAX_AUTO_LINKS = 6;
 
 const domId = (s: PageSection) => s.anchor || s.id;
 
@@ -34,9 +53,17 @@ function PBNav({ doc, ctx }: { doc: PageDoc; ctx: BlockCtx }) {
 
   const links = useMemo(() => {
     if (nav.links?.length) return nav.links;
-    return doc.sections
-      .filter(s => !s.hidden && NAV_TYPES.has(s.type) && s.props.title)
-      .map(s => ({ label: s.props.title as string, href: `#${domId(s)}` }));
+    const seen = new Set<string>();
+    const out: { label: string; href: string }[] = [];
+    for (const s of doc.sections) {
+      const label = NAV_LABELS[s.type];
+      // One entry per label: `location` and `contact` are both "Contacto".
+      if (s.hidden || !label || seen.has(label)) continue;
+      seen.add(label);
+      out.push({ label, href: `#${domId(s)}` });
+      if (out.length === MAX_AUTO_LINKS) break;
+    }
+    return out;
   }, [nav.links, doc.sections]);
 
   const cta = resolveCta(nav.ctaAction ?? 'reserve', nav.ctaLabel ?? 'Reservar', nav.ctaHref, shop);

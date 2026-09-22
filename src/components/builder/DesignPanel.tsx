@@ -4,17 +4,7 @@ import { Lock } from 'lucide-react';
 import type { PageDoc, PageDesign, DesignPreset, FontKey, PlanKey } from '@/types/builder';
 import { PALETTES, FONTS, resolvePalette } from '@/lib/builder/design';
 import { PLAN_RANK } from '@/lib/builder/blocks';
-import { Collapse, ColorField } from './Inspector';
-
-function Row({ label, children, hint }: { label?: string; children: React.ReactNode; hint?: string }) {
-  return (
-    <label className="st-field">
-      {label && <span className="st-field__label">{label}</span>}
-      {children}
-      {hint && <span className="st-field__hint">{hint}</span>}
-    </label>
-  );
-}
+import { Collapse, ColorField, Row } from './Inspector';
 
 function Seg<T extends string>({ value, options, onChange }: {
   value: T | undefined; options: { value: T; label: string }[]; onChange: (v: T) => void;
@@ -78,6 +68,7 @@ export default function DesignPanel({ doc, plan, onChange }: {
             return (
               <button
                 key={key} type="button"
+                data-testid={`palette-${key}`}
                 className={`st-palette${active ? ' is-on' : ''}`}
                 // Dropping the overrides is the point: picking a preset should
                 // actually look like the preset, not like the last custom mix.
@@ -106,16 +97,16 @@ export default function DesignPanel({ doc, plan, onChange }: {
             de las paletas de arriba: esas están incluidas en todos los planes.
           </p>
         )}
-        <fieldset className="st-lockable" disabled={!canCustomColors}>
-        <Row label="Fondo">        <ColorField value={d.colors?.bg       ?? ''} onChange={v => setColor('bg', v)} /></Row>
-        <Row label="Fondo alterno"><ColorField value={d.colors?.bg2      ?? ''} onChange={v => setColor('bg2', v)} /></Row>
-        <Row label="Texto">        <ColorField value={d.colors?.fg       ?? ''} onChange={v => setColor('fg', v)} /></Row>
-        <Row label="Texto suave">  <ColorField value={d.colors?.fgSoft   ?? ''} onChange={v => setColor('fgSoft', v)} /></Row>
-        <Row label="Acento">       <ColorField value={d.colors?.accent   ?? ''} onChange={v => setColor('accent', v)} /></Row>
+        <fieldset className="st-lockable" data-testid="custom-colors" disabled={!canCustomColors}>
+        <Row label="Fondo">        <ColorField name="Fondo" value={d.colors?.bg ?? ''} onChange={v => setColor('bg', v)} /></Row>
+        <Row label="Fondo alterno"><ColorField name="Fondo alterno" value={d.colors?.bg2 ?? ''} onChange={v => setColor('bg2', v)} /></Row>
+        <Row label="Texto">        <ColorField name="Texto" value={d.colors?.fg ?? ''} onChange={v => setColor('fg', v)} /></Row>
+        <Row label="Texto suave">  <ColorField name="Texto suave" value={d.colors?.fgSoft ?? ''} onChange={v => setColor('fgSoft', v)} /></Row>
+        <Row label="Acento">       <ColorField name="Acento" value={d.colors?.accent ?? ''} onChange={v => setColor('accent', v)} /></Row>
         <Row label="Sobre acento" hint="El color del texto arriba del acento.">
-          <ColorField value={d.colors?.accentFg ?? ''} onChange={v => setColor('accentFg', v)} />
+          <ColorField name="Sobre acento" value={d.colors?.accentFg ?? ''} onChange={v => setColor('accentFg', v)} />
         </Row>
-        <Row label="Líneas">       <ColorField value={d.colors?.line     ?? ''} onChange={v => setColor('line', v)} /></Row>
+        <Row label="Líneas">       <ColorField name="Líneas" value={d.colors?.line ?? ''} onChange={v => setColor('line', v)} /></Row>
         <Row label="Claro u oscuro" hint="Define cómo se calculan las superficies y sombras.">
           <Seg value={d.mode} options={[{ value: 'dark', label: 'Oscuro' }, { value: 'light', label: 'Claro' }]}
                onChange={v => onChange({ mode: v })} />

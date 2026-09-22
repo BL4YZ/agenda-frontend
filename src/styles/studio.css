@@ -246,6 +246,9 @@
 
 /* ── Campos ───────────────────────────────────────────────────────────── */
 .st-field { display: grid; gap: 5px; }
+/* El <label> envuelve al control; el hint queda fuera para no entrar en el
+   nombre accesible del campo. */
+.st-field__row { display: grid; gap: 5px; }
 .st-field__label { font-size: 11px; font-weight: 600; color: var(--st-fg-2); }
 .st-field__hint  { font-size: 10.5px; color: var(--st-fg-3); line-height: 1.4; }
 .st-input {

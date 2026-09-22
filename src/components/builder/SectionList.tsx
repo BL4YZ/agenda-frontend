@@ -27,7 +27,7 @@ function AddDrawer({ doc, plan, onAdd, onClose }: {
   }, [q]);
 
   return (
-    <div className="st-drawer">
+    <div className="st-drawer" data-testid="block-catalog">
       <div className="st-drawer__h">
         <div className="st-search">
           <Search size={13} />
@@ -47,6 +47,8 @@ function AddDrawer({ doc, plan, onAdd, onClose }: {
               return (
                 <button
                   key={b.type} type="button"
+                  data-testid={`block-option-${b.type}`}
+                  data-locked={!allowed || undefined}
                   className={`st-block${disabled ? ' is-disabled' : ''}`}
                   disabled={disabled}
                   onClick={() => { onAdd(b.type); onClose(); }}
@@ -94,17 +96,20 @@ export default function SectionList({
     <div className="st-sections">
       <div className="st-sections__h">
         <span>Secciones</span>
-        <button type="button" className="st-btn st-btn--sm" onClick={() => setAdding(true)}>
+        <button type="button" className="st-btn st-btn--sm" data-testid="add-section" onClick={() => setAdding(true)}>
           <Plus size={13} /> Agregar
         </button>
       </div>
 
-      <ol className="st-sections__list">
+      <ol className="st-sections__list" data-testid="section-list">
         {doc.sections.map((s, i) => {
           const allowed = blockAllowed(s.type, plan);
           return (
             <li
               key={s.id}
+              data-testid="section-row"
+              data-section-type={s.type}
+              data-section-hidden={s.hidden || undefined}
               className={[
                 'st-srow',
                 selectedId === s.id ? 'is-sel' : '',
@@ -127,14 +132,14 @@ export default function SectionList({
                 </span>
               </button>
               <div className="st-srow__acts">
-                <button type="button" className="st-icon-btn" title={s.hidden ? 'Mostrar' : 'Ocultar'}
+                <button type="button" className="st-icon-btn" data-testid="section-toggle" title={s.hidden ? 'Mostrar' : 'Ocultar'}
                         onClick={() => onToggleHidden(s.id)}>
                   {s.hidden ? <EyeOff size={13} /> : <Eye size={13} />}
                 </button>
-                <button type="button" className="st-icon-btn" title="Duplicar" onClick={() => onDuplicate(s.id)}>
+                <button type="button" className="st-icon-btn" data-testid="section-duplicate" title="Duplicar" onClick={() => onDuplicate(s.id)}>
                   <Copy size={13} />
                 </button>
-                <button type="button" className="st-icon-btn st-icon-btn--danger" title="Eliminar"
+                <button type="button" className="st-icon-btn st-icon-btn--danger" data-testid="section-delete" title="Eliminar"
                         onClick={() => onRemove(s.id)}>
                   <Trash2 size={13} />
                 </button>

@@ -128,7 +128,8 @@ export default function EditorPage() {
         <div className="st-top__l">
           <Link href="/dashboard/landing" className="st-icon-btn" title="Volver al panel"><ArrowLeft size={16} /></Link>
           <span className="st-top__title">Editor de tu página</span>
-          <span className={`st-save st-save--${b.saveState}${b.dirty ? ' is-dirty' : ''}`}>
+          <span data-testid="save-state" data-dirty={b.dirty || undefined}
+                className={`st-save st-save--${b.saveState}${b.dirty ? ' is-dirty' : ''}`}>
             {b.saveState === 'saving' && <Loader2 size={12} className="st-spin" />}
             {b.saveState === 'error'  && <CloudOff size={12} />}
             {b.saveState !== 'saving' && b.saveState !== 'error' && !b.dirty && <Check size={12} />}
@@ -138,17 +139,18 @@ export default function EditorPage() {
 
         <div className="st-top__c">
           {(['desktop', 'tablet', 'mobile'] as Device[]).map(d => (
-            <button key={d} type="button" className={`st-icon-btn${device === d ? ' is-on' : ''}`}
+            <button key={d} type="button" data-testid={`device-${d}`}
+                    className={`st-icon-btn${device === d ? ' is-on' : ''}`}
                     onClick={() => setDevice(d)}
                     title={d === 'desktop' ? 'Escritorio' : d === 'tablet' ? 'Tablet' : 'Celular'}>
               {d === 'desktop' ? <Monitor size={15} /> : d === 'tablet' ? <Tablet size={15} /> : <Smartphone size={15} />}
             </button>
           ))}
           <span className="st-top__sep" />
-          <button type="button" className="st-icon-btn" onClick={b.undo} disabled={!b.canUndo} title="Deshacer (Ctrl+Z)">
+          <button type="button" className="st-icon-btn" data-testid="undo" onClick={b.undo} disabled={!b.canUndo} title="Deshacer (Ctrl+Z)">
             <Undo2 size={15} />
           </button>
-          <button type="button" className="st-icon-btn" onClick={b.redo} disabled={!b.canRedo} title="Rehacer (Ctrl+Shift+Z)">
+          <button type="button" className="st-icon-btn" data-testid="redo" onClick={b.redo} disabled={!b.canRedo} title="Rehacer (Ctrl+Shift+Z)">
             <Redo2 size={15} />
           </button>
         </div>
@@ -159,10 +161,10 @@ export default function EditorPage() {
               <ExternalLink size={13} /> Ver publicada
             </a>
           )}
-          <button type="button" className="st-btn st-btn--sm" onClick={() => void b.save()} disabled={b.saveState === 'saving'}>
+          <button type="button" className="st-btn st-btn--sm" data-testid="save" onClick={() => void b.save()} disabled={b.saveState === 'saving'}>
             Guardar
           </button>
-          <button type="button" className="st-btn st-btn--sm st-btn--primary" onClick={() => void onPublish()}
+          <button type="button" className="st-btn st-btn--sm st-btn--primary" data-testid="publish" onClick={() => void onPublish()}
                   disabled={b.saveState === 'saving'}>
             {b.builderEnabled ? 'Publicar cambios' : 'Publicar'}
           </button>
@@ -201,6 +203,7 @@ export default function EditorPage() {
           <div className="st-frame-wrap" data-device={device}>
             <iframe
               ref={frameRef}
+              data-testid="preview-frame"
               className="st-frame"
               style={{ width: DEVICE_WIDTH[device] }}
               src={`/editor/preview?slug=${encodeURIComponent(slug)}`}
@@ -211,13 +214,13 @@ export default function EditorPage() {
 
         <aside className="st-right">
           <div className="st-tabs">
-            <button type="button" className={`st-tab${panel === 'section' ? ' is-on' : ''}`} onClick={() => setPanel('section')}>
+            <button type="button" data-testid="tab-section" className={`st-tab${panel === 'section' ? ' is-on' : ''}`} onClick={() => setPanel('section')}>
               <Layers size={13} /> Sección
             </button>
-            <button type="button" className={`st-tab${panel === 'design' ? ' is-on' : ''}`} onClick={() => setPanel('design')}>
+            <button type="button" data-testid="tab-design" className={`st-tab${panel === 'design' ? ' is-on' : ''}`} onClick={() => setPanel('design')}>
               <Palette size={13} /> Diseño
             </button>
-            <button type="button" className={`st-tab${panel === 'settings' ? ' is-on' : ''}`} onClick={() => setPanel('settings')}>
+            <button type="button" data-testid="tab-settings" className={`st-tab${panel === 'settings' ? ' is-on' : ''}`} onClick={() => setPanel('settings')}>
               <Settings size={13} /> Ajustes
             </button>
           </div>
@@ -243,7 +246,7 @@ export default function EditorPage() {
 
           {b.builderEnabled && (
             <div className="st-right__foot">
-              <button type="button" className="st-btn st-btn--sm" onClick={() => void b.unpublish()}>
+              <button type="button" className="st-btn st-btn--sm" data-testid="unpublish" onClick={() => void b.unpublish()}>
                 Volver a la página anterior
               </button>
               <span className="st-field__hint">Despublica el editor sin borrar nada de lo que armaste.</span>

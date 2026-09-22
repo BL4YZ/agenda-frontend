@@ -4,17 +4,7 @@ import { useState } from 'react';
 import type { PageDoc, PageNav, PageFooter, PageSeo, PlanKey } from '@/types/builder';
 import { TEMPLATES } from '@/lib/builder/templates';
 import { PLAN_RANK, PLAN_LABEL } from '@/lib/builder/blocks';
-import { Collapse } from './Inspector';
-
-function Row({ label, children, hint }: { label?: string; children: React.ReactNode; hint?: string }) {
-  return (
-    <label className="st-field">
-      {label && <span className="st-field__label">{label}</span>}
-      {children}
-      {hint && <span className="st-field__hint">{hint}</span>}
-    </label>
-  );
-}
+import { Collapse, Row } from './Inspector';
 
 function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (

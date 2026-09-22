@@ -8,13 +8,23 @@ import { BLOCK_DEFS, type Control } from '@/lib/builder/blocks';
 import { newId } from '@/lib/builder/templates';
 
 // ── Field primitives ──────────────────────────────────────────────────────────
-function Row({ label, children, hint }: { label?: string; children: React.ReactNode; hint?: string }) {
+/**
+ * One labelled field.
+ *
+ * The hint sits OUTSIDE the <label> on purpose: inside, it becomes part of
+ * the control's accessible name, so a screen reader announces the field as
+ * "Titulo Lo que se ve en la pestana del navegador y en Google". The label
+ * still wraps the control, so the association needs no id plumbing.
+ */
+export function Row({ label, children, hint }: { label?: string; children: React.ReactNode; hint?: string }) {
   return (
-    <label className="st-field">
-      {label && <span className="st-field__label">{label}</span>}
-      {children}
+    <div className="st-field">
+      <label className="st-field__row">
+        {label && <span className="st-field__label">{label}</span>}
+        {children}
+      </label>
       {hint && <span className="st-field__hint">{hint}</span>}
-    </label>
+    </div>
   );
 }
 
@@ -132,7 +142,7 @@ function ControlField({ ctrl, bag, set }: { ctrl: Control; bag: Bag; set: (key: 
     case 'color':
       return (
         <Row label={ctrl.label}>
-          <ColorField value={(bag[ctrl.key] as string) ?? ''} onChange={v => set(ctrl.key, v)} />
+          <ColorField name={ctrl.label} value={(bag[ctrl.key] as string) ?? ''} onChange={v => set(ctrl.key, v)} />
         </Row>
       );
 
@@ -179,13 +189,24 @@ function ControlField({ ctrl, bag, set }: { ctrl: Control; bag: Bag; set: (key: 
   }
 }
 
-/** Colour input paired with a text field so a token like `oklch(...)` is typable. */
-export function ColorField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+/**
+ * Colour input paired with a text field so a token like `oklch(...)` is typable.
+ *
+ * The two inputs need distinct accessible names: they sit inside one <label>,
+ * so without them a screen reader (and any by-label lookup) announces two
+ * controls with the same name and no way to tell the swatch from the value.
+ */
+export function ColorField({ value, onChange, name }: {
+  value: string; onChange: (v: string) => void; name?: string;
+}) {
   const isHex = /^#[0-9a-f]{6}$/i.test(value);
+  const low = name?.toLowerCase();
   return (
-    <div className="st-color">
-      <input type="color" value={isHex ? value : '#888888'} onChange={e => onChange(e.target.value)} aria-label="Elegir color" />
-      <input className="st-input" value={value} placeholder="#8b5cf6" onChange={e => onChange(e.target.value)} />
+    <div className="st-color" data-testid={name ? `color-${low}` : undefined}>
+      <input type="color" value={isHex ? value : '#888888'} onChange={e => onChange(e.target.value)}
+             aria-label={low ? `Elegir ${low}` : 'Elegir color'} />
+      <input className="st-input" value={value} placeholder="#8b5cf6" onChange={e => onChange(e.target.value)}
+             aria-label={name ? `${name} en hexadecimal` : undefined} />
       {value && <button type="button" className="st-icon-btn" onClick={() => onChange('')} title="Quitar">×</button>}
     </div>
   );
@@ -325,7 +346,7 @@ function StylePanel({ style, onChange }: { style: SectionStyle; onChange: (patch
         </>
       )}
       <Row label="Color de fondo propio">
-        <ColorField value={style.bgColor ?? ''} onChange={v => onChange({ bgColor: v })} />
+        <ColorField name="Color de fondo" value={style.bgColor ?? ''} onChange={v => onChange({ bgColor: v })} />
       </Row>
       <Row label="Borde inferior">
         <Segmented value={style.divider ?? 'none'} options={[
