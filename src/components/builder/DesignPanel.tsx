@@ -1,7 +1,9 @@
 'use client';
 
-import type { PageDoc, PageDesign, DesignPreset, FontKey } from '@/types/builder';
+import { Lock } from 'lucide-react';
+import type { PageDoc, PageDesign, DesignPreset, FontKey, PlanKey } from '@/types/builder';
 import { PALETTES, FONTS, resolvePalette } from '@/lib/builder/design';
+import { PLAN_RANK } from '@/lib/builder/blocks';
 import { Collapse, ColorField } from './Inspector';
 
 function Row({ label, children, hint }: { label?: string; children: React.ReactNode; hint?: string }) {
@@ -46,12 +48,17 @@ function FontSelect({ value, onChange }: { value: FontKey; onChange: (v: FontKey
   );
 }
 
-export default function DesignPanel({ doc, onChange }: {
+export default function DesignPanel({ doc, plan, onChange }: {
   doc: PageDoc;
+  plan: PlanKey;
   onChange: (patch: Partial<PageDesign>) => void;
 }) {
   const d = doc.design;
   const live = resolvePalette(d);
+  // Hand-picked colours are the "marca propia" entitlement. The server strips
+  // them from the published copy below Negocio, so locking the controls here
+  // keeps the editor from promising something the live page won't show.
+  const canCustomColors = PLAN_RANK[plan] >= PLAN_RANK.negocio;
 
   const setColor = (key: keyof NonNullable<PageDesign['colors']>, v: string) =>
     onChange({ colors: { ...(d.colors ?? {}), [key]: v || undefined }, preset: v ? 'custom' : d.preset });
@@ -89,8 +96,17 @@ export default function DesignPanel({ doc, onChange }: {
         </div>
       </Collapse>
 
-      <Collapse title="Colores propios" defaultOpen={false}>
-        <p className="st-note">Cualquier color que cambies acá pisa la paleta elegida.</p>
+      <Collapse title="Colores propios" defaultOpen={false}
+                aside={!canCustomColors ? <span className="st-tag"><Lock size={9} /> Negocio</span> : undefined}>
+        {canCustomColors ? (
+          <p className="st-note">Cualquier color que cambies acá pisa la paleta elegida.</p>
+        ) : (
+          <p className="st-note">
+            Elegir colores a mano es parte del plan Negocio. Podés seguir usando cualquiera
+            de las paletas de arriba: esas están incluidas en todos los planes.
+          </p>
+        )}
+        <fieldset className="st-lockable" disabled={!canCustomColors}>
         <Row label="Fondo">        <ColorField value={d.colors?.bg       ?? ''} onChange={v => setColor('bg', v)} /></Row>
         <Row label="Fondo alterno"><ColorField value={d.colors?.bg2      ?? ''} onChange={v => setColor('bg2', v)} /></Row>
         <Row label="Texto">        <ColorField value={d.colors?.fg       ?? ''} onChange={v => setColor('fg', v)} /></Row>
@@ -104,6 +120,7 @@ export default function DesignPanel({ doc, onChange }: {
           <Seg value={d.mode} options={[{ value: 'dark', label: 'Oscuro' }, { value: 'light', label: 'Claro' }]}
                onChange={v => onChange({ mode: v })} />
         </Row>
+        </fieldset>
         <div className="st-preview-strip" style={{ background: live.bg, color: live.fg, borderColor: live.line }}>
           <span style={{ color: live.fgSoft }}>Texto secundario</span>
           <span className="st-preview-strip__btn" style={{ background: live.accent, color: live.accentFg }}>Botón</span>

@@ -264,6 +264,11 @@
 }
 .st-note--pad { margin: 16px; }
 
+/* Bloque de controles que un plan inferior no puede usar. `fieldset` para que
+   el navegador desactive todo lo de adentro sin tocar cada control. */
+.st-lockable { display: grid; gap: 12px; border: 0; margin: 0; padding: 0; min-width: 0; }
+.st-lockable:disabled { opacity: .45; }
+
 .st-group { display: grid; gap: 7px; padding: 10px; border: 1px solid var(--st-line); border-radius: 9px; }
 .st-group__t { font-size: 11px; font-weight: 700; color: var(--st-fg-2); }
 

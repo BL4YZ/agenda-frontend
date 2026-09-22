@@ -31,12 +31,13 @@ The API base URL comes from `NEXT_PUBLIC_API_URL`.
 
 ---
 
-## Three distinct surfaces
+## Four distinct surfaces
 
 | Surface | Audience | Routes | Auth |
 |---|---|---|---|
 | **Dashboard** | Business owner + employees | `/dashboard/*` | JWT required |
 | **Public page** | The business's own customers | `/public/[slug]` | none |
+| **Page builder** | Business owner | `/editor`, `/editor/preview` | JWT required |
 | **Marketing** | Prospects | `/`, `/features/*`, `/blog/*`, legal | none |
 
 ---
@@ -50,10 +51,13 @@ The API base URL comes from `NEXT_PUBLIC_API_URL`.
 ```
 src/
 ├── app/          ← App Router; folder = URL segment
-├── components/   ← landing/ public/ auth/ legal/ about/ contact/ onboarding/ + shared
+├── components/   ← landing/ public/ public/blocks/ builder/ auth/ legal/ about/
+│                 contact/ onboarding/ + shared
 ├── context/      ← AuthContext, BusinessContext, ThemeContext
 ├── lib/api.ts    ← the ONLY axios instance
-└── styles/       ← system.css dashboard.css landing.css public.css auth.css legal.css …
+├── lib/builder/  ← page-builder model: blocks.ts design.ts runtime.ts templates.ts
+└── styles/       ← system.css dashboard.css landing.css public.css builder.css
+                  studio.css auth.css legal.css …
 ```
 
 ⚠️ **No CSS framework in the app shell.** Styling is hand-written CSS in `src/styles/*.css`
@@ -71,6 +75,53 @@ plus inline styles. Tailwind classes appear *only* on `<body>` in `app/layout.ts
 | Auth | `/login`, `/register`, `/signup`, `/forgot-password`, `/reset-password`, `/verify-email` |
 | Dashboard | `/dashboard` (calendar), `/appointments`, `/services`, `/schedules`, `/analytics`, `/team` (+`/modalities`, `/reports`), `/finances/{expenses,commissions}`, `/landing`, `/integraciones`, `/settings` (+`/billing`) |
 | Public | `/public/[slug]`, `/public/[slug]/book`, `/public/payment/{success,failure}`, `/cancelar` |
+| Page builder | `/editor` (studio), `/editor/preview` (iframe target) — **outside `/dashboard` on purpose**: the dashboard layout's sidebar would eat the canvas, and a nested route cannot escape its parent layout |
+
+---
+
+## The page builder ⚠️
+
+A business's public page is a **JSON document**, not a fixed component tree. The document
+lives in `business_pages` (backend) as a **draft/published pair**, and only
+`published_doc` is ever served to visitors.
+
+```
+types/builder.ts        ← the document model
+lib/builder/blocks.ts   ← block registry: catalog + inspector controls + defaults
+lib/builder/design.ts   ← design tokens → CSS custom properties
+lib/builder/runtime.ts  ← helpers every block shares (safeUrl, sectionCss, videoEmbed…)
+lib/builder/templates.ts← starter docs + docFromLegacy()
+components/public/blocks/       ← one renderer per block
+components/public/PageRenderer  ← doc → page
+components/builder/             ← the studio (section list, inspector, design, settings)
+app/editor/                     ← the studio route + its preview frame
+```
+
+**Adding a block takes three edits, all required:**
+1. an entry in `BLOCK_DEFS` (`lib/builder/blocks.ts`),
+2. a renderer wired into `BLOCK_RENDERERS` (`components/public/blocks/index.ts`),
+3. its type in `BLOCKS` in the backend's `pageController.js` — **that list is the
+   authority and silently drops any type it does not know**, so a block missing there
+   disappears on save with no error.
+
+⚠️ **Blocks never define their own colours.** Everything reads the `--pb-*` CSS variables
+that `designToCssVars()` puts on the page root. That is the whole reason a palette change
+repaints the page; a hardcoded colour in a block breaks it for every other palette.
+
+⚠️ **`PublicLanding` still renders the old fixed layout when `shop.page` is null.** The
+builder is opt-in per business (`businesses.builder_enabled`, flipped by Publish), so
+both paths are live at the same time. Don't delete the `PL*` components.
+
+⚠️ **`lib/builder/runtime.ts` duplicates the server's URL allow-list on purpose.** The
+server is the real gate, but the studio renders an unsaved draft straight from local
+state that never passed through it. Both layers check — the project's boundary rule.
+
+⚠️ **Custom colours are gated to Negocio** (the old "marca propia" entitlement). The
+server strips `design.colors` from the published copy below that plan; `DesignPanel`
+locks the controls so the editor never promises what the live page won't show.
+
+The existing `/dashboard/landing` tabs stay: they manage the **records** (services,
+products, reviews, hours, gallery, team) that the data-driven blocks read.
 
 ---
 
@@ -201,9 +252,20 @@ is missing or wrong in Vercel, the CSP pins `connect-src` to `localhost` and **e
 call fails in production**. It is now a second failure mode for that variable, not just
 a wrong base URL.
 
-⚠️ `frame-ancestors 'none'` + `X-Frame-Options: DENY` block embedding anywhere. If
-businesses should ever be able to embed their booking page in their own site, those two
-lines are what to relax — and only for `/public/*`.
+⚠️ `frame-ancestors 'none'` + `X-Frame-Options: DENY` block embedding anywhere — with
+**one deliberate exception**: `/editor/preview` answers `frame-ancestors 'self'` +
+`X-Frame-Options: SAMEORIGIN`, because the builder previews the page in a same-origin
+iframe so real CSS breakpoints react to the chosen device width. `headers()` therefore
+returns **two** entries, the general one guarded by a negative lookahead
+(`/:path((?!editor/preview$).*)`). Every other route still answers `'none'` / `DENY`.
+If businesses should ever embed their booking page in their own site, `/public/*` is the
+next route to relax — same pattern.
+
+⚠️ `frame-src` must list every iframe host. It now carries `openstreetmap.org` — which
+`PLLocation`'s map **already needed and never had**, so the map was silently blocked in
+production — plus YouTube/Vimeo for the builder's video block. `videoEmbed()` in
+`lib/builder/runtime.ts` only ever emits those two hosts, so the two lists cannot drift
+into rendering an iframe the browser kills.
 
 `'unsafe-inline' 'unsafe-eval'` in `script-src` is a known App Router concession
 (hydration injects inline scripts without nonces in this setup). The real protection is
@@ -247,6 +309,10 @@ and a public booking page.
 | 10 | `useSearchParams` needs a `<Suspense>` boundary |
 | 11 | New third-party script/iframe/font/API needs its domain in the CSP allowlist |
 | 12 | `NEXT_PUBLIC_API_URL` missing in Vercel now also breaks CSP `connect-src` |
+| 13 | A new builder block needs its type in the **backend's** `BLOCKS` too, or it is dropped on save without an error |
+| 14 | Builder blocks must style from `--pb-*` vars only — a hardcoded colour breaks every other palette |
+| 15 | `/editor/preview` is the one route allowed to be framed; don't collapse `headers()` back to a single entry |
+| 16 | The legacy `PL*` public components are still live for businesses that haven't published a document |
 
 **Reference case — the `employee_id` bug.** `components/public/PLReserveModal.tsx` fell
 back to `employees[0]?.id`; when a service had no employees assigned the array was empty →
@@ -261,8 +327,13 @@ fields. **Pattern to copy: validate at the boundary in both layers.**
 **Add a dashboard page** → `src/app/dashboard/<name>/page.tsx`; gate with `role` /
 `permissions` from `useAuth()`; data via `@/lib/api`.
 
-**Add a public-page section** → component in `src/components/public/` (`PL*` prefix);
-styles in `src/styles/public.css`; wire into `PublicLanding.tsx`.
+**Add a public-page block** → `BLOCK_DEFS` entry in `lib/builder/blocks.ts` + renderer in
+`components/public/blocks/` wired into `BLOCK_RENDERERS` + the type added to `BLOCKS` in
+the backend's `pageController.js`. Styles go in `src/styles/builder.css`, using `--pb-*`
+variables only.
+
+**Touch the legacy public page** → `src/components/public/PL*.tsx` + `src/styles/public.css`
++ `PublicLanding.tsx`. Only reached while `shop.page` is null.
 
 **Gate a feature behind Pro** → hide with `featureFlags` / `isPro` **and** confirm the
 API enforces `requirePlan`. UI hiding alone is not a control.

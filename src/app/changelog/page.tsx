@@ -5,6 +5,22 @@ export const metadata: Metadata = { title: 'Cambios — Novu' };
 
 const ENTRIES = [
   {
+    version: 'v3.0',
+    date: 'Septiembre 2026',
+    tag: 'Nuevo',
+    tagColor: '#34d399',
+    items: [
+      'Editor visual de tu página: agregá, ordená, duplicá y ocultá secciones, y mirá el resultado en vivo en escritorio, tablet y celular.',
+      '29 secciones para armarla — portada, servicios, tienda, galería, equipo, reseñas, FAQs, video, beneficios, números, pasos, testimonios, paquetes, marcas, cuenta regresiva y más.',
+      '10 paletas y 15 tipografías, con control de redondeos, espaciado, ancho de página y textura de fondo.',
+      'Fondo, alineación, espaciado y animación configurables sección por sección.',
+      'Borrador y publicación separados: probás todo lo que quieras y tus clientes ven los cambios recién cuando publicás.',
+      '5 plantillas para arrancar, o seguí desde la página que ya tenías — el editor la reconstruye tal cual al abrirlo por primera vez.',
+      'Deshacer/rehacer con Ctrl+Z, autoguardado del borrador y vuelta atrás a la página anterior en un clic.',
+      'El mapa de la sección Ubicación volvió a cargar: faltaba su dominio en la política de seguridad y el navegador lo bloqueaba en silencio.',
+    ],
+  },
+  {
     version: 'v2.1',
     date: 'Junio 2026',
     tag: 'Mejora',

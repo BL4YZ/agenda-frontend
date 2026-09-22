@@ -32,12 +32,15 @@ const FEATURES = [
     ],
   },
   {
-    category: 'Página pública',
+    category: 'Tu página web',
     items: [
       { name: 'URL propia', desc: 'Cada negocio tiene su página en novu.app/tu-negocio lista para compartir.' },
-      { name: 'Tienda de servicios', desc: 'Mostrá tus servicios con precios y duración para que el cliente elija.' },
-      { name: 'Reseñas y FAQs', desc: 'Sumá testimonios y respondé las preguntas más frecuentes de tus clientes.' },
-      { name: 'Marca propia', desc: 'Personalizá con tu logo y color de marca. Disponible en plan Negocio.' },
+      { name: 'Editor visual', desc: 'Agregá, ordenás y ocultás secciones, y mirás el resultado en vivo en escritorio, tablet y celular.' },
+      { name: '29 secciones', desc: 'Portada, servicios, tienda, galería, equipo, reseñas, FAQs, video, testimonios, paquetes y más. Cuáles podés usar depende del plan.' },
+      { name: 'Diseño sin diseñar', desc: '10 paletas y 15 tipografías listas, más control de redondeos, espaciado y ancho de página.' },
+      { name: 'Contenido que se actualiza solo', desc: 'Las secciones de servicios, horarios, equipo y reseñas leen lo que ya cargaste en el panel.' },
+      { name: 'Borrador y publicación', desc: 'Probá todo lo que quieras: tus clientes ven los cambios recién cuando publicás.' },
+      { name: 'Marca propia', desc: 'Tu logo y colores elegidos a mano. Disponible en plan Negocio.' },
     ],
   },
 ];

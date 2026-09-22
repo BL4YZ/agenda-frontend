@@ -228,7 +228,7 @@ export default function EditorPage() {
               : <p className="st-note st-note--pad">Elegí una sección en la lista de la izquierda, o hacé clic sobre ella en la vista previa.</p>
             )}
             {panel === 'design' && (
-              <DesignPanel doc={doc} onChange={patch => b.update(d => ({ ...d, design: { ...d.design, ...patch } }))} />
+              <DesignPanel doc={doc} plan={b.plan} onChange={patch => b.update(d => ({ ...d, design: { ...d.design, ...patch } }))} />
             )}
             {panel === 'settings' && (
               <SettingsPanel
