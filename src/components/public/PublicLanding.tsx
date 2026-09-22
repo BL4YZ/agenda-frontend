@@ -20,6 +20,7 @@ const PLReviews      = lazy(() => import('./PLReviews'));
 const PLLocation     = lazy(() => import('./PLLocation'));
 const PLFaq          = lazy(() => import('./PLFaq'));
 const PLReserveModal = lazy(() => import('./PLReserveModal'));
+const PageRenderer   = lazy(() => import('./PageRenderer'));
 
 // Sections available per plan level
 const PLAN_SECTIONS: Record<ShopPlan, Set<string>> = {
@@ -116,6 +117,30 @@ export default function PublicLanding({ shop }: Props) {
     showReviews                                    && { href: '#reviews',   label: 'Reseñas' },
     showLocation                                   && { href: '#contacto',  label: 'Contacto' },
   ].filter(Boolean) as NavSection[];
+
+  // A business that has published a page-builder document gets that document
+  // rendered instead of the fixed layout below. The booking modal and the
+  // JSON-LD are shared by both paths — they describe the business, not the
+  // page's shape.
+  if (shop.page) {
+    return (
+      <>
+        <JsonLd shop={shop} />
+        <Suspense fallback={null}>
+          <PageRenderer doc={shop.page} shop={shop} onReserve={openReserve} />
+          {modalOpen && (
+            <PLReserveModal
+              open={modalOpen}
+              onClose={() => setModalOpen(false)}
+              shop={shop}
+              initialServiceId={preselectedServiceId}
+              initialBranchId={preselectedBranchId}
+            />
+          )}
+        </Suspense>
+      </>
+    );
+  }
 
   return (
     <>

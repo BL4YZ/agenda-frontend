@@ -1,3 +1,5 @@
+import type { PageDoc } from './builder';
+
 export type ShopTheme = 'violet' | 'rose' | 'green' | 'cyan' | 'amber' | 'bw';
 export type ShopFont  = 'editorial' | 'playfair' | 'bebas' | 'oswald' | 'elegant' | 'dm-serif' | 'raleway' | 'modern' | 'montserrat' | 'nunito' | 'lora' | 'poppins' | null;
 export type ShopPlan  = 'gratis' | 'pro' | 'negocio';
@@ -108,6 +110,11 @@ export interface Shop {
   faqs: Faq[];
   gallery: GalleryImage[];
   branches: Branch[];
+  /**
+   * The published page-builder document. Null while the business has not
+   * opted into the builder — the legacy landing renders instead.
+   */
+  page?: PageDoc | null;
 }
 
 export interface ModalBookingState {

@@ -89,6 +89,7 @@ const IcoPlus    = <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><
 const IcoTrash   = <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 3.5h9M4.5 3.5V2.5a.5.5 0 01.5-.5h3a.5.5 0 01.5.5v1M5.5 6v3.5M7.5 6v3.5M3 3.5l.7 7a.5.5 0 00.5.5h5.6a.5.5 0 00.5-.5l.7-7" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>;
 const IcoPencil  = <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M9 2l2 2-6 6-2.5.5.5-2.5L9 2z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 const IcoEye     = <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1.5 6.5C2.5 4 4.3 2.5 6.5 2.5S10.5 4 11.5 6.5C10.5 9 8.7 10.5 6.5 10.5S2.5 9 1.5 6.5z" stroke="currentColor" strokeWidth="1.2"/><circle cx="6.5" cy="6.5" r="1.5" stroke="currentColor" strokeWidth="1.2"/></svg>;
+const IcoLayout  = <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1.5" y="1.5" width="10" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.2"/><path d="M1.5 5h10M5 5v6.5" stroke="currentColor" strokeWidth="1.2"/></svg>;
 const IcoExtLink = <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M9 2h2v2M11 2L6.5 6.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/><path d="M10 7.5V10a1 1 0 01-1 1H3a1 1 0 01-1-1V4a1 1 0 011-1h2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 
 async function revalidatePublicPage(slug: string) {
@@ -1716,13 +1717,28 @@ export default function LandingAdminPage() {
                     <h1 className="dash-page__title">Página pública</h1>
                     <p className="dash-page__sub">Administrá el contenido que ven tus clientes</p>
                 </div>
-                {publicUrl && (
-                    <div className="dash-page__actions">
+                <div className="dash-page__actions">
+                    <Link href="/editor" className="dbtn dbtn--primary" style={{ textDecoration: 'none' }}>
+                        {IcoLayout}<span>Abrir el editor</span>
+                    </Link>
+                    {publicUrl && (
                         <a href={publicUrl} target="_blank" rel="noopener noreferrer" className="dbtn" style={{ textDecoration: 'none' }}>
                             {IcoExtLink}<span>Ver página</span>
                         </a>
-                    </div>
-                )}
+                    )}
+                </div>
+            </div>
+
+            {/* El editor arma la página; estas pestañas cargan los datos que el
+                editor muestra (servicios, reseñas, fotos, horarios…). */}
+            <div className="lp-editor-cta">
+                <div>
+                    <strong>Diseñá tu página como quieras</strong>
+                    <span>Arrastrá secciones, elegí colores y tipografías, y mirá el resultado en vivo. Lo que cargues en estas pestañas aparece solo dentro de las secciones que elijas.</span>
+                </div>
+                <Link href="/editor" className="dbtn dbtn--primary" style={{ textDecoration: 'none', flexShrink: 0 }}>
+                    {IcoLayout}<span>Abrir el editor</span>
+                </Link>
             </div>
 
             {/* Tabs */}

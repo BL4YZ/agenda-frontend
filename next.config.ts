@@ -10,6 +10,11 @@ const GOOGLE_MAPS = "https://maps.googleapis.com https://maps.gstatic.com";
 const GOOGLE_FONTS = "https://fonts.googleapis.com https://fonts.gstatic.com";
 const FONTSHARE = "https://api.fontshare.com https://cdn.fontshare.com";
 const MERCADOPAGO = "https://*.mercadopago.com https://*.mercadolibre.com";
+// Iframes que las páginas públicas embeben: el mapa de la sección Ubicación
+// (⚠️ ya lo usaba PLLocation, pero faltaba en frame-src y el navegador lo
+// bloqueaba en silencio) y el bloque Video del constructor de páginas.
+const OSM = "https://www.openstreetmap.org";
+const VIDEO = "https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com";
 
 // La API vive en otro host (Railway). Sin esto, connect-src bloquea todo axios.
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
@@ -27,7 +32,7 @@ const csp = [
   // ya permite cualquier https), así que img-src tiene que acompañar.
   "img-src 'self' data: blob: https:",
   `connect-src 'self' ${API} ${CLARITY} ${GOOGLE_AUTH} ${GOOGLE_MAPS}`,
-  `frame-src 'self' ${GOOGLE_AUTH} ${MERCADOPAGO}`,
+  `frame-src 'self' ${GOOGLE_AUTH} ${MERCADOPAGO} ${OSM} ${VIDEO}`,
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -36,10 +41,17 @@ const csp = [
   "frame-ancestors 'none'",
 ].join("; ");
 
-const securityHeaders = [
-  { key: "Content-Security-Policy", value: csp },
+/* El constructor de páginas previsualiza la página dentro de un iframe del
+   mismo origen para que los breakpoints reales respondan al ancho elegido.
+   `frame-ancestors 'none'` lo bloquearía, así que esa ruta —y solo esa— pasa a
+   'self': sigue sin poder embeberse desde ningún otro dominio. */
+const PREVIEW_PATH = "/editor/preview";
+const previewCsp = csp.replace("frame-ancestors 'none'", "frame-ancestors 'self'");
+
+const buildHeaders = (policy: string, frameOptions: string) => [
+  { key: "Content-Security-Policy", value: policy },
   // Redundante con frame-ancestors, para navegadores viejos que no leen CSP3.
-  { key: "X-Frame-Options", value: "DENY" },
+  { key: "X-Frame-Options", value: frameOptions },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   // Sin `preload`: entrar a la lista de precarga de los navegadores es difícil
@@ -56,7 +68,17 @@ const nextConfig: NextConfig = {
     remotePatterns: [{ protocol: 'https', hostname: '**' }],
   },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      // Todo salvo la previsualización del constructor.
+      {
+        source: "/:path((?!editor/preview$).*)",
+        headers: buildHeaders(csp, "DENY"),
+      },
+      {
+        source: PREVIEW_PATH,
+        headers: buildHeaders(previewCsp, "SAMEORIGIN"),
+      },
+    ];
   },
 };
 

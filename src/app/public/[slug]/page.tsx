@@ -27,11 +27,16 @@ export async function generateMetadata(
     return { title: 'Negocio no encontrado | Novu' };
   }
 
-  const title = `${shop.name}${shop.tagline ? ` — ${shop.tagline}` : ''} | Novu`;
+  // A published page-builder document can override the title, description and
+  // share image, and can ask to be left out of search results.
+  const seo = shop.page?.seo;
+
+  const title = seo?.title ?? `${shop.name}${shop.tagline ? ` — ${shop.tagline}` : ''} | Novu`;
   const description =
+    seo?.description ??
     shop.lede ??
     `Reservá tu turno en ${shop.name} de forma fácil y rápida.${shop.address ? ` ${shop.address}.` : ''}`;
-  const ogImage = shop.logo_url ?? shop.cover_url ?? undefined;
+  const ogImage = seo?.ogImage ?? shop.logo_url ?? shop.cover_url ?? undefined;
 
   return {
     title,
@@ -49,7 +54,7 @@ export async function generateMetadata(
       description,
       ...(ogImage && { images: [ogImage] }),
     },
-    robots: { index: true, follow: true },
+    robots: seo?.noindex ? { index: false, follow: false } : { index: true, follow: true },
     alternates: { canonical: `/public/${slug}` },
   };
 }

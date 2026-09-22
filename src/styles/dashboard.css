@@ -2242,3 +2242,22 @@
   background: rgba(22,163,74,0.1);
   color: #16a34a;
 }
+
+/* ── Página pública: acceso al editor ─────────────────────────────────────
+   Banda que separa "cargar datos" (las pestañas de abajo) de "diseñar la
+   página" (el editor a pantalla completa en /editor).                     */
+.lp-editor-cta {
+    display: flex; align-items: center; justify-content: space-between; gap: 20px;
+    padding: 16px 20px; margin-bottom: 20px;
+    border: 1px solid var(--line); border-radius: 14px;
+    background: linear-gradient(120deg,
+        color-mix(in oklab, var(--accent) 12%, transparent), transparent 70%),
+        var(--glass-bg);
+}
+.lp-editor-cta > div { display: grid; gap: 4px; min-width: 0; }
+.lp-editor-cta strong { font-size: 14px; color: var(--fg-0); }
+.lp-editor-cta span { font-size: 12px; color: var(--fg-3); line-height: 1.5; }
+
+@media (max-width: 680px) {
+    .lp-editor-cta { flex-direction: column; align-items: stretch; }
+}
