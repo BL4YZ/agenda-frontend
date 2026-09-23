@@ -40,11 +40,11 @@ export default function SettingsPanel({ doc, plan, slug, hasLogo, onNav, onFoote
   onApplyTemplate: (key: string) => void;
 }) {
   const [confirming, setConfirming] = useState<string | null>(null);
-  // El logo en la barra es la vieja entitlement de «marca propia»: el endpoint
-  // público devuelve `logo_url` en null por debajo de Negocio. Ofrecer «Solo
-  // logo» sin decirlo parecía un interruptor roto — se elegía y seguía saliendo
-  // el nombre.
-  const canLogo = PLAN_RANK[plan] >= PLAN_RANK.negocio;
+  // El logo en la barra es Pro+; los colores elegidos a mano siguen siendo
+  // Negocio. Iban juntos bajo «marca propia», y el panel ofrecía «Solo logo» a
+  // planes donde el endpoint público devolvía `logo_url` en null: se elegía y
+  // seguía saliendo el nombre, sin explicación.
+  const canLogo = PLAN_RANK[plan] >= PLAN_RANK.pro;
 
   return (
     <div className="st-inspector">
@@ -73,7 +73,7 @@ export default function SettingsPanel({ doc, plan, slug, hasLogo, onNav, onFoote
             </Row>
             {!canLogo ? (
               <p className="st-note">
-                Mostrar tu logo en la barra es parte del plan Negocio. Con tu plan actual
+                Mostrar tu logo en la barra es parte del plan Pro. Con tu plan actual
                 siempre aparece el nombre del negocio.
               </p>
             ) : !hasLogo ? (
