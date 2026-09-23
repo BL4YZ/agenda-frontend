@@ -636,8 +636,20 @@ function DisenoTab({ token, slug, profileData }: { token: string | null; slug: s
 }
 
 // ── AddressAutocomplete ───────────────────────────────────────────────────────
-type NominatimResult = { place_id: number; display_name: string };
+type NominatimAddress = {
+    house_number?: string; road?: string; pedestrian?: string;
+    neighbourhood?: string; suburb?: string; city_district?: string;
+    city?: string; town?: string; village?: string;
+};
+type NominatimResult = {
+    place_id: number;
+    display_name: string;
+    lat: string;
+    lon: string;
+    address?: NominatimAddress;
+};
 
+/** Solo para mostrar la sugerencia en dos líneas. */
 function splitAddress(display_name: string): { main: string; secondary: string } {
     const parts = display_name.split(', ');
     const main = parts.slice(0, 2).join(', ');
@@ -645,7 +657,41 @@ function splitAddress(display_name: string): { main: string; secondary: string }
     return { main, secondary };
 }
 
-function AddressAutocomplete({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+/**
+ * Arma la dirección a partir de los campos estructurados de Nominatim.
+ *
+ * ⚠️ No se recorta `display_name` por comas. Ese texto no tiene una forma fija:
+ * una vez devolvió "3576,3578, Jacinto Vera, Montevideo, 11800, Uruguay" —un
+ * rango de números sin calle— y recortarlo dejó guardado "3576,3578, Jacinto
+ * Vera, Uruguay", sin ciudad y sin calle. Eso no le sirve a nadie, y encima no
+ * vuelve a geocodificar, así que el mapa se quedaba apuntando a la dirección
+ * anterior.
+ */
+function formatAddress(r: NominatimResult): string {
+    const a = r.address;
+    if (!a) return r.display_name;
+
+    const calle = a.road ?? a.pedestrian;
+    const numero = a.house_number;
+    // En Uruguay el número va después del nombre de la calle.
+    const linea = calle ? [calle, numero].filter(Boolean).join(' ') : numero;
+
+    const zona = a.suburb ?? a.neighbourhood ?? a.city_district;
+    const ciudad = a.city ?? a.town ?? a.village;
+
+    const partes = [linea, zona, ciudad].filter(Boolean);
+    return partes.length > 0 ? partes.join(', ') : r.display_name;
+}
+
+/**
+ * `onChange` recibe las coordenadas cuando el usuario elige una sugerencia, y
+ * `undefined` cuando escribe a mano. Así el servidor usa el punto exacto que se
+ * eligió en vez de volver a geocodificar un texto.
+ */
+function AddressAutocomplete({ value, onChange }: {
+    value: string;
+    onChange: (v: string, coords?: { lat: number; lng: number }) => void;
+}) {
     const [suggestions, setSuggestions] = useState<NominatimResult[]>([]);
     const [open, setOpen] = useState(false);
     const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
@@ -656,7 +702,7 @@ function AddressAutocomplete({ value, onChange }: { value: string; onChange: (v:
         if (q.length < 3) { setSuggestions([]); setOpen(false); return; }
         try {
             const res = await fetch(
-                `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&addressdetails=0`,
+                `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&addressdetails=1`,
                 { headers: { 'Accept-Language': 'es' } }
             );
             const data: NominatimResult[] = await res.json();
@@ -694,9 +740,11 @@ function AddressAutocomplete({ value, onChange }: { value: string; onChange: (v:
         debounceRef.current = setTimeout(() => fetchSuggestions(v), 400);
     };
 
-    const handleSelect = (displayName: string) => {
-        const { main, secondary } = splitAddress(displayName);
-        onChange(secondary ? `${main}, ${secondary.split(', ').slice(-1)[0]}` : main);
+    const handleSelect = (r: NominatimResult) => {
+        const lat = parseFloat(r.lat);
+        const lng = parseFloat(r.lon);
+        const coords = Number.isFinite(lat) && Number.isFinite(lng) ? { lat, lng } : undefined;
+        onChange(formatAddress(r), coords);
         setSuggestions([]);
         setOpen(false);
     };
@@ -733,7 +781,7 @@ function AddressAutocomplete({ value, onChange }: { value: string; onChange: (v:
                         return (
                             <li
                                 key={s.place_id}
-                                onMouseDown={() => handleSelect(s.display_name)}
+                                onMouseDown={() => handleSelect(s)}
                                 style={{
                                     display: 'flex', alignItems: 'flex-start', gap: 10,
                                     padding: '10px 14px', cursor: 'pointer',
@@ -768,7 +816,13 @@ function AddressAutocomplete({ value, onChange }: { value: string; onChange: (v:
 
 // ── ContactoTab ───────────────────────────────────────────────────────────────
 function ContactoTab({ token, slug, profileData }: { token: string | null; slug: string; profileData: LandingProfileData | null }) {
-    const [form, setForm] = useState({ address: '', phone: '', whatsapp: '', instagram_url: '', tiktok_url: '', facebook_url: '' });
+    // lat/lng viajan con el formulario: son las del punto que el usuario eligió
+    // en el autocompletado. En null, el servidor geocodifica la dirección.
+    const [form, setForm] = useState<{
+        address: string; phone: string; whatsapp: string;
+        instagram_url: string; tiktok_url: string; facebook_url: string;
+        lat: number | null; lng: number | null;
+    }>({ address: '', phone: '', whatsapp: '', instagram_url: '', tiktok_url: '', facebook_url: '', lat: null, lng: null });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving]   = useState(false);
     const [saved, setSaved]     = useState(false);
@@ -783,12 +837,14 @@ function ContactoTab({ token, slug, profileData }: { token: string | null; slug:
             instagram_url: profileData.instagram_url ?? '',
             tiktok_url:    profileData.tiktok_url ?? '',
             facebook_url:  profileData.facebook_url ?? '',
+            lat:           profileData.lat ?? null,
+            lng:           profileData.lng ?? null,
         });
         setLoading(false);
     }, [profileData]);
 
-    const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
-        setForm(f => ({ ...f, [k]: e.target.value }));
+    const set = (k: 'phone' | 'whatsapp' | 'instagram_url' | 'tiktok_url' | 'facebook_url') =>
+        (e: React.ChangeEvent<HTMLInputElement>) => setForm(f => ({ ...f, [k]: e.target.value }));
 
     const handleSave = async () => {
         setSaving(true); setSaveError('');
@@ -810,7 +866,18 @@ function ContactoTab({ token, slug, profileData }: { token: string | null; slug:
                 <div className="gcard__head"><h3 className="gcard__title">Información de contacto</h3></div>
                 <div className="gcard__body" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                     <Field label="Dirección">
-                        <AddressAutocomplete value={form.address} onChange={v => setForm(f => ({ ...f, address: v }))} />
+                        <AddressAutocomplete
+                            value={form.address}
+                            onChange={(v, coords) => setForm(f => ({
+                                ...f,
+                                address: v,
+                                // Escrita a mano: se limpian las coordenadas para que el
+                                // servidor las recalcule. Si no, el mapa se quedaría en la
+                                // dirección anterior.
+                                lat: coords ? coords.lat : null,
+                                lng: coords ? coords.lng : null,
+                            }))}
+                        />
                     </Field>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                         <Field label="Teléfono">
