@@ -215,11 +215,19 @@ export function LocationBlock({ section, ctx }: BlockComponentProps) {
             <Cta action={props.ctaAction ?? 'reserve'} label={props.ctaLabel ?? 'Reservar turno'} href={props.ctaHref} ctx={ctx} />
           </div>
         </div>
-        {props.showMap !== false && mapSrc && (
+        {props.showMap !== false && (mapSrc ? (
           <div className={`pb-location__map pb-map--${props.mapStyle ?? 'standard'}`}>
             <iframe src={mapSrc} title={`Mapa de ${shop.name}`} loading="lazy" />
           </div>
-        )}
+        ) : (
+          // Sin coordenadas no hay mapa: el embed de OpenStreetMap toma una caja
+          // de coordenadas, no una dirección. Antes simplemente no se dibujaba
+          // nada y el dueño no tenía forma de saber por qué.
+          <EmptyHint editing={ctx.editing}>
+            Todavía no ubicamos «{shop.address}» en el mapa. Abrí la pestaña Contacto
+            y volvé a guardar la dirección; si no aparece, agregale ciudad y país.
+          </EmptyHint>
+        ))}
       </div>
     </div>
   );
