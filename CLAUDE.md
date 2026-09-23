@@ -135,12 +135,20 @@ split in two and **only some of them still have any effect**:
 | Identidad → Presentación, Fotos, Sobre nosotros | **Superseded** by the hero / imageText / richText blocks. `tagline` and `lede` survive only as fallbacks when the hero's own props are empty. |
 | Diseño → Paleta, Tipografía | **Superseded** by `doc.design`. Saving there changes nothing on the live page. |
 
-⚠️ Those superseded cards are **marked, not hidden**: they are still the live controls
-for any business that has not published a built page. `builderActive` (from
-`GET /api/landing/page`) drives a `MovedToEditor` banner and per-card `MovedChip`.
-Leaving two surfaces that both look authoritative, with only one actually wired up, is
-what made this confusing in the first place — if you add a builder feature that
-supersedes an old tab, mark the old one in the same change.
+⚠️ Those superseded cards are **hidden** once `builderActive` (from
+`GET /api/landing/page`) is true, and a `MovedToEditor` banner says where they went.
+Marking them was tried first and was not enough: the palette card still showed a
+*selected* theme and the typography card a *selected* font, neither of which matched the
+document, so the tab kept asserting something false about the live page.
+
+⚠️ Hiding them was only safe after **`HeroBlock` stopped falling back to
+`shop.tagline` / `shop.lede` / `shop.cover_url`**. Those fallbacks meant a hidden field
+could still reach the page with no control anywhere to change it. The document is now
+the hero's only source; the one thing still inherited is `shop.name`, which has no
+competing control. The columns stay for the legacy page.
+
+If you add a builder feature that supersedes an old tab, hide the old one **and** cut
+any silent fallback into it, in the same change.
 
 ---
 

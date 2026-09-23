@@ -33,9 +33,14 @@ export function HeroBlock({ section, ctx }: BlockComponentProps) {
   useEffect(() => { setStatus(openStatus(shop.hours)); }, [shop.hours]);
 
   const layout = props.layout ?? 'cover';
-  const title  = props.title || shop.tagline || shop.name;
-  const lede   = props.subtitle || shop.lede;
-  const image  = safeImg(props.image) ?? safeImg(shop.cover_url);
+  // ⚠️ Sin respaldo en `shop.tagline` / `lede` / `cover_url`. El documento es el
+  // único origen de la portada: esos campos siguen existiendo para la página
+  // anterior, y hacer que se colaran acá significaba que el dueño podía estar
+  // viendo un texto que el editor no mostraba en ningún campo. Lo único que se
+  // hereda es el nombre del negocio, que no tiene control propio en la portada.
+  const title  = props.title || shop.name;
+  const lede   = props.subtitle;
+  const image  = safeImg(props.image);
 
   const meta = (
     <div className="pb-hero__meta">

@@ -119,11 +119,6 @@ function MovedToEditor({ titulo, detalle }: { titulo: string; detalle: string })
     );
 }
 
-/** Marca una tarjeta cuyo contenido pasó a editarse en el constructor. */
-function MovedChip() {
-    return <span className="lp-chip-moved">Se edita en el editor</span>;
-}
-
 function Field({ label, children, hint }: { label: React.ReactNode; children: React.ReactNode; hint?: string }) {
     return (
         <div className="fg-field">
@@ -302,7 +297,7 @@ function IdentidadTab({ token, slug: slugProp, isPro, profileData, builderActive
             {builderActive && (
                 <MovedToEditor
                     titulo="La portada y los textos ahora se editan en el constructor"
-                    detalle="Tu página se arma desde el editor, así que el título, el subtítulo, las fotos y la sección «Sobre nosotros» se cambian ahí. Acá siguen viviendo la dirección de tu página y el logo, que el editor usa."
+                    detalle="El título, el subtítulo, las fotos y la sección «Sobre nosotros» se editan ahí, así que se sacaron de acá para no mostrarte dos valores distintos. Lo que sí seguís administrando en esta pestaña es la dirección de tu página y el logo."
                 />
             )}
             {/* URL pública editable */}
@@ -339,10 +334,11 @@ function IdentidadTab({ token, slug: slugProp, isPro, profileData, builderActive
             </div>
 
             {/* Toggle sección Sobre nosotros */}
+            {!builderActive && (
             <div className="gcard">
                 <div className="gcard__head" style={{ justifyContent: 'space-between' }}>
                     <div>
-                        <h3 className="gcard__title">Sección &ldquo;Sobre nosotros&rdquo; {builderActive && <MovedChip />}</h3>
+                        <h3 className="gcard__title">Sección &ldquo;Sobre nosotros&rdquo;</h3>
                         <span style={{ fontSize: 11, color: 'var(--fg-3)' }}>Bloque de presentación bajo el hero</span>
                     </div>
                     <button
@@ -363,10 +359,12 @@ function IdentidadTab({ token, slug: slugProp, isPro, profileData, builderActive
                     </button>
                 </div>
             </div>
+            )}
 
             {/* Texto principal */}
+            {!builderActive && (
             <div className="gcard" style={{ opacity: aboutHidden ? 0.45 : 1, pointerEvents: aboutHidden ? 'none' : undefined, transition: 'opacity .2s' }}>
-                <div className="gcard__head"><h3 className="gcard__title">Presentación {builderActive && <MovedChip />}</h3></div>
+                <div className="gcard__head"><h3 className="gcard__title">Presentación</h3></div>
                 <div className="gcard__body" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                     <Field label="Tagline — frase principal del hero" hint="Aparece como título grande en la portada">
                         <input className="fg-field__input" value={tagline} onChange={e => setTagline(e.target.value)}
@@ -386,10 +384,12 @@ function IdentidadTab({ token, slug: slugProp, isPro, profileData, builderActive
                     </Field>
                 </div>
             </div>
+            )}
 
             {/* Fotos */}
+            {!builderActive && (
             <div className="gcard" style={{ opacity: aboutHidden ? 0.45 : 1, pointerEvents: aboutHidden ? 'none' : undefined, transition: 'opacity .2s' }}>
-                <div className="gcard__head"><h3 className="gcard__title">Fotos {builderActive && <MovedChip />}</h3></div>
+                <div className="gcard__head"><h3 className="gcard__title">Fotos</h3></div>
                 <div className="gcard__body" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
                     <div>
                         <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-2)', marginBottom: 8 }}>Foto de portada</p>
@@ -403,6 +403,7 @@ function IdentidadTab({ token, slug: slugProp, isPro, profileData, builderActive
                     </div>
                 </div>
             </div>
+            )}
 
             <SaveBar saving={saving} saved={saved} error={saveError} onSave={handleSave} />
 
@@ -517,13 +518,14 @@ function DisenoTab({ token, slug, profileData, builderActive }: { token: string 
             {builderActive && (
                 <MovedToEditor
                     titulo="Los colores y la tipografía ahora se eligen en el constructor"
-                    detalle="El editor trae 10 paletas y 15 tipografías, y además redondeos, espaciado y ancho de página. La paleta de acá abajo ya no afecta a tu página publicada. El logo sí se sigue usando."
+                    detalle="Trae 10 paletas y 15 tipografías, y además redondeos, espaciado y ancho de página. La paleta y la tipografía se sacaron de acá porque mostraban una selección que ya no era la de tu página. El logo se sigue administrando en esta pestaña."
                 />
             )}
             {/* Paleta de color */}
+            {!builderActive && (
             <div className="gcard">
                 <div className="gcard__head">
-                    <h3 className="gcard__title">Paleta de color {builderActive && <MovedChip />}</h3>
+                    <h3 className="gcard__title">Paleta de color</h3>
                     <span style={{ fontSize: 11, color: 'var(--fg-3)' }}>Fondo y acento de tu página pública</span>
                 </div>
                 <div className="gcard__body">
@@ -587,11 +589,13 @@ function DisenoTab({ token, slug, profileData, builderActive }: { token: string 
                     {saveError && <p style={{ fontSize: 12, color: '#f87171', padding: '8px 12px', borderRadius: 8, background: 'rgba(239,68,68,.08)', border: '1px solid rgba(239,68,68,.2)', marginBottom: 12 }}>{saveError}</p>}
                 </div>
             </div>
+            )}
 
             {/* Tipografía */}
+            {!builderActive && (
             <div className="gcard">
                 <div className="gcard__head">
-                    <h3 className="gcard__title">Tipografía {builderActive && <MovedChip />}</h3>
+                    <h3 className="gcard__title">Tipografía</h3>
                     <span style={{ fontSize: 11, color: 'var(--fg-3)' }}>Estilo de letra en toda la página</span>
                 </div>
                 <div className="gcard__body">
@@ -634,6 +638,7 @@ function DisenoTab({ token, slug, profileData, builderActive }: { token: string 
                     ))}
                 </div>
             </div>
+            )}
 
             <button className="dbtn dbtn--primary" onClick={handleSaveThemeFont} disabled={saving}
                 style={{ width: '100%', justifyContent: 'center', padding: 14 }}>

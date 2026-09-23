@@ -2258,12 +2258,4 @@
 .lp-moved > strong { font-size: 13.5px; color: var(--fg-0); }
 .lp-moved > span { font-size: 12px; color: var(--fg-2); line-height: 1.5; }
 
-.lp-chip-moved {
-    display: inline-block; vertical-align: middle; margin-left: 8px;
-    font-size: 9.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
-    padding: 2px 7px; border-radius: 99px;
-    background: color-mix(in oklab, var(--accent) 20%, transparent);
-    color: var(--accent);
-}
-
 
