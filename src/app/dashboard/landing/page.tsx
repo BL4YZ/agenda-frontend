@@ -302,7 +302,7 @@ function IdentidadTab({ token, slug: slugProp, isPro, profileData, builderActive
             {builderActive && (
                 <MovedToEditor
                     titulo="La portada y los textos ahora se editan en el constructor"
-                    detalle="Tu página se arma desde el editor, así que el título, la bajada, las fotos y la sección «Sobre nosotros» se cambian ahí. Acá siguen viviendo la dirección de tu página y el logo, que el editor usa."
+                    detalle="Tu página se arma desde el editor, así que el título, el subtítulo, las fotos y la sección «Sobre nosotros» se cambian ahí. Acá siguen viviendo la dirección de tu página y el logo, que el editor usa."
                 />
             )}
             {/* URL pública editable */}
