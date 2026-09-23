@@ -676,7 +676,15 @@ function AddressAutocomplete({ value, onChange }: { value: string; onChange: (v:
             } else {
                 setOpen(false);
             }
-        } catch { /* ignore */ }
+        } catch (err) {
+            // No es fatal: la dirección se puede escribir a mano. Pero sí se
+            // registra — este fetch ya estuvo roto en silencio porque faltaba
+            // nominatim.openstreetmap.org en connect-src, y un catch mudo no
+            // dejaba ni rastro en la consola.
+            console.warn('Autocompletado de dirección no disponible:', err);
+            setSuggestions([]);
+            setOpen(false);
+        }
     }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

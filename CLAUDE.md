@@ -247,10 +247,22 @@ backend only covers API JSON responses — it never touched the HTML Vercel serv
 is what these headers protect.
 
 Third-party domains are an **explicit allowlist**, not a blanket `https:`: Clarity,
-Google (OAuth + Maps + Fonts), Fontshare (loaded by an `@import` in `system.css`), and
-Mercado Pago. **Adding a new third-party script, iframe, font, or API call requires
-adding its domain here** — otherwise the browser silently blocks it. That is the single
-most likely way this file breaks a feature.
+Google (OAuth + Maps + Fonts), Fontshare (loaded by an `@import` in `system.css`),
+Mercado Pago, OpenStreetMap and YouTube/Vimeo. **Adding a new third-party script,
+iframe, font, or API call requires adding its domain here** — otherwise the browser
+silently blocks it. That is the single most likely way this file breaks a feature.
+
+⚠️ **OpenStreetMap is two different hosts in two different directives**, and both were
+missing at some point, each breaking a feature with no error anywhere:
+
+| Host | Directive | Used by |
+|---|---|---|
+| `www.openstreetmap.org` | `frame-src` | the map iframe in the Ubicación block / `PLLocation` |
+| `nominatim.openstreetmap.org` | `connect-src` | the address autocomplete in `/dashboard/landing` |
+
+Getting one right does not cover the other. When a feature that calls out to a third
+party "does nothing", check this allowlist **first** — three bugs so far have been
+exactly this, and a `catch {}` around the call turns it into a silent one.
 
 ⚠️ **`connect-src` is baked at build time from `NEXT_PUBLIC_API_URL`.** If that variable
 is missing or wrong in Vercel, the CSP pins `connect-src` to `localhost` and **every API

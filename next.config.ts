@@ -13,7 +13,12 @@ const MERCADOPAGO = "https://*.mercadopago.com https://*.mercadolibre.com";
 // Iframes que las páginas públicas embeben: el mapa de la sección Ubicación
 // (⚠️ ya lo usaba PLLocation, pero faltaba en frame-src y el navegador lo
 // bloqueaba en silencio) y el bloque Video del constructor de páginas.
+// El mapa de la sección Ubicación se embebe desde www.openstreetmap.org, y el
+// autocompletado de dirección del panel consulta nominatim.openstreetmap.org
+// desde el navegador. Son hosts distintos y van en directivas distintas:
+// frame-src el primero, connect-src el segundo.
 const OSM = "https://www.openstreetmap.org";
+const NOMINATIM = "https://nominatim.openstreetmap.org";
 const VIDEO = "https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com";
 
 // La API vive en otro host (Railway). Sin esto, connect-src bloquea todo axios.
@@ -31,7 +36,7 @@ const csp = [
   // Los negocios suben logos/portadas a hosts arbitrarios (images.remotePatterns
   // ya permite cualquier https), así que img-src tiene que acompañar.
   "img-src 'self' data: blob: https:",
-  `connect-src 'self' ${API} ${CLARITY} ${GOOGLE_AUTH} ${GOOGLE_MAPS}`,
+  `connect-src 'self' ${API} ${CLARITY} ${GOOGLE_AUTH} ${GOOGLE_MAPS} ${NOMINATIM}`,
   `frame-src 'self' ${GOOGLE_AUTH} ${MERCADOPAGO} ${OSM} ${VIDEO}`,
   "object-src 'none'",
   "base-uri 'self'",
