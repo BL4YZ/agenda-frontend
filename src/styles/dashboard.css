@@ -2264,3 +2264,30 @@
 @media (max-width: 680px) {
     .lp-editor-cta { flex-direction: column; align-items: stretch; }
 }
+
+/* ── Página pública: avisos de lo que pasó al constructor ─────────────────
+   Con el editor publicado, varias tarjetas de estas pestañas dejaron de tener
+   efecto sobre la página. Se marcan en vez de esconderse: siguen siendo las que
+   mandan para quien todavía no publicó con el constructor.               */
+.lp-moved {
+    display: flex; align-items: center; justify-content: space-between; gap: 20px;
+    padding: 14px 18px;
+    border: 1px solid color-mix(in oklab, var(--accent) 35%, var(--line));
+    border-radius: 12px;
+    background: color-mix(in oklab, var(--accent) 9%, transparent);
+}
+.lp-moved > div { display: grid; gap: 4px; min-width: 0; }
+.lp-moved > div > strong { font-size: 13.5px; color: var(--fg-0); }
+.lp-moved > div > span { font-size: 12px; color: var(--fg-2); line-height: 1.5; }
+
+.lp-chip-moved {
+    display: inline-block; vertical-align: middle; margin-left: 8px;
+    font-size: 9.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 99px;
+    background: color-mix(in oklab, var(--accent) 20%, transparent);
+    color: var(--accent);
+}
+
+@media (max-width: 680px) {
+    .lp-moved { flex-direction: column; align-items: stretch; }
+}

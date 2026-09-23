@@ -125,8 +125,22 @@ field on the document, the server's `sanitizeFooter` drops the key so it cannot 
 persisted even by calling the API directly, and `PageRenderer` draws it in a
 minimal strip when the owner turns the whole footer off. Don't add a toggle back.
 
-The existing `/dashboard/landing` tabs stay: they manage the **records** (services,
-products, reviews, hours, gallery, team) that the data-driven blocks read.
+The existing `/dashboard/landing` tabs stay, but once `builder_enabled` is true they
+split in two and **only some of them still have any effect**:
+
+| Tab | With the builder published |
+|---|---|
+| Contacto · Horarios · FAQs · Productos · Reseñas · Galería · Equipo · Sucursales | **Source of truth.** The data-driven blocks read these records. |
+| Identidad → URL, Logo | **Source of truth.** The built nav uses `shop.logo_url`. |
+| Identidad → Presentación, Fotos, Sobre nosotros | **Superseded** by the hero / imageText / richText blocks. `tagline` and `lede` survive only as fallbacks when the hero's own props are empty. |
+| Diseño → Paleta, Tipografía | **Superseded** by `doc.design`. Saving there changes nothing on the live page. |
+
+⚠️ Those superseded cards are **marked, not hidden**: they are still the live controls
+for any business that has not published a built page. `builderActive` (from
+`GET /api/landing/page`) drives a `MovedToEditor` banner and per-card `MovedChip`.
+Leaving two surfaces that both look authoritative, with only one actually wired up, is
+what made this confusing in the first place — if you add a builder feature that
+supersedes an old tab, mark the old one in the same change.
 
 ---
 

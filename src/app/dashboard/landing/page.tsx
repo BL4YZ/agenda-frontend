@@ -99,6 +99,33 @@ async function revalidatePublicPage(slug: string) {
     } catch { /* non-critical */ }
 }
 
+/**
+ * Aviso de que parte de una pestaña dejó de mandar.
+ *
+ * ⚠️ Con el constructor publicado, la página pública se arma desde el documento
+ * (`business_pages`), no desde estas columnas. Sin decirlo quedaban dos lugares
+ * que parecían controlar lo mismo y solo uno tenía efecto — se editaba acá, no
+ * pasaba nada, y no había forma de saber por qué.
+ */
+function MovedToEditor({ titulo, detalle }: { titulo: string; detalle: string }) {
+    return (
+        <div className="lp-moved">
+            <div>
+                <strong>{titulo}</strong>
+                <span>{detalle}</span>
+            </div>
+            <Link href="/editor" className="dbtn dbtn--primary" style={{ textDecoration: 'none', flexShrink: 0 }}>
+                {IcoLayout}<span>Abrir el editor</span>
+            </Link>
+        </div>
+    );
+}
+
+/** Marca una tarjeta cuyo contenido pasó a editarse en el constructor. */
+function MovedChip() {
+    return <span className="lp-chip-moved">Se edita en el editor</span>;
+}
+
 function Field({ label, children, hint }: { label: React.ReactNode; children: React.ReactNode; hint?: string }) {
     return (
         <div className="fg-field">
@@ -153,7 +180,7 @@ function LockedOverlay({ required }: { required: 'pro' | 'negocio' }) {
 }
 
 // ── IdentidadTab ──────────────────────────────────────────────────────────────
-function IdentidadTab({ token, slug: slugProp, isPro, profileData }: { token: string | null; slug: string; isPro: boolean; profileData: LandingProfileData | null }) {
+function IdentidadTab({ token, slug: slugProp, isPro, profileData, builderActive }: { token: string | null; slug: string; isPro: boolean; profileData: LandingProfileData | null; builderActive: boolean }) {
     const [tagline, setTagline]       = useState('');
     const [lede, setLede]             = useState('');
     const [aboutQuote, setAboutQuote] = useState('');
@@ -274,6 +301,12 @@ function IdentidadTab({ token, slug: slugProp, isPro, profileData }: { token: st
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {builderActive && (
+                <MovedToEditor
+                    titulo="La portada y los textos ahora se editan en el constructor"
+                    detalle="Tu página se arma desde el editor, así que el título, la bajada, las fotos y la sección «Sobre nosotros» se cambian ahí. Acá siguen viviendo la dirección de tu página y el logo, que el editor usa."
+                />
+            )}
             {/* URL pública editable */}
             <div className="gcard">
                 <div className="gcard__head"><h3 className="gcard__title">URL de tu página pública</h3></div>
@@ -311,7 +344,7 @@ function IdentidadTab({ token, slug: slugProp, isPro, profileData }: { token: st
             <div className="gcard">
                 <div className="gcard__head" style={{ justifyContent: 'space-between' }}>
                     <div>
-                        <h3 className="gcard__title">Sección &ldquo;Sobre nosotros&rdquo;</h3>
+                        <h3 className="gcard__title">Sección &ldquo;Sobre nosotros&rdquo; {builderActive && <MovedChip />}</h3>
                         <span style={{ fontSize: 11, color: 'var(--fg-3)' }}>Bloque de presentación bajo el hero</span>
                     </div>
                     <button
@@ -335,7 +368,7 @@ function IdentidadTab({ token, slug: slugProp, isPro, profileData }: { token: st
 
             {/* Texto principal */}
             <div className="gcard" style={{ opacity: aboutHidden ? 0.45 : 1, pointerEvents: aboutHidden ? 'none' : undefined, transition: 'opacity .2s' }}>
-                <div className="gcard__head"><h3 className="gcard__title">Presentación</h3></div>
+                <div className="gcard__head"><h3 className="gcard__title">Presentación {builderActive && <MovedChip />}</h3></div>
                 <div className="gcard__body" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                     <Field label="Tagline — frase principal del hero" hint="Aparece como título grande en la portada">
                         <input className="fg-field__input" value={tagline} onChange={e => setTagline(e.target.value)}
@@ -358,7 +391,7 @@ function IdentidadTab({ token, slug: slugProp, isPro, profileData }: { token: st
 
             {/* Fotos */}
             <div className="gcard" style={{ opacity: aboutHidden ? 0.45 : 1, pointerEvents: aboutHidden ? 'none' : undefined, transition: 'opacity .2s' }}>
-                <div className="gcard__head"><h3 className="gcard__title">Fotos</h3></div>
+                <div className="gcard__head"><h3 className="gcard__title">Fotos {builderActive && <MovedChip />}</h3></div>
                 <div className="gcard__body" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
                     <div>
                         <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-2)', marginBottom: 8 }}>Foto de portada</p>
@@ -406,7 +439,7 @@ function IdentidadTab({ token, slug: slugProp, isPro, profileData }: { token: st
 }
 
 // ── DiseñoTab ─────────────────────────────────────────────────────────────────
-function DisenoTab({ token, slug, profileData }: { token: string | null; slug: string; profileData: LandingProfileData | null }) {
+function DisenoTab({ token, slug, profileData, builderActive }: { token: string | null; slug: string; profileData: LandingProfileData | null; builderActive: boolean }) {
     const { business, updateBusiness } = useBusiness();
     const plan      = (business?.subscription_plan ?? 'gratis') as PlanKey;
     const isNegocio = business?.subscription_status !== 'expired' && (PLAN_RANK[plan] ?? 0) >= PLAN_RANK['negocio'];
@@ -483,10 +516,16 @@ function DisenoTab({ token, slug, profileData }: { token: string | null; slug: s
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {builderActive && (
+                <MovedToEditor
+                    titulo="Los colores y la tipografía ahora se eligen en el constructor"
+                    detalle="El editor trae 10 paletas y 15 tipografías, y además redondeos, espaciado y ancho de página. La paleta de acá abajo ya no afecta a tu página publicada. El logo sí se sigue usando."
+                />
+            )}
             {/* Paleta de color */}
             <div className="gcard">
                 <div className="gcard__head">
-                    <h3 className="gcard__title">Paleta de color</h3>
+                    <h3 className="gcard__title">Paleta de color {builderActive && <MovedChip />}</h3>
                     <span style={{ fontSize: 11, color: 'var(--fg-3)' }}>Fondo y acento de tu página pública</span>
                 </div>
                 <div className="gcard__body">
@@ -554,7 +593,7 @@ function DisenoTab({ token, slug, profileData }: { token: string | null; slug: s
             {/* Tipografía */}
             <div className="gcard">
                 <div className="gcard__head">
-                    <h3 className="gcard__title">Tipografía</h3>
+                    <h3 className="gcard__title">Tipografía {builderActive && <MovedChip />}</h3>
                     <span style={{ fontSize: 11, color: 'var(--fg-3)' }}>Estilo de letra en toda la página</span>
                 </div>
                 <div className="gcard__body">
@@ -1755,6 +1794,16 @@ export default function LandingAdminPage() {
             .catch(() => setProfileData({} as LandingProfileData));
     }, [token]);
 
+    // ¿La página publicada se arma con el constructor? Mientras no lo esté, estas
+    // pestañas siguen siendo las que mandan y no hay que avisar nada.
+    const [builderActive, setBuilderActive] = useState(false);
+    useEffect(() => {
+        if (!token) return;
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/landing/page`, { headers: { Authorization: `Bearer ${token}` } })
+            .then(r => setBuilderActive(r.data?.builder_enabled === true))
+            .catch(() => setBuilderActive(false));
+    }, [token]);
+
     // Lazy-mount tabs: a tab only mounts (and fetches its data) once visited.
     // Once mounted it stays mounted to preserve unsaved edits.
     const [visited, setVisited] = useState<Set<Tab>>(() => new Set<Tab>(['Identidad']));
@@ -1772,8 +1821,8 @@ export default function LandingAdminPage() {
         : '';
 
     const TAB_DESCRIPTIONS: Record<Tab, string> = {
-        'Identidad':  'Nombre, descripción, fotos y logo',
-        'Diseño':     'Colores, tipografía y marca',
+        'Identidad':  builderActive ? 'Dirección de tu página y logo' : 'Nombre, descripción, fotos y logo',
+        'Diseño':     builderActive ? 'El diseño se elige en el editor' : 'Colores, tipografía y marca',
         'Contacto':   'Dirección, teléfono y redes sociales',
         'Horarios':   'Días y horarios de atención',
         'FAQs':       'Preguntas frecuentes de clientes',
@@ -1808,8 +1857,12 @@ export default function LandingAdminPage() {
                 editor muestra (servicios, reseñas, fotos, horarios…). */}
             <div className="lp-editor-cta">
                 <div>
-                    <strong>Diseñá tu página como quieras</strong>
-                    <span>Arrastrá secciones, elegí colores y tipografías, y mirá el resultado en vivo. Lo que cargues en estas pestañas aparece solo dentro de las secciones que elijas.</span>
+                    <strong>{builderActive ? 'Tu página se arma en el editor' : 'Diseñá tu página como quieras'}</strong>
+                    <span>
+                        {builderActive
+                            ? 'Las secciones, los colores y los textos de la portada se editan ahí. Estas pestañas guardan los datos que las secciones muestran: servicios, horarios, reseñas, fotos y equipo.'
+                            : 'Arrastrá secciones, elegí colores y tipografías, y mirá el resultado en vivo. Lo que cargues en estas pestañas aparece solo dentro de las secciones que elijas.'}
+                    </span>
                 </div>
                 <Link href="/editor" className="dbtn dbtn--primary" style={{ textDecoration: 'none', flexShrink: 0 }}>
                     {IcoLayout}<span>Abrir el editor</span>
@@ -1851,8 +1904,8 @@ export default function LandingAdminPage() {
             {/* Tab content — a tab mounts (and fetches) only once visited, then
                 stays mounted to preserve unsaved edits. Identidad/Diseño/Contacto
                 share the single profileData fetch, so they mount up front. */}
-            <div style={{ display: tab === 'Identidad'  ? 'block' : 'none' }}><IdentidadTab  token={token} slug={slug} isPro={isPro} profileData={profileData} /></div>
-            <div style={{ display: tab === 'Diseño'     ? 'block' : 'none' }}><DisenoTab     token={token} slug={slug} profileData={profileData} /></div>
+            <div style={{ display: tab === 'Identidad'  ? 'block' : 'none' }}><IdentidadTab  token={token} slug={slug} isPro={isPro} profileData={profileData} builderActive={builderActive} /></div>
+            <div style={{ display: tab === 'Diseño'     ? 'block' : 'none' }}><DisenoTab     token={token} slug={slug} profileData={profileData} builderActive={builderActive} /></div>
             <div style={{ display: tab === 'Contacto'   ? 'block' : 'none' }}><ContactoTab   token={token} slug={slug} profileData={profileData} /></div>
             <div style={{ display: tab === 'Horarios'   ? 'block' : 'none' }}>{visited.has('Horarios') && <HoursTab token={token} slug={slug} />}</div>
             <div style={{ display: tab === 'FAQs'       ? 'block' : 'none' }}>
