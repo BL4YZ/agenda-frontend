@@ -1,7 +1,14 @@
 @import "tailwindcss";
 
-/* Prevent horizontal scroll at document level */
+/* Prevent horizontal scroll at document level.
+   ⚠️ `clip`, no `hidden`: con `hidden` el navegador calcula `overflow-y: auto`
+   y el <body> pasa a ser su propio contenedor de scroll, lo que rompe
+   `position: sticky` en toda la app — la barra superior de las páginas
+   construidas se iba con el scroll aunque tuviera `position: sticky; top: 0`.
+   `clip` recorta igual sin crear contenedor. La primera declaración queda de
+   respaldo para navegadores sin soporte (Safari <16), que la ignoran. */
 html, body { overflow-x: hidden; }
+html, body { overflow-x: clip; }
 
 /* ── Class-based dark mode ── */
 @custom-variant dark (&:where(.dark, .dark *));
