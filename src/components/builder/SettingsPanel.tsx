@@ -28,16 +28,23 @@ function Seg<T extends string>({ value, options, onChange }: {
   );
 }
 
-export default function SettingsPanel({ doc, plan, slug, onNav, onFooter, onSeo, onApplyTemplate }: {
+export default function SettingsPanel({ doc, plan, slug, hasLogo, onNav, onFooter, onSeo, onApplyTemplate }: {
   doc: PageDoc;
   plan: PlanKey;
   slug: string | null;
+  /** El negocio tiene logo cargado y el plan permite servirlo. */
+  hasLogo: boolean;
   onNav: (patch: Partial<PageNav>) => void;
   onFooter: (patch: Partial<PageFooter>) => void;
   onSeo: (patch: Partial<PageSeo>) => void;
   onApplyTemplate: (key: string) => void;
 }) {
   const [confirming, setConfirming] = useState<string | null>(null);
+  // El logo en la barra es la vieja entitlement de «marca propia»: el endpoint
+  // público devuelve `logo_url` en null por debajo de Negocio. Ofrecer «Solo
+  // logo» sin decirlo parecía un interruptor roto — se elegía y seguía saliendo
+  // el nombre.
+  const canLogo = PLAN_RANK[plan] >= PLAN_RANK.negocio;
 
   return (
     <div className="st-inspector">
@@ -58,10 +65,23 @@ export default function SettingsPanel({ doc, plan, slug, onNav, onFooter, onSeo,
               ]} onChange={v => onNav({ style: v })} />
             </Row>
             <Row label="Marca">
-              <Seg value={doc.nav.logoMode ?? 'both'} options={[
-                { value: 'logo', label: 'Solo logo' }, { value: 'name', label: 'Solo nombre' }, { value: 'both', label: 'Ambos' },
-              ]} onChange={v => onNav({ logoMode: v })} />
+              <fieldset className="st-lockable" disabled={!canLogo} data-testid="nav-brand">
+                <Seg value={canLogo ? (doc.nav.logoMode ?? 'both') : 'name'} options={[
+                  { value: 'logo', label: 'Solo logo' }, { value: 'name', label: 'Solo nombre' }, { value: 'both', label: 'Ambos' },
+                ]} onChange={v => onNav({ logoMode: v })} />
+              </fieldset>
             </Row>
+            {!canLogo ? (
+              <p className="st-note">
+                Mostrar tu logo en la barra es parte del plan Negocio. Con tu plan actual
+                siempre aparece el nombre del negocio.
+              </p>
+            ) : !hasLogo ? (
+              <p className="st-note">
+                Todavía no cargaste un logo, así que se muestra el nombre. Podés subirlo
+                en Página pública → Diseño.
+              </p>
+            ) : null}
             <Row label="Texto del botón">
               <input className="st-input" value={doc.nav.ctaLabel ?? ''} placeholder="Reservar"
                      onChange={e => onNav({ ctaLabel: e.target.value })} />

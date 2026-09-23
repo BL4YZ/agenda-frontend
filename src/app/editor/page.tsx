@@ -235,7 +235,7 @@ export default function EditorPage() {
             )}
             {panel === 'settings' && (
               <SettingsPanel
-                doc={doc} plan={b.plan} slug={slug}
+                doc={doc} plan={b.plan} slug={slug} hasLogo={!!b.shop?.logo_url}
                 onNav={patch    => b.update(d => ({ ...d, nav:    { ...d.nav, ...patch } }))}
                 onFooter={patch => b.update(d => ({ ...d, footer: { ...d.footer, ...patch } }))}
                 onSeo={patch    => b.update(d => ({ ...d, seo:    { ...d.seo, ...patch } }))}
