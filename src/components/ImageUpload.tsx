@@ -144,7 +144,10 @@ export default function ImageUpload({
                     value={value}
                     onChange={e => onChange(e.target.value)}
                     placeholder={placeholder}
-                    style={{ flex: 1, fontSize: 12 }}
+                    // minWidth:0 — sin esto el input no baja de su ancho
+                    // intrínseco (~170px) y, junto a los botones, desborda
+                    // paneles angostos como el inspector del editor.
+                    style={{ flex: 1, minWidth: 0, fontSize: 12 }}
                 />
                 <button
                     type="button"

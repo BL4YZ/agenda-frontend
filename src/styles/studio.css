@@ -16,6 +16,8 @@
   --st-line:    rgba(255, 255, 255, 0.09);
   --st-accent:  #a78bfa;
   --st-danger:  #f87171;
+  --st-scroll:       rgba(255, 255, 255, 0.18);
+  --st-scroll-hover: rgba(255, 255, 255, 0.30);
 
   position: fixed; inset: 0;
   display: flex; flex-direction: column;
@@ -35,8 +37,29 @@
   --st-line:    rgba(26, 21, 48, 0.1);
   --st-accent:  #6d28d9;
   --st-danger:  #dc2626;
+  --st-scroll:       rgba(26, 21, 48, 0.22);
+  --st-scroll-hover: rgba(26, 21, 48, 0.38);
 }
-.st-root *, .st-root *::before, .st-root *::after { box-sizing: border-box; }
+.st-root *, .st-root *::before, .st-root *::after { box-sizing: border-box; }
+
+/* Barras de scroll del editor.
+   En Windows las barras clásicas son claras, anchas y con flechas: dentro de un
+   panel oscuro cantan muchísimo, y además se comen ~15px de ancho útil, que es
+   parte de por qué el inspector desbordaba. Acá se hacen finas y del color del
+   chrome. Solo dentro de .st-root: el resto de la app queda como estaba. */
+.st-root { scrollbar-width: thin; scrollbar-color: var(--st-scroll) transparent; }
+.st-root ::-webkit-scrollbar { width: 10px; height: 10px; }
+.st-root ::-webkit-scrollbar-track,
+.st-root ::-webkit-scrollbar-corner { background: transparent; }
+.st-root ::-webkit-scrollbar-thumb {
+  background: var(--st-scroll);
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: 999px;
+}
+.st-root ::-webkit-scrollbar-thumb:hover { background: var(--st-scroll-hover); background-clip: content-box; }
+/* Los botones de flecha de Windows no aportan nada acá. */
+.st-root ::-webkit-scrollbar-button { display: none; }
 
 .st-loading {
   display: flex; align-items: center; justify-content: center; gap: 10px;
@@ -228,6 +251,20 @@
   padding: 12px 14px; border-top: 1px solid var(--st-line);
   display: grid; gap: 6px; flex-shrink: 0;
 }
+
+/* ⚠️ El panel derecho es una columna de ancho fijo que scrollea en vertical, y
+   por regla de CSS eso le calcula `overflow-x: auto` también. Los ítems de grid
+   y de flex nacen con `min-width: auto`, así que se niegan a bajar de su ancho
+   intrínseco: uno solo que no entre —el subidor de imágenes medía 312px en un
+   panel de 299— le saca una barra horizontal al panel y estira TODOS los campos
+   fuera de la vista.
+
+   En una columna de ancho fijo ese `auto` está mal para todo, así que se
+   neutraliza de entrada. Va con `:where()` para que no suba la especificidad y
+   cualquier regla puntual le siga ganando. */
+.st-right__body,
+.st-right__body :where(*) { min-width: 0; }
+.st-right__body :where(img) { max-width: 100%; }
 
 .st-inspector { padding: 14px; display: grid; gap: 6px; align-content: start; }
 .st-inspector__head { padding: 0 2px 8px; }
