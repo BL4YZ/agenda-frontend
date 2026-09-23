@@ -180,6 +180,32 @@ export function designToCssVars(design: PageDesign): CSSProperties {
   } as CSSProperties;
 }
 
+/**
+ * Traduce la paleta de la página construida a los tokens `--pl-*` del modal de
+ * reserva.
+ *
+ * El modal es el de la página vieja (`PLReserveModal`) y se renderiza fuera de
+ * `.pb-page`, así que no hereda ninguna variable: sin esto usa sus valores de
+ * respaldo y se ve ajeno a la página. Las superficies salen SÓLIDAS a propósito
+ * — regla del proyecto: los popups nunca translúcidos.
+ */
+export function designToModalVars(design: PageDesign): CSSProperties {
+  const p = resolvePalette(design);
+  return {
+    '--pl-fg': p.fg,
+    '--pl-fg-soft': p.fgSoft,
+    '--pl-fg-mute': p.fgSoft,
+    '--pl-accent': p.accent,
+    '--pl-accent-2': p.accent,
+    '--pl-line': p.line,
+    '--pl-glass': p.bg,
+    '--pl-glass-strong': p.bg2,
+    '--pl-glass-border': p.line,
+    '--pl-font-display': FONTS[design.fontDisplay]?.stack ?? FONTS.editorial.stack,
+    '--pl-font-mono': '"JetBrains Mono", ui-monospace, monospace',
+  } as CSSProperties;
+}
+
 /** Section vertical padding, in px, after the density multiplier. */
 export function padPx(key: string | undefined, fallback: string): string {
   const v = PAD_SCALE[key ?? fallback] ?? PAD_SCALE[fallback] ?? 88;

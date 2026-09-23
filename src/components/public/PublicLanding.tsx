@@ -3,7 +3,8 @@
 import { useState, lazy, Suspense } from 'react';
 import type { Shop, ShopPlan } from '@/types/public';
 import type { NavSection } from './PLNav';
-import '@/styles/public.css';
+import '@/styles/public.css';
+import { designToModalVars } from '@/lib/builder/design';
 
 import PLNav      from './PLNav';
 import PLHero     from './PLHero';
@@ -129,13 +130,17 @@ export default function PublicLanding({ shop }: Props) {
         <Suspense fallback={null}>
           <PageRenderer doc={shop.page} shop={shop} onReserve={openReserve} />
           {modalOpen && (
-            <PLReserveModal
-              open={modalOpen}
-              onClose={() => setModalOpen(false)}
-              shop={shop}
-              initialServiceId={preselectedServiceId}
-              initialBranchId={preselectedBranchId}
-            />
+            // El modal vive fuera de `.pb-page`, así que no hereda las variables
+            // de la paleta. Se le pasan acá para que combine con la página.
+            <div style={designToModalVars(shop.page.design)}>
+              <PLReserveModal
+                open={modalOpen}
+                onClose={() => setModalOpen(false)}
+                shop={shop}
+                initialServiceId={preselectedServiceId}
+                initialBranchId={preselectedBranchId}
+              />
+            </div>
           )}
         </Suspense>
       </>

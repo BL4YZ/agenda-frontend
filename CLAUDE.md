@@ -226,6 +226,18 @@ semi-transparent and made overlays unreadable — this bug recurred three times 
 notifications, calendar event popup, professional/service select). Prefer a CSS class
 over inline styles so the light-mode override can reach it.
 
+⚠️ **A fourth time, with a different cause: an undefined custom property.** The booking
+modal is styled with `--pl-*` tokens, and those live on `[data-pl-theme]`, which hangs
+off `.pl-page`. `PLReserveModal` renders **outside** that element, so on a builder page —
+whose root is `.pb-page` — every token resolved to nothing and
+`background: var(--pl-glass-strong)` produced a fully transparent panel.
+
+The modal's rules now carry **solid fallbacks at the point of use**
+(`var(--pl-glass-strong, #141019)`), not a redefinition, so the legacy page keeps its
+per-theme colours. `designToModalVars()` additionally maps the built page's palette onto
+those tokens so the modal matches the page. **A `var()` with no fallback is a silent
+failure whenever the component can render outside the element that defines the token.**
+
 ---
 
 ## Analytics / tracking

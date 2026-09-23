@@ -772,6 +772,15 @@ html:has(.pl-page) { scroll-behavior: smooth; }
 .pl-footer__credit a { color:var(--pl-accent); text-decoration:none; }
 
 /* ── Reserve Modal ──────────────────────────────────────── */
+/* ⚠️ Los `var(--pl-*)` de acá abajo llevan valor de respaldo a propósito.
+   El modal de reserva se renderiza FUERA de `.pl-page`, y los tokens de
+   color viven en `[data-pl-theme]`, que cuelga de ella. En una página
+   construida con el editor la raíz es `.pb-page`, así que quedaban sin
+   definir: `background: var(--pl-glass-strong)` no resolvía y el modal
+   salía transparente sobre el contenido, ilegible.
+   Los respaldos son SÓLIDOS — regla del proyecto: popups y dropdowns nunca
+   translúcidos. Van en el punto de uso y no como redefinición, para que la
+   página vieja siga usando los colores de su tema. */
 .pl-modal-overlay {
   position:fixed; inset:0; z-index:200;
   background:oklch(0.05 0.03 280 / 0.7);
@@ -782,7 +791,7 @@ html:has(.pl-page) { scroll-behavior: smooth; }
 @keyframes plFadeIn { from{opacity:0} to{opacity:1} }
 .pl-modal {
   width:100%; max-width:540px; max-height:calc(100vh - 64px); overflow:auto;
-  background:var(--pl-glass-strong); border:1px solid var(--pl-glass-border);
+  background:var(--pl-glass-strong, #141019); border:1px solid var(--pl-glass-border, rgba(255,255,255,.14));
   backdrop-filter:blur(40px) saturate(160%); -webkit-backdrop-filter:blur(40px) saturate(160%);
   border-radius:var(--pl-radius-xl);
   box-shadow:0 50px 120px -20px oklch(0.05 0.03 280 / 0.7);
@@ -793,63 +802,63 @@ html:has(.pl-page) { scroll-behavior: smooth; }
   display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:22px;
 }
 .pl-modal__title {
-  font-family:var(--pl-font-display); font-size:26px;
+  font-family:var(--pl-font-display, "Fraunces", Georgia, serif); font-size:26px;
   letter-spacing:-0.02em; font-weight:500; margin:0;
 }
-.pl-modal__sub { color:var(--pl-fg-soft); font-size:13px; margin-top:4px; }
+.pl-modal__sub { color:var(--pl-fg-soft, #b8b3c8); font-size:13px; margin-top:4px; }
 .pl-modal__close {
   width:32px; height:32px; border-radius:50%;
-  background:var(--pl-glass); border:1px solid var(--pl-glass-border);
-  color:var(--pl-fg); cursor:pointer; display:grid;
+  background:var(--pl-glass, #1c1828); border:1px solid var(--pl-glass-border, rgba(255,255,255,.14));
+  color:var(--pl-fg, #f5f1ec); cursor:pointer; display:grid;
   place-items:center; font-size:18px; flex-shrink:0;
   transition:background 0.2s;
 }
-.pl-modal__close:hover { background:var(--pl-glass-strong); }
+.pl-modal__close:hover { background:var(--pl-glass-strong, #141019); }
 .pl-step-row { display:flex; gap:8px; margin-bottom:22px; }
 .pl-step {
   flex:1; height:4px; border-radius:999px;
-  background:var(--pl-line); transition:background 0.3s;
+  background:var(--pl-line, rgba(255,255,255,.14)); transition:background 0.3s;
 }
-.pl-step.is-done { background:var(--pl-accent); }
-.pl-step.is-current { background:linear-gradient(90deg,var(--pl-accent),transparent); }
+.pl-step.is-done { background:var(--pl-accent, #c4b5fd); }
+.pl-step.is-current { background:linear-gradient(90deg,var(--pl-accent, #c4b5fd),transparent); }
 .pl-modal__field { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
 .pl-modal__label {
-  font-family:var(--pl-font-mono); font-size:10.5px;
-  letter-spacing:0.16em; text-transform:uppercase; color:var(--pl-fg-mute);
+  font-family:var(--pl-font-mono, "JetBrains Mono", ui-monospace, monospace); font-size:10.5px;
+  letter-spacing:0.16em; text-transform:uppercase; color:var(--pl-fg-mute, #8a849c);
 }
 .pl-modal__input {
-  background:var(--pl-glass); border:1px solid var(--pl-glass-border);
-  border-radius:10px; padding:11px 14px; color:var(--pl-fg);
+  background:var(--pl-glass, #1c1828); border:1px solid var(--pl-glass-border, rgba(255,255,255,.14));
+  border-radius:10px; padding:11px 14px; color:var(--pl-fg, #f5f1ec);
   font-size:14px; font-family:inherit; outline:0; transition:all 0.2s;
   width:100%;
 }
-.pl-modal__input:focus { border-color:var(--pl-accent); box-shadow:0 0 0 3px oklch(0.65 0.18 290 / 0.18); }
+.pl-modal__input:focus { border-color:var(--pl-accent, #c4b5fd); box-shadow:0 0 0 3px oklch(0.65 0.18 290 / 0.18); }
 .pl-modal__summary {
-  padding:14px; border-radius:12px; background:var(--pl-glass);
-  border:1px solid var(--pl-glass-border); margin-bottom:14px; font-size:13px;
+  padding:14px; border-radius:12px; background:var(--pl-glass, #1c1828);
+  border:1px solid var(--pl-glass-border, rgba(255,255,255,.14)); margin-bottom:14px; font-size:13px;
 }
-.pl-modal__summary-label { font-family:var(--pl-font-mono); font-size:10px; color:var(--pl-fg-mute); letter-spacing:0.14em; margin-bottom:8px; }
+.pl-modal__summary-label { font-family:var(--pl-font-mono, "JetBrains Mono", ui-monospace, monospace); font-size:10px; color:var(--pl-fg-mute, #8a849c); letter-spacing:0.14em; margin-bottom:8px; }
 .pl-modal__summary-total {
   display:flex; justify-content:space-between; margin-top:10px;
-  padding-top:10px; border-top:1px solid var(--pl-line);
+  padding-top:10px; border-top:1px solid var(--pl-line, rgba(255,255,255,.14));
 }
 .pl-day-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
 .pl-day {
   aspect-ratio:1; border-radius:8px; border:0;
-  background:var(--pl-glass); color:var(--pl-fg);
-  font-family:var(--pl-font-mono); font-size:12px; cursor:pointer; transition:all 0.2s;
+  background:var(--pl-glass, #1c1828); color:var(--pl-fg, #f5f1ec);
+  font-family:var(--pl-font-mono, "JetBrains Mono", ui-monospace, monospace); font-size:12px; cursor:pointer; transition:all 0.2s;
 }
-.pl-day:hover:not(:disabled) { background:var(--pl-glass-strong); }
-.pl-day.is-active { background:linear-gradient(180deg,var(--pl-accent),var(--pl-accent-2)); color:white; }
-.pl-day:disabled { color:var(--pl-fg-mute); opacity:0.4; cursor:not-allowed; }
+.pl-day:hover:not(:disabled) { background:var(--pl-glass-strong, #141019); }
+.pl-day.is-active { background:linear-gradient(180deg,var(--pl-accent, #c4b5fd),var(--pl-accent-2, #8b5cf6)); color:white; }
+.pl-day:disabled { color:var(--pl-fg-mute, #8a849c); opacity:0.4; cursor:not-allowed; }
 .pl-slots { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
 .pl-slot {
-  padding:8px 0; border-radius:8px; border:1px solid var(--pl-line);
-  background:var(--pl-glass); color:var(--pl-fg);
-  font-family:var(--pl-font-mono); font-size:12px; cursor:pointer; transition:all 0.2s;
+  padding:8px 0; border-radius:8px; border:1px solid var(--pl-line, rgba(255,255,255,.14));
+  background:var(--pl-glass, #1c1828); color:var(--pl-fg, #f5f1ec);
+  font-family:var(--pl-font-mono, "JetBrains Mono", ui-monospace, monospace); font-size:12px; cursor:pointer; transition:all 0.2s;
 }
-.pl-slot:hover { border-color:var(--pl-accent); }
-.pl-slot.is-active { background:linear-gradient(180deg,var(--pl-accent),var(--pl-accent-2)); border-color:transparent; color:white; }
+.pl-slot:hover { border-color:var(--pl-accent, #c4b5fd); }
+.pl-slot.is-active { background:linear-gradient(180deg,var(--pl-accent, #c4b5fd),var(--pl-accent-2, #8b5cf6)); border-color:transparent; color:white; }
 
 /* ── Responsive ─────────────────────────────────────────── */
 @media (max-width: 980px) {
