@@ -2243,42 +2243,20 @@
   color: #16a34a;
 }
 
-/* ── Página pública: acceso al editor ─────────────────────────────────────
-   Banda que separa "cargar datos" (las pestañas de abajo) de "diseñar la
-   página" (el editor a pantalla completa en /editor).                     */
-.lp-editor-cta {
-    display: flex; align-items: center; justify-content: space-between; gap: 20px;
-    padding: 16px 20px; margin-bottom: 20px;
-    border: 1px solid var(--line); border-radius: 14px;
-    background: linear-gradient(120deg,
-        color-mix(in oklab, var(--accent) 12%, transparent), transparent 70%),
-        var(--glass-bg);
-}
-.lp-editor-cta > div { display: grid; gap: 4px; min-width: 0; }
-/* ⚠️ Con el combinador de hijo, no descendiente: el botón de la derecha lleva
-   su etiqueta dentro de un <span>, y un `.lp-editor-cta span` suelto le pisaba
-   el `color: white` de .dbtn--primary y lo dejaba gris sobre violeta. */
-.lp-editor-cta > div > strong { font-size: 14px; color: var(--fg-0); }
-.lp-editor-cta > div > span   { font-size: 12px; color: var(--fg-3); line-height: 1.5; }
-
-@media (max-width: 680px) {
-    .lp-editor-cta { flex-direction: column; align-items: stretch; }
-}
-
 /* ── Página pública: avisos de lo que pasó al constructor ─────────────────
    Con el editor publicado, varias tarjetas de estas pestañas dejaron de tener
    efecto sobre la página. Se marcan en vez de esconderse: siguen siendo las que
    mandan para quien todavía no publicó con el constructor.               */
 .lp-moved {
-    display: flex; align-items: center; justify-content: space-between; gap: 20px;
+    display: grid; gap: 4px;
     padding: 14px 18px;
     border: 1px solid color-mix(in oklab, var(--accent) 35%, var(--line));
     border-radius: 12px;
     background: color-mix(in oklab, var(--accent) 9%, transparent);
 }
-.lp-moved > div { display: grid; gap: 4px; min-width: 0; }
-.lp-moved > div > strong { font-size: 13.5px; color: var(--fg-0); }
-.lp-moved > div > span { font-size: 12px; color: var(--fg-2); line-height: 1.5; }
+/* Combinador de hijo, no descendiente: ver BUG-022. */
+.lp-moved > strong { font-size: 13.5px; color: var(--fg-0); }
+.lp-moved > span { font-size: 12px; color: var(--fg-2); line-height: 1.5; }
 
 .lp-chip-moved {
     display: inline-block; vertical-align: middle; margin-left: 8px;
@@ -2288,6 +2266,4 @@
     color: var(--accent);
 }
 
-@media (max-width: 680px) {
-    .lp-moved { flex-direction: column; align-items: stretch; }
-}
+

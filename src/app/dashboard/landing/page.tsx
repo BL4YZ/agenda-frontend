@@ -108,15 +108,13 @@ async function revalidatePublicPage(slug: string) {
  * pasaba nada, y no había forma de saber por qué.
  */
 function MovedToEditor({ titulo, detalle }: { titulo: string; detalle: string }) {
+    // Sin botón a propósito: el de «Abrir el editor» está arriba, en el
+    // encabezado de la página. Repetirlo en cada aviso llenaba la pantalla de
+    // botones que hacen exactamente lo mismo.
     return (
         <div className="lp-moved">
-            <div>
-                <strong>{titulo}</strong>
-                <span>{detalle}</span>
-            </div>
-            <Link href="/editor" className="dbtn dbtn--primary" style={{ textDecoration: 'none', flexShrink: 0 }}>
-                {IcoLayout}<span>Abrir el editor</span>
-            </Link>
+            <strong>{titulo}</strong>
+            <span>{detalle}</span>
         </div>
     );
 }
@@ -1839,7 +1837,11 @@ export default function LandingAdminPage() {
                 <div className="dash-page__title-wrap">
                     <div className="dash-page__eyebrow"><span className="dash-page__eyebrow-dot" />Página pública</div>
                     <h1 className="dash-page__title">Página pública</h1>
-                    <p className="dash-page__sub">Administrá el contenido que ven tus clientes</p>
+                    <p className="dash-page__sub">
+                        {builderActive
+                            ? 'Tu página se arma en el editor. Acá cargás los datos que muestran sus secciones.'
+                            : 'Administrá el contenido que ven tus clientes'}
+                    </p>
                 </div>
                 <div className="dash-page__actions">
                     <Link href="/editor" className="dbtn dbtn--primary" style={{ textDecoration: 'none' }}>
@@ -1851,22 +1853,6 @@ export default function LandingAdminPage() {
                         </a>
                     )}
                 </div>
-            </div>
-
-            {/* El editor arma la página; estas pestañas cargan los datos que el
-                editor muestra (servicios, reseñas, fotos, horarios…). */}
-            <div className="lp-editor-cta">
-                <div>
-                    <strong>{builderActive ? 'Tu página se arma en el editor' : 'Diseñá tu página como quieras'}</strong>
-                    <span>
-                        {builderActive
-                            ? 'Las secciones, los colores y los textos de la portada se editan ahí. Estas pestañas guardan los datos que las secciones muestran: servicios, horarios, reseñas, fotos y equipo.'
-                            : 'Arrastrá secciones, elegí colores y tipografías, y mirá el resultado en vivo. Lo que cargues en estas pestañas aparece solo dentro de las secciones que elijas.'}
-                    </span>
-                </div>
-                <Link href="/editor" className="dbtn dbtn--primary" style={{ textDecoration: 'none', flexShrink: 0 }}>
-                    {IcoLayout}<span>Abrir el editor</span>
-                </Link>
             </div>
 
             {/* Tabs */}
