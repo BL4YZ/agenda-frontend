@@ -13,8 +13,8 @@ import type { BlockType, BlockProps, PlanKey, SectionStyle } from '@/types/build
 
 // ── Inspector controls ────────────────────────────────────────────────────────
 export type Control =
-  | { k: 'text';     key: string; label: string; placeholder?: string }
-  | { k: 'textarea'; key: string; label: string; rows?: number; placeholder?: string }
+  | { k: 'text';     key: string; label: string; placeholder?: string; hint?: string }
+  | { k: 'textarea'; key: string; label: string; rows?: number; placeholder?: string; hint?: string }
   | { k: 'number';   key: string; label: string; min: number; max: number; step?: number; suffix?: string }
   | { k: 'toggle';   key: string; label: string; hint?: string }
   | { k: 'select';   key: string; label: string; options: { value: string; label: string }[] }
@@ -42,9 +42,9 @@ export interface BlockDef {
 
 // ── Shared control fragments ──────────────────────────────────────────────────
 const headingControls: Control[] = [
-  { k: 'text',     key: 'eyebrow',  label: 'Antetítulo', placeholder: 'SERVICIOS' },
+  { k: 'text',     key: 'eyebrow',  label: 'Etiqueta', placeholder: 'SERVICIOS', hint: 'Texto corto arriba del título' },
   { k: 'text',     key: 'title',    label: 'Título' },
-  { k: 'textarea', key: 'subtitle', label: 'Bajada', rows: 2 },
+  { k: 'textarea', key: 'subtitle', label: 'Subtítulo', rows: 2 },
 ];
 
 const columnsControl = (max = 4): Control =>
@@ -95,16 +95,17 @@ export const BLOCK_DEFS: Record<BlockType, BlockDef> = {
         { value: 'auto', label: 'Automática' }, { value: 'half', label: 'Media pantalla' },
         { value: 'tall', label: 'Alta' },       { value: 'full', label: 'Pantalla completa' },
       ]},
-      { k: 'text',     key: 'eyebrow',  label: 'Antetítulo', placeholder: 'Desde 2019' },
+      { k: 'text',     key: 'eyebrow',  label: 'Etiqueta', placeholder: 'Desde 2019', hint: 'Texto corto arriba del título' },
       { k: 'text',     key: 'title',    label: 'Título', placeholder: 'Se usa el nombre del negocio si lo dejás vacío' },
-      { k: 'textarea', key: 'subtitle', label: 'Bajada', rows: 3 },
+      { k: 'textarea', key: 'subtitle', label: 'Subtítulo', rows: 3 },
       { k: 'image',    key: 'image',    label: 'Imagen de fondo' },
       { k: 'number',   key: 'overlay',  label: 'Oscurecer imagen', min: 0, max: 1, step: 0.05 },
       { k: 'cta',      label: 'Botón principal',  actionKey: 'ctaAction',       labelKey: 'ctaLabel',       hrefKey: 'ctaHref' },
       { k: 'cta',      label: 'Botón secundario', actionKey: 'secondaryAction', labelKey: 'secondaryLabel', hrefKey: 'secondaryHref' },
       { k: 'toggle',   key: 'showRating', label: 'Mostrar calificación' },
       { k: 'toggle',   key: 'showStatus', label: 'Mostrar si está abierto ahora' },
-      { k: 'toggle',   key: 'showChips',  label: 'Mostrar chips flotantes' },
+      { k: 'toggle',   key: 'showChips',  label: 'Mostrar datos sobre la imagen',
+        hint: 'Calificación y cantidad de servicios, en burbujas flotantes' },
     ],
   },
 
@@ -122,7 +123,7 @@ export const BLOCK_DEFS: Record<BlockType, BlockDef> = {
     hint: 'Uno o varios párrafos. Ideal para contar tu historia.',
     defaults: { title: 'Sobre nosotros', text: 'Contá quién sos, qué hacés y por qué.', variant: 'normal' },
     controls: [
-      { k: 'text',     key: 'eyebrow', label: 'Antetítulo' },
+      { k: 'text',     key: 'eyebrow', label: 'Etiqueta', hint: 'Texto corto arriba del título' },
       { k: 'text',     key: 'title',   label: 'Título' },
       { k: 'textarea', key: 'text',    label: 'Texto', rows: 8, placeholder: 'Una línea en blanco separa párrafos.' },
       { k: 'select',   key: 'variant', label: 'Tamaño', options: [
@@ -142,7 +143,7 @@ export const BLOCK_DEFS: Record<BlockType, BlockDef> = {
     controls: [
       { k: 'image',    key: 'image',    label: 'Imagen' },
       { k: 'text',     key: 'imageAlt', label: 'Texto alternativo', placeholder: 'Descripción para lectores de pantalla' },
-      { k: 'text',     key: 'eyebrow',  label: 'Antetítulo' },
+      { k: 'text',     key: 'eyebrow',  label: 'Etiqueta', hint: 'Texto corto arriba del título' },
       { k: 'text',     key: 'title',    label: 'Título' },
       { k: 'textarea', key: 'text',     label: 'Texto', rows: 6 },
       { k: 'toggle',   key: 'reverse',  label: 'Imagen a la derecha' },

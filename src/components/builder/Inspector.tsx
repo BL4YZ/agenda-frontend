@@ -88,7 +88,7 @@ function ControlField({ ctrl, bag, set }: { ctrl: Control; bag: Bag; set: (key: 
 
     case 'text':
       return (
-        <Row label={ctrl.label}>
+        <Row label={ctrl.label} hint={ctrl.hint}>
           <input className="st-input" value={(bag[ctrl.key] as string) ?? ''}
                  placeholder={ctrl.placeholder}
                  onChange={e => set(ctrl.key, e.target.value)} />
@@ -97,7 +97,7 @@ function ControlField({ ctrl, bag, set }: { ctrl: Control; bag: Bag; set: (key: 
 
     case 'textarea':
       return (
-        <Row label={ctrl.label}>
+        <Row label={ctrl.label} hint={ctrl.hint}>
           <textarea className="st-input st-input--area" rows={ctrl.rows ?? 4}
                     value={(bag[ctrl.key] as string) ?? ''}
                     placeholder={ctrl.placeholder}
