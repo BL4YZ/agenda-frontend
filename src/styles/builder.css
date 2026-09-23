@@ -205,12 +205,25 @@
 .pb-nav--glass.is-scrolled { border-bottom-color: var(--pb-line); }
 .pb-nav--solid { background: var(--pb-bg-2); border-bottom: 1px solid var(--pb-line); }
 .pb-nav--minimal { background: transparent; }
+/* Barra flotante: la pastilla necesita aire arriba, y el mismo aire en reposo
+   que cuando queda fija.
+
+   ⚠️ El hueco va como `padding` de .pb-nav, no como `margin` de __inner. La que
+   se fija es .pb-nav: con margen, al pegarse en `top: 0` la pastilla quedaba
+   contra el borde y encima saltaba de posición al fijarse. Con padding, el
+   hueco viaja con ella y la posición no cambia. La franja es transparente a
+   propósito — el contenido pasa por detrás, que es el efecto flotante. */
+.pb-nav--floating {
+  --pb-nav-gap: 20px;
+  padding-top: var(--pb-nav-gap);
+  padding-bottom: calc(var(--pb-nav-gap) / 2);
+}
 .pb-nav--floating .pb-nav__inner {
-  margin-top: 14px;
   background: var(--pb-surface-strong);
   border: 1px solid var(--pb-line);
   border-radius: var(--pb-radius-btn);
   padding-inline: 20px;
+  box-shadow: var(--pb-shadow);
 }
 
 .pb-nav__brand {
@@ -638,6 +651,7 @@
   .pb-hero__meta { gap: 22px; }
   .pb-list__row { flex-wrap: wrap; }
 
+  .pb-nav--floating { --pb-nav-gap: 12px; }
   .pb-nav__burger { display: block; }
   .pb-nav__links {
     display: none; position: absolute; left: 0; right: 0; top: 100%;
