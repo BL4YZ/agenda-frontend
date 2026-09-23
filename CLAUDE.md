@@ -120,6 +120,11 @@ state that never passed through it. Both layers check — the project's boundary
 server strips `design.colors` from the published copy below that plan; `DesignPanel`
 locks the controls so the editor never promises what the live page won't show.
 
+⚠️ **The "Hecho con Novu" footer link is not optional.** There is no `showNovu`
+field on the document, the server's `sanitizeFooter` drops the key so it cannot be
+persisted even by calling the API directly, and `PageRenderer` draws it in a
+minimal strip when the owner turns the whole footer off. Don't add a toggle back.
+
 The existing `/dashboard/landing` tabs stay: they manage the **records** (services,
 products, reviews, hours, gallery, team) that the data-driven blocks read.
 

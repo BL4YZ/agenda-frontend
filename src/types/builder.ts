@@ -173,13 +173,13 @@ export interface PageNav {
   links?: { id?: string; label: string; href: string }[];
 }
 
+/** Sin `showNovu`: la atribución a Novu no es opcional. */
 export interface PageFooter {
   enabled?: boolean;
   style?: 'minimal' | 'columns' | 'centered' | 'bold';
   text?: string;
   showHours?: boolean;
   showSocial?: boolean;
-  showNovu?: boolean;
 }
 
 export interface PageSeo {

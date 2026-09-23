@@ -89,7 +89,10 @@ export default function SettingsPanel({ doc, plan, slug, onNav, onFooter, onSeo,
             </Row>
             <Toggle label="Mostrar horarios"  checked={doc.footer.showHours !== false}  onChange={v => onFooter({ showHours: v })} />
             <Toggle label="Mostrar redes"     checked={doc.footer.showSocial !== false} onChange={v => onFooter({ showSocial: v })} />
-            <Toggle label='Mostrar "Hecho con Novu"' checked={doc.footer.showNovu !== false} onChange={v => onFooter({ showNovu: v })} />
+            <p className="st-note">
+              El enlace «Hecho con Novu» va siempre al pie y no se puede quitar,
+              tampoco apagando el pie de página.
+            </p>
           </>
         )}
       </Collapse>

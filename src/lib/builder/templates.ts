@@ -33,7 +33,7 @@ const baseDoc = (sections: PageSection[], design: Partial<PageDoc['design']> = {
   design: { ...DEFAULT_DESIGN, ...design },
   seo: {},
   nav: { enabled: true, sticky: true, logoMode: 'both', align: 'split', style: 'glass', ctaLabel: 'Reservar', ctaAction: 'reserve' },
-  footer: { enabled: true, style: 'columns', showHours: true, showSocial: true, showNovu: true },
+  footer: { enabled: true, style: 'columns', showHours: true, showSocial: true },
   sections,
 });
 

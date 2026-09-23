@@ -116,6 +116,23 @@ function PBNav({ doc, ctx }: { doc: PageDoc; ctx: BlockCtx }) {
 }
 
 // ── Footer ────────────────────────────────────────────────────────────────────
+/**
+ * Atribución a Novu. No es configurable a propósito: el documento no tiene
+ * ninguna opción para ocultarla, ni siquiera apagando el pie de página — en ese
+ * caso se renderiza sola, en una franja mínima.
+ */
+function NovuCredit({ ctx }: { ctx: BlockCtx }) {
+  return (
+    <a
+      className="pb-link pb-credit__link"
+      href={ctx.editing ? undefined : 'https://novu.uy'}
+      target="_blank" rel="noopener noreferrer"
+    >
+      Hecho con Novu
+    </a>
+  );
+}
+
 function PBFooter({ doc, ctx }: { doc: PageDoc; ctx: BlockCtx }) {
   const { footer } = doc;
   const { shop } = ctx;
@@ -168,11 +185,7 @@ function PBFooter({ doc, ctx }: { doc: PageDoc; ctx: BlockCtx }) {
 
         <div className="pb-footer__bar">
           <span>© {year} {shop.name}</span>
-          {footer.showNovu !== false && (
-            <a className="pb-link" href={ctx.editing ? undefined : 'https://novu.uy'} target="_blank" rel="noopener noreferrer">
-              Hecho con Novu
-            </a>
-          )}
+          <NovuCredit ctx={ctx} />
         </div>
       </div>
     </footer>
@@ -235,7 +248,9 @@ export default function PageRenderer({ doc, shop, onReserve, editing }: PageRend
         {body.map(s => <Section key={s.id} section={s} doc={doc} ctx={ctx} />)}
       </main>
 
-      {doc.footer.enabled !== false && <PBFooter doc={doc} ctx={ctx} />}
+      {doc.footer.enabled !== false
+        ? <PBFooter doc={doc} ctx={ctx} />
+        : <div className="pb-credit"><div className="pb-container"><NovuCredit ctx={ctx} /></div></div>}
     </div>
   );
 }
