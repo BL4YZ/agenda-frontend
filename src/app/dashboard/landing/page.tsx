@@ -297,7 +297,7 @@ function IdentidadTab({ token, slug: slugProp, isPro, profileData, builderActive
             {builderActive && (
                 <MovedToEditor
                     titulo="La portada y los textos ahora se editan en el constructor"
-                    detalle="El título, el subtítulo, las fotos y la sección «Sobre nosotros» se editan ahí, así que se sacaron de acá para no mostrarte dos valores distintos. Lo que sí seguís administrando en esta pestaña es la dirección de tu página y el logo."
+                    detalle="El título, el subtítulo, las fotos y la sección «Sobre nosotros» se editan ahí."
                 />
             )}
             {/* URL pública editable */}
@@ -518,7 +518,7 @@ function DisenoTab({ token, slug, profileData, builderActive }: { token: string 
             {builderActive && (
                 <MovedToEditor
                     titulo="Los colores y la tipografía ahora se eligen en el constructor"
-                    detalle="Trae 10 paletas y 15 tipografías, y además redondeos, espaciado y ancho de página. La paleta y la tipografía se sacaron de acá porque mostraban una selección que ya no era la de tu página. El logo se sigue administrando en esta pestaña."
+                    detalle="La paleta, las tipografías y las formas se eligen ahí."
                 />
             )}
             {/* Paleta de color */}
