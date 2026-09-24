@@ -64,6 +64,11 @@ export default function SettingsPanel({ doc, plan, slug, hasLogo, onNav, onFoote
                 { value: 'minimal', label: 'Minimal' }, { value: 'floating', label: 'Flotante' },
               ]} onChange={v => onNav({ style: v })} />
             </Row>
+            <Row label="Menú en celular" hint="Cómo se abre al tocar las tres rayas">
+              <Seg value={doc.nav.mobileMenu ?? 'panel'} options={[
+                { value: 'panel', label: 'Panel' }, { value: 'overlay', label: 'Pantalla' }, { value: 'drawer', label: 'Cajón' },
+              ]} onChange={v => onNav({ mobileMenu: v })} />
+            </Row>
             <Row label="Marca">
               <fieldset className="st-lockable" disabled={!canLogo} data-testid="nav-brand">
                 <Seg value={canLogo ? (doc.nav.logoMode ?? 'both') : 'name'} options={[

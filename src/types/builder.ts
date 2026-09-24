@@ -164,6 +164,8 @@ export interface PageSection {
 export interface PageNav {
   enabled?: boolean;
   sticky?: boolean;
+  /** Cómo se abre el menú en celular. */
+  mobileMenu?: 'panel' | 'overlay' | 'drawer';
   logoMode?: 'logo' | 'name' | 'both';
   align?: 'left' | 'center' | 'split';
   style?: 'glass' | 'solid' | 'minimal' | 'floating';

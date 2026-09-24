@@ -51,6 +51,23 @@ function PBNav({ doc, ctx }: { doc: PageDoc; ctx: BlockCtx }) {
     return () => window.removeEventListener('scroll', onScroll);
   }, [nav.sticky]);
 
+  const mobileMenu = nav.mobileMenu ?? 'panel';
+  // En pantalla completa y en cajón el menú tapa la página: dejar que el fondo
+  // siga scrolleando detrás es desorientador, y sin Escape no hay forma de
+  // salir con teclado.
+  const cubrePantalla = mobileMenu !== 'panel';
+  useEffect(() => {
+    if (!open || !cubrePantalla) return;
+    const previo = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = previo;
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open, cubrePantalla]);
+
   const links = useMemo(() => {
     if (nav.links?.length) return nav.links;
     const seen = new Set<string>();
@@ -79,7 +96,9 @@ function PBNav({ doc, ctx }: { doc: PageDoc; ctx: BlockCtx }) {
         `pb-nav--${nav.align ?? 'split'}`,
         nav.sticky ? 'is-sticky' : '',
         scrolled ? 'is-scrolled' : '',
+        open ? 'is-menu-open' : '',
       ].filter(Boolean).join(' ')}
+      data-mobile-menu={mobileMenu}
     >
       <div className="pb-container pb-nav__inner">
         <a className="pb-nav__brand" href="#top">
@@ -95,6 +114,9 @@ function PBNav({ doc, ctx }: { doc: PageDoc; ctx: BlockCtx }) {
             ))}
           </nav>
         )}
+        {open && cubrePantalla && (
+          <div className="pb-nav__scrim" onClick={() => setOpen(false)} aria-hidden="true" />
+        )}
 
         <div className="pb-nav__right">
           {cta && (cta.reserve
@@ -103,8 +125,11 @@ function PBNav({ doc, ctx }: { doc: PageDoc; ctx: BlockCtx }) {
           )}
           {links.length > 0 && (
             <button
-              type="button" className="pb-nav__burger" aria-label="Abrir menú"
-              aria-expanded={open} onClick={() => setOpen(v => !v)}
+              type="button"
+              className={`pb-nav__burger${open ? ' is-open' : ''}`}
+              aria-label={open ? 'Cerrar menú' : 'Abrir menú'}
+              aria-expanded={open}
+              onClick={() => setOpen(v => !v)}
             >
               <span /><span /><span />
             </button>

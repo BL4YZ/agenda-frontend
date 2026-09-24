@@ -516,6 +516,8 @@
 .pb-marquee__track--cards > * { width: 340px; flex-shrink: 0; }
 .pb-marquee:hover .pb-marquee__track { animation-play-state: paused; }
 @keyframes pb-scroll { to { transform: translateX(-50%); } }
+@keyframes pb-menu-down { from { opacity: 0; transform: translateY(-8px) } to { opacity: 1; transform: none } }
+@keyframes pb-menu-side { from { transform: translateX(100%) } to { transform: none } }
 @media (prefers-reduced-motion: reduce) {
   .pb-marquee__track { animation: none; flex-wrap: wrap; width: 100%; }
 }
@@ -652,16 +654,99 @@
   .pb-list__row { flex-wrap: wrap; }
 
   .pb-nav--floating { --pb-nav-gap: 12px; }
+  /* ── Menú en celular ────────────────────────────────────────────────────
+     Tres formas distintas, elegibles desde Ajustes → Barra superior. El
+     `overflow: hidden` de la versión de escritorio (que recorta enlaces largos)
+     se anula acá: en vertical recortaría el menú entero. */
   .pb-nav__burger { display: block; }
+  .pb-nav__inner { position: relative; z-index: 3; }
+
   .pb-nav__links {
-    display: none; position: absolute; left: 0; right: 0; top: 100%;
-    flex-direction: column; gap: 0;
-    background: var(--pb-bg-2); border-bottom: 1px solid var(--pb-line);
-    padding: 10px 18px 18px;
+    display: none;
+    flex-direction: column;
+    gap: 0;
+    min-width: 0;
+    overflow: visible;
   }
   .pb-nav__links.is-open { display: flex; }
-  .pb-nav__inner { position: relative; }
   .pb-nav--split .pb-nav__links { margin-inline: 0; }
+
+  /* Los enlaces dejan de ser texto apretado: área de toque de verdad. */
+  .pb-nav__links a {
+    font-size: 1.05rem;
+    color: var(--pb-fg);
+    padding: 15px 4px;
+    border-bottom: 1px solid var(--pb-line);
+  }
+  .pb-nav__links a:last-child { border-bottom: 0; }
+
+  /* ⚠️ Un `backdrop-filter` en un ancestro hace que `position: fixed` se
+     resuelva contra ESE elemento en vez de contra la ventana. La barra de
+     vidrio lo tiene, así que el menú a pantalla completa y el cajón quedarían
+     encerrados dentro de la barra. Se apaga mientras el menú está abierto: por
+     debajo hay un fondo sólido, no se nota. */
+  .pb-nav.is-menu-open {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .pb-nav__scrim {
+    position: fixed; inset: 0; z-index: 1;
+    background: color-mix(in oklab, var(--pb-bg) 72%, transparent);
+    backdrop-filter: blur(4px);
+  }
+
+  /* — Panel: cuelga de la barra y copia su forma — */
+  .pb-nav[data-mobile-menu='panel'] .pb-nav__links {
+    position: absolute; left: 0; right: 0; top: calc(100% + 8px);
+    z-index: 2;
+    background: var(--pb-bg-2);
+    border: 1px solid var(--pb-line);
+    border-radius: var(--pb-radius);
+    box-shadow: var(--pb-shadow);
+    padding: 6px 18px;
+  }
+  /* La barra flotante ya tiene su propio margen lateral; el panel lo respeta. */
+  .pb-nav--floating[data-mobile-menu='panel'] .pb-nav__links { left: 0; right: 0; }
+
+  /* — Pantalla completa: los enlaces son el contenido — */
+  .pb-nav[data-mobile-menu='overlay'] .pb-nav__links {
+    position: fixed; inset: 0; z-index: 2;
+    justify-content: center; align-items: center;
+    gap: 6px;
+    background: var(--pb-bg);
+    padding: 80px 32px 40px;
+  }
+  .pb-nav[data-mobile-menu='overlay'] .pb-nav__links a {
+    font-family: var(--pb-font-display);
+    font-size: clamp(1.7rem, 8vw, 2.6rem);
+    border-bottom: 0;
+    padding: 10px 0;
+  }
+
+  /* — Cajón lateral — */
+  .pb-nav[data-mobile-menu='drawer'] .pb-nav__links {
+    position: fixed; top: 0; right: 0; bottom: 0; z-index: 2;
+    width: min(340px, 82vw);
+    background: var(--pb-bg-2);
+    border-left: 1px solid var(--pb-line);
+    box-shadow: var(--pb-shadow);
+    padding: 88px 24px 24px;
+    justify-content: flex-start;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .pb-nav[data-mobile-menu='panel']   .pb-nav__links.is-open { animation: pb-menu-down .22s cubic-bezier(.16,1,.3,1) both; }
+    .pb-nav[data-mobile-menu='overlay'] .pb-nav__links.is-open { animation: pb-fade .2s ease both; }
+    .pb-nav[data-mobile-menu='drawer']  .pb-nav__links.is-open { animation: pb-menu-side .26s cubic-bezier(.16,1,.3,1) both; }
+    .pb-nav__scrim { animation: pb-fade .2s ease both; }
+  }
+
+  /* La hamburguesa pasa a X mientras está abierto. */
+  .pb-nav__burger span { transition: transform .22s ease, opacity .18s ease; }
+  .pb-nav__burger.is-open span:nth-child(1) { transform: translateY(5px) rotate(45deg); }
+  .pb-nav__burger.is-open span:nth-child(2) { opacity: 0; }
+  .pb-nav__burger.is-open span:nth-child(3) { transform: translateY(-5px) rotate(-45deg); }
 
   .pb-card--pad, .pb-band--card, .pb-cta--card, .pb-hero__card { padding: 26px; }
 }
