@@ -83,6 +83,30 @@ function PBNav({ doc, ctx }: { doc: PageDoc; ctx: BlockCtx }) {
     return out;
   }, [nav.links, doc.sections]);
 
+  /**
+   * Navegación a una sección desde el menú.
+   *
+   * ⚠️ No se deja al navegador. Con el menú a pantalla completa el `body` está
+   * con `overflow: hidden` para que el fondo no scrollee; el salto del ancla
+   * ocurre mientras ese bloqueo sigue puesto y se pierde — el menú se cerraba y
+   * la página no se movía. Acá se cierra primero y se desplaza en el siguiente
+   * cuadro, ya sin bloqueo. Sirve igual en la vista previa del editor, donde los
+   * enlaces no tienen href.
+   */
+  const irA = (e: React.MouseEvent, href?: string) => {
+    setOpen(false);
+    if (!href?.startsWith('#')) return;   // enlaces externos siguen su camino
+    e.preventDefault();
+    const destino = href.slice(1);
+    // Se suelta el bloqueo acá mismo en vez de esperar a que lo haga la limpieza
+    // del efecto: así el desplazamiento no depende de cuándo React vacíe el
+    // estado. El efecto lo va a restaurar al mismo valor.
+    document.body.style.overflow = '';
+    requestAnimationFrame(() => {
+      document.getElementById(destino)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  };
+
   const cta = resolveCta(nav.ctaAction ?? 'reserve', nav.ctaLabel ?? 'Reservar', nav.ctaHref, shop);
   const logo = safeImg(shop.logo_url);
   const showLogo = nav.logoMode !== 'name' && !!logo;
@@ -123,7 +147,13 @@ function PBNav({ doc, ctx }: { doc: PageDoc; ctx: BlockCtx }) {
               </button>
             )}
             {links.map((l, i) => (
-              <a key={i} href={ctx.editing ? undefined : l.href} onClick={() => setOpen(false)}>{l.label}</a>
+              <a
+                key={i}
+                href={ctx.editing ? undefined : l.href}
+                onClick={e => irA(e, l.href)}
+              >
+                {l.label}
+              </a>
             ))}
           </nav>
         )}

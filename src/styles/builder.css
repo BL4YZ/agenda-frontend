@@ -71,7 +71,9 @@
   margin-inline: auto;
   padding-inline: 24px;
 }
-.pb-section { position: relative; }
+/* La barra fija tapa el arranque de la sección a la que se salta desde el
+   menú; este margen la deja debajo en vez de encima. */
+.pb-section { position: relative; scroll-margin-top: 88px; }
 .pb-section__inner { position: relative; z-index: 1; }
 .pb-section--bgimage { color: #fff; }
 .pb-section__scrim { position: absolute; inset: 0; background: #000; z-index: 0; }
