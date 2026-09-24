@@ -742,6 +742,32 @@
     .pb-nav__scrim { animation: pb-fade .2s ease both; }
   }
 
+  /* Cierre propio de los menús que tapan la pantalla. Vive dentro del panel,
+     no en la barra, que es donde el usuario lo busca. Mientras está abierto se
+     esconde la hamburguesa para no dejar dos X compitiendo. */
+  .pb-nav__close {
+    position: absolute; top: 14px; right: 14px;
+    display: grid; place-items: center;
+    width: 44px; height: 44px;          /* área de toque cómoda */
+    border: 1px solid var(--pb-line);
+    border-radius: 999px;
+    background: var(--pb-bg-2);
+    color: var(--pb-fg);
+    cursor: pointer;
+    z-index: 1;
+  }
+  .pb-nav__close:hover { border-color: var(--pb-accent); color: var(--pb-accent); }
+
+  .pb-nav[data-mobile-menu='panel'] .pb-nav__close { display: none; }
+
+  /* ⚠️ La barra queda por encima del menú (z-index 3 contra 2), así que su
+     botón de reserva se superpone al cierre y le roba el clic. Mientras el menú
+     tapa la pantalla, el lado derecho de la barra se esconde entero: la
+     hamburguesa sería una segunda X y el botón de reserva, una trampa. La marca
+     sigue visible a la izquierda. */
+  .pb-nav[data-mobile-menu='overlay'].is-menu-open .pb-nav__right,
+  .pb-nav[data-mobile-menu='drawer'].is-menu-open  .pb-nav__right { display: none; }
+
   /* La hamburguesa pasa a X mientras está abierto. */
   .pb-nav__burger span { transition: transform .22s ease, opacity .18s ease; }
   .pb-nav__burger.is-open span:nth-child(1) { transform: translateY(5px) rotate(45deg); }

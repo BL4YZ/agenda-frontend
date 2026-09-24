@@ -109,6 +109,19 @@ function PBNav({ doc, ctx }: { doc: PageDoc; ctx: BlockCtx }) {
 
         {links.length > 0 && (
           <nav className={`pb-nav__links${open ? ' is-open' : ''}`} aria-label="Secciones">
+            {/* El menú que tapa la pantalla necesita su propio cierre: la
+                hamburguesa queda en la barra, chica y separada de lo que
+                cierra. En modo panel no hace falta — se ve la página detrás. */}
+            {cubrePantalla && (
+              <button
+                type="button" className="pb-nav__close"
+                aria-label="Cerrar menú" onClick={() => setOpen(false)}
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              </button>
+            )}
             {links.map((l, i) => (
               <a key={i} href={ctx.editing ? undefined : l.href} onClick={() => setOpen(false)}>{l.label}</a>
             ))}
