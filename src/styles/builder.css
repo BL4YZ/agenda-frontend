@@ -265,6 +265,27 @@
 .pb-hero__bg    { position: absolute; inset: 0; background: var(--pb-bg-2) center/cover no-repeat; }
 .pb-hero__scrim { position: absolute; inset: 0; background: linear-gradient(to top, #000 10%, transparent 75%); }
 .pb-hero__content { position: relative; width: 100%; padding-block: 60px; }
+/* ⚠️ La portada a pantalla completa y las secciones con imagen de fondo son
+   SIEMPRE superficies oscuras: foto más un velo negro. La paleta de la página no
+   aplica ahí. Con una paleta clara —Papel, Arena, Cian— el acento y las líneas
+   son casi negros, y sobre la foto el botón de contorno quedaba negro sobre
+   negro y el secundario directamente sin borde visible.
+
+   Por eso se redefinen los tokens, no solo `color`: así todo lo de adentro
+   —botones en sus cuatro estilos, antetítulos, bajadas, bordes— queda claro
+   sobre oscuro sin una regla por elemento. Se pierde el acento de marca dentro
+   de la foto, y está bien: sobre una imagen cualquiera, legible le gana a
+   fiel. */
+.pb-hero--cover,
+.pb-section--bgimage {
+  --pb-fg: #ffffff;
+  --pb-fg-soft: rgba(255, 255, 255, 0.82);
+  --pb-accent: #ffffff;
+  --pb-accent-fg: #111113;
+  --pb-line: rgba(255, 255, 255, 0.45);
+}
+/* La variante en tarjeta NO entra acá: su texto va sobre una superficie de la
+   paleta, no sobre la foto. */
 .pb-hero--cover, .pb-hero--card { color: #fff; }
 .pb-hero--cover .pb-hero__lede, .pb-hero--card .pb-hero__lede { color: rgba(255,255,255,.82); }
 
