@@ -27,6 +27,11 @@
 }
 .pb-page *, .pb-page *::before, .pb-page *::after { box-sizing: border-box; }
 .pb-page img { max-width: 100%; }
+/* ⚠️ En la vista previa del editor los enlaces se renderizan SIN `href` para que
+   no naveguen, y un <a> sin href no es un enlace: el navegador le pone el cursor
+   de texto en vez de la manito. Como en esta página todo <a> es clicleable —en
+   la previa el clic selecciona la sección—, el puntero se declara explícito. */
+.pb-page a { cursor: pointer; }
 .pb-page h1, .pb-page h2, .pb-page h3 {
   font-family: var(--pb-font-display);
   font-weight: 500;
