@@ -101,12 +101,21 @@ export function Stars({ n }: { n: number }) {
   );
 }
 
+const clampCols = (n: number) => String(Math.max(1, Math.min(6, n)));
+
 /** Grid wrapper honouring the block's `columns` prop. */
-export function Grid({ cols, children, className = '' }: { cols?: number; children: ReactNode; className?: string }) {
+export function Grid({ cols, colsMobile, children, className = '' }: {
+  cols?: number; colsMobile?: number; children: ReactNode; className?: string;
+}) {
   return (
     <div
       className={`pb-grid ${className}`.trim()}
-      style={{ '--pb-cols': String(Math.max(1, Math.min(6, cols ?? 3))) } as React.CSSProperties}
+      style={{
+        '--pb-cols': clampCols(cols ?? 3),
+        // Solo se emite si el dueño lo pidió: sin la variable, el CSS de celular
+        // usa su valor por defecto y las páginas ya publicadas no se mueven.
+        ...(colsMobile ? { '--pb-cols-m': clampCols(colsMobile) } : {}),
+      } as React.CSSProperties}
     >
       {children}
     </div>

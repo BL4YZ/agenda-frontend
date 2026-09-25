@@ -78,7 +78,14 @@
 }
 /* La barra fija tapa el arranque de la sección a la que se salta desde el
    menú; este margen la deja debajo en vez de encima. */
-.pb-section { position: relative; scroll-margin-top: 88px; }
+/* El espacio vertical llega en variables desde `sectionCss`, no como
+   `padding-top` en línea: así la media query de celular puede pisarlo. */
+.pb-section {
+  position: relative;
+  scroll-margin-top: 88px;
+  padding-top: var(--pb-pad-t, 0px);
+  padding-bottom: var(--pb-pad-b, 0px);
+}
 .pb-section__inner { position: relative; z-index: 1; }
 .pb-section--bgimage { color: #fff; }
 .pb-section__scrim { position: absolute; inset: 0; background: #000; z-index: 0; }
@@ -722,6 +729,14 @@
 }
 .pb-footer__bar .pb-credit__link { white-space: nowrap; }
 
+/* ── Visible solo en un tamaño de pantalla ─────────────────────────────────
+   El enlace del menú se esconde junto con su sección: si no, en celular queda
+   una opción que al tocarla no lleva a ningún lado. */
+@media (min-width: 761px) {
+  .pb-section[data-hide='desktop'],
+  .pb-nav__links a[data-hide='desktop'] { display: none; }
+}
+
 /* ── Responsive ───────────────────────────────────────────────────────── */
 @media (max-width: 1000px) {
   .pb-grid { grid-template-columns: repeat(min(var(--pb-cols, 3), 2), minmax(0, 1fr)); }
@@ -733,12 +748,48 @@
 
 @media (max-width: 760px) {
   .pb-container { padding-inline: 18px; }
-  .pb-grid,
+
+  .pb-section[data-hide='mobile'],
+  .pb-nav__links a[data-hide='mobile'] { display: none; }
+
+  /* Espacio propio en celular, si la sección lo definió. */
+  .pb-section {
+    padding-top: var(--pb-pad-t-m, var(--pb-pad-t, 0px));
+    padding-bottom: var(--pb-pad-b-m, var(--pb-pad-b, 0px));
+  }
+
+  /* Alineación propia en celular.
+     ⚠️ Acá no alcanza con aplicar la nueva: hay que deshacer la de escritorio.
+     `.pb-align-center .pb-sub { margin-inline: auto }` y sus hermanas siguen
+     activas, así que pasar a «izquierda» en celular sin anularlas deja el texto
+     a la izquierda pero los bloques internos todavía centrados. */
+  .pb-section[data-align-m='left']   { text-align: left; }
+  .pb-section[data-align-m='center'] { text-align: center; }
+  .pb-section[data-align-m='right']  { text-align: right; }
+
+  .pb-section[data-align-m='center'] :where(.pb-head, .pb-cta-row) { justify-items: center; justify-content: center; }
+  .pb-section[data-align-m='center'] :where(.pb-sub, .pb-hours, .pb-faq) { margin-inline: auto; }
+  .pb-section[data-align-m='center'] .pb-social { justify-content: center; }
+
+  .pb-section[data-align-m='left'] :where(.pb-head, .pb-cta-row),
+  .pb-section[data-align-m='right'] :where(.pb-head, .pb-cta-row) { justify-items: start; justify-content: flex-start; }
+  .pb-section[data-align-m='left'] :where(.pb-sub, .pb-hours, .pb-faq),
+  .pb-section[data-align-m='right'] :where(.pb-sub, .pb-hours, .pb-faq) { margin-inline: 0; }
+  .pb-section[data-align-m='left'] .pb-social,
+  .pb-section[data-align-m='right'] .pb-social { justify-content: flex-start; }
+
+  /* Las preguntas se leen siempre alineadas a la izquierda, centrada o no. */
+  .pb-section[data-align-m] .pb-faq { text-align: left; }
+
+  /* Una columna sigue siendo el valor por defecto: `--pb-cols-m` solo aparece
+     cuando el dueño pidió otra cosa, así que las páginas ya publicadas no se
+     mueven. */
+  .pb-grid { grid-template-columns: repeat(var(--pb-cols-m, 1), minmax(0, 1fr)); }
   .pb-hours--grid,
   .pb-faq--two-col,
   .pb-footer__grid { grid-template-columns: 1fr; }
-  .pb-gallery--grid { grid-template-columns: repeat(2, 1fr); }
-  .pb-gallery--masonry { columns: 2; }
+  .pb-gallery--grid { grid-template-columns: repeat(var(--pb-cols-m, 2), 1fr); }
+  .pb-gallery--masonry { columns: var(--pb-cols-m, 2); }
   .pb-split, .pb-hero__split { grid-template-columns: 1fr; gap: 30px; }
   .pb-split--reverse .pb-split__media { order: 0; }
   .pb-band--split { grid-template-columns: 1fr; }

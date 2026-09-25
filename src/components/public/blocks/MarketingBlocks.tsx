@@ -40,7 +40,7 @@ export function FeaturesBlock({ section }: BlockComponentProps) {
   return (
     <div className="pb-container">
       <SectionHead props={props} />
-      <Grid cols={props.columns ?? 3} className={`pb-features pb-features--${layout}`}>
+      <Grid cols={props.columns ?? 3} colsMobile={props.columnsMobile} className={`pb-features pb-features--${layout}`}>
         {items.map((it, i) => (
           <article key={it.id ?? i} className={layout === 'cards' ? 'pb-card pb-card--pad' : 'pb-plain'}>
             <Icon name={it.icon} />
@@ -62,7 +62,7 @@ export function StatsBlock({ section }: BlockComponentProps) {
   return (
     <div className="pb-container">
       <SectionHead props={props} />
-      <Grid cols={props.columns ?? 4} className={`pb-stats pb-stats--${props.layout ?? 'plain'}`}>
+      <Grid cols={props.columns ?? 4} colsMobile={props.columnsMobile} className={`pb-stats pb-stats--${props.layout ?? 'plain'}`}>
         {items.map((it, i) => (
           <div key={it.id ?? i} className={props.layout === 'cards' ? 'pb-card pb-card--pad pb-stat' : 'pb-stat'}>
             <div className="pb-stat__v">
@@ -147,7 +147,7 @@ export function TestimonialsBlock({ section }: BlockComponentProps) {
   return (
     <div className="pb-container">
       <SectionHead props={props} />
-      <Grid cols={props.columns ?? 3}>{items.map((it, i) => card(it, i))}</Grid>
+      <Grid cols={props.columns ?? 3} colsMobile={props.columnsMobile}>{items.map((it, i) => card(it, i))}</Grid>
     </div>
   );
 }
@@ -161,7 +161,7 @@ export function PricingBlock({ section, ctx }: BlockComponentProps) {
   return (
     <div className="pb-container">
       <SectionHead props={props} />
-      <Grid cols={props.columns ?? 3} className="pb-pricing">
+      <Grid cols={props.columns ?? 3} colsMobile={props.columnsMobile} className="pb-pricing">
         {items.map((it, i) => {
           // Stored as a string[] by the inspector, but a document written by an
           // older client may still carry a single newline-joined string.

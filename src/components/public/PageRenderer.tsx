@@ -6,7 +6,7 @@ import type { Shop } from '@/types/public';
 import { BLOCK_RENDERERS } from './blocks';
 import type { BlockCtx } from './blocks';
 import { designToCssVars, googleFontsHref } from '@/lib/builder/design';
-import { sectionCss, sectionClass, resolveCta, safeImg, DAY_NAMES } from '@/lib/builder/runtime';
+import { sectionCss, sectionClass, sectionData, resolveCta, safeImg, DAY_NAMES } from '@/lib/builder/runtime';
 import '@/styles/builder.css';
 
 /**
@@ -71,13 +71,15 @@ function PBNav({ doc, ctx }: { doc: PageDoc; ctx: BlockCtx }) {
   const links = useMemo(() => {
     if (nav.links?.length) return nav.links;
     const seen = new Set<string>();
-    const out: { label: string; href: string }[] = [];
+    const out: { label: string; href: string; hideOn?: PageSection['hideOn'] }[] = [];
     for (const s of doc.sections) {
       const label = NAV_LABELS[s.type];
       // One entry per label: `location` and `contact` are both "Contacto".
       if (s.hidden || !label || seen.has(label)) continue;
       seen.add(label);
-      out.push({ label, href: `#${domId(s)}` });
+      // `hideOn` viaja con el enlace: una sección que no está en celular no
+      // puede dejar una opción de menú que no lleva a ningún lado.
+      out.push({ label, href: `#${domId(s)}`, hideOn: s.hideOn });
       if (out.length === MAX_AUTO_LINKS) break;
     }
     return out;
@@ -180,6 +182,7 @@ function PBNav({ doc, ctx }: { doc: PageDoc; ctx: BlockCtx }) {
               <a
                 key={i}
                 href={ctx.editing ? undefined : l.href}
+                data-hide={'hideOn' in l ? l.hideOn : undefined}
                 onClick={e => irA(e, l.href)}
               >
                 {l.label}
@@ -302,6 +305,7 @@ function Section({ section, doc, ctx }: { section: PageSection; doc: PageDoc; ct
       style={sectionCss(section.style, doc.design)}
       data-block={section.type}
       data-section-id={section.id}
+      {...sectionData(section)}
       data-anim={!ctx.editing && section.style.animate && section.style.animate !== 'none'
         ? section.style.animate : undefined}
     >

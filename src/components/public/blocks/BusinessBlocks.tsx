@@ -85,7 +85,7 @@ export function ServicesBlock({ section, ctx }: BlockComponentProps) {
   return (
     <div className="pb-container">
       <SectionHead props={props} />
-      <Grid cols={props.columns ?? 3}>
+      <Grid cols={props.columns ?? 3} colsMobile={props.columnsMobile}>
         {services.map(s => (
           <button key={s.id} type="button" className={`pb-card pb-card--btn${layout === 'grid' ? ' pb-card--photo' : ''}`}
                   onClick={() => !ctx.editing && ctx.onReserve(s.id)}>
@@ -349,7 +349,7 @@ export function ProductsBlock({ section, ctx }: BlockComponentProps) {
   return (
     <div className="pb-container">
       <SectionHead props={props} />
-      <Grid cols={props.columns ?? 3}>{products.map(card)}</Grid>
+      <Grid cols={props.columns ?? 3} colsMobile={props.columnsMobile}>{products.map(card)}</Grid>
     </div>
   );
 }
@@ -411,7 +411,7 @@ export function ReviewsBlock({ section, ctx }: BlockComponentProps) {
   return (
     <div className="pb-container">
       {head}
-      <Grid cols={props.columns ?? 3}>{reviews.map((r, i) => card(r, i))}</Grid>
+      <Grid cols={props.columns ?? 3} colsMobile={props.columnsMobile}>{reviews.map((r, i) => card(r, i))}</Grid>
     </div>
   );
 }
@@ -477,7 +477,7 @@ export function TeamBlock({ section, ctx }: BlockComponentProps) {
   return (
     <div className="pb-container">
       <SectionHead props={props} />
-      <Grid cols={props.columns ?? 3} className={`pb-team pb-team--${layout}`}>
+      <Grid cols={props.columns ?? 3} colsMobile={props.columnsMobile} className={`pb-team pb-team--${layout}`}>
         {team.map(m => (
           <article key={m.id} className="pb-person">
             <div className="pb-person__photo">
@@ -543,7 +543,12 @@ export function GalleryBlock({ section, ctx }: BlockComponentProps) {
       <SectionHead props={props} />
       <div
         className={`pb-gallery pb-gallery--${layout}`}
-        style={{ '--pb-cols': String(Math.max(1, Math.min(6, props.columns ?? 3))) } as React.CSSProperties}
+        style={{
+          '--pb-cols': String(Math.max(1, Math.min(6, props.columns ?? 3))),
+          ...(props.columnsMobile
+            ? { '--pb-cols-m': String(Math.max(1, Math.min(6, props.columnsMobile))) }
+            : {}),
+        } as React.CSSProperties}
       >
         {tiles}
       </div>
@@ -568,7 +573,7 @@ export function BranchesBlock({ section, ctx }: BlockComponentProps) {
   return (
     <div className="pb-container">
       <SectionHead props={props} />
-      <Grid cols={props.columns ?? 2}>
+      <Grid cols={props.columns ?? 2} colsMobile={props.columnsMobile}>
         {branches.map(b => (
           <article key={b.id} className="pb-card">
             <div className="pb-card__body">

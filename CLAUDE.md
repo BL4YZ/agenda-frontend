@@ -150,6 +150,23 @@ competing control. The columns stay for the legacy page.
 If you add a builder feature that supersedes an old tab, hide the old one **and** cut
 any silent fallback into it, in the same change.
 
+⚠️ **Anything that may differ per screen size travels as a CSS variable or a
+`data-*` attribute, never as an inline property.** Inline styles cannot hold a media
+query, so `sectionCss` emits `--pb-pad-t` / `--pb-pad-t-m` and `builder.css` picks
+between them; `sectionData` emits `data-align-m` and `data-hide` for the same reason.
+Attributes are also what lets the mobile rules outrank the desktop ones — mobile
+alignment has to beat `.pb-align-center .pb-sub` and its six siblings, and
+`.pb-section[data-align-m]` does that without restating the list.
+
+⚠️ **A per-device override must undo the desktop rule, not just add its own.** Setting
+mobile alignment to "left" while `.pb-align-center .pb-sub { margin-inline: auto }` is
+still in force left the text left-aligned and the inner blocks still centred. Every
+`[data-align-m='center']` rule has a matching `left`/`right` rule that resets it.
+
+⚠️ **New per-device and framing defaults are emitted only when the owner sets them**
+(`--pb-cols-m`, `object-position`). The CSS fallback is the old hardcoded value, so
+already-published pages render byte-identically until someone touches the control.
+
 ---
 
 ## API layer

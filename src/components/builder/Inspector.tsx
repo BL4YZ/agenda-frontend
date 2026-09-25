@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import { ChevronDown, GripVertical, Plus, Trash2 } from 'lucide-react';
 import ImageUpload from '@/components/ImageUpload';
-import type { PageSection, BlockItem, BlockProps, SectionStyle, CtaAction } from '@/types/builder';
+import type { PageSection, BlockItem, BlockProps, SectionStyle, CtaAction, FocalKey } from '@/types/builder';
 import { BLOCK_DEFS, type Control } from '@/lib/builder/blocks';
 import { newId } from '@/lib/builder/templates';
+import { FOCAL_KEYS, safeImg } from '@/lib/builder/runtime';
 
 // ── Field primitives ──────────────────────────────────────────────────────────
 /**
@@ -24,6 +25,42 @@ export function Row({ label, children, hint }: { label?: string; children: React
         {children}
       </label>
       {hint && <span className="st-field__hint">{hint}</span>}
+    </div>
+  );
+}
+
+const FOCAL_LABELS: Record<FocalKey, string> = {
+  'top-left': 'Arriba a la izquierda', top: 'Arriba', 'top-right': 'Arriba a la derecha',
+  left: 'Izquierda',                 center: 'Centro',  right: 'Derecha',
+  'bottom-left': 'Abajo a la izquierda', bottom: 'Abajo', 'bottom-right': 'Abajo a la derecha',
+};
+
+/**
+ * Punto focal, sobre la foto misma.
+ *
+ * Los nueve botones van encima de la imagen que se está encuadrando: elegir
+ * «arriba a la izquierda» en abstracto no dice nada, verlo sobre la foto sí.
+ * `FOCAL_KEYS` ya viene en orden de lectura, que es el orden de la grilla.
+ */
+function FocalField({ value, onChange, preview }: {
+  value?: FocalKey; onChange: (v: FocalKey) => void; preview?: string;
+}) {
+  const img = safeImg(preview);
+  const actual = value ?? 'center';
+  return (
+    <div
+      className={`st-focal${img ? ' has-img' : ''}`}
+      style={img ? { backgroundImage: `url("${img.replace(/"/g, '%22')}")` } : undefined}
+    >
+      {FOCAL_KEYS.map(k => (
+        <button
+          key={k} type="button"
+          className={`st-focal__d${actual === k ? ' is-on' : ''}`}
+          aria-label={FOCAL_LABELS[k]} title={FOCAL_LABELS[k]}
+          aria-pressed={actual === k}
+          onClick={() => onChange(k)}
+        />
+      ))}
     </div>
   );
 }
@@ -138,6 +175,18 @@ function ControlField({ ctrl, bag, set }: { ctrl: Control; bag: Bag; set: (key: 
                        onChange={url => set(ctrl.key, url)} previewHeight={110} />
         </div>
       );
+
+    // Sin imagen cargada no hay nada que encuadrar, así que el control no
+    // aparece: es la diferencia entre un panel corto y uno lleno de controles
+    // que no hacen nada todavía.
+    case 'focal':
+      return safeImg(bag.image as string) ? (
+        <Row label={ctrl.label} hint={ctrl.hint}>
+          <FocalField value={bag[ctrl.key] as FocalKey | undefined}
+                      preview={bag.image as string}
+                      onChange={v => set(ctrl.key, v)} />
+        </Row>
+      ) : null;
 
     case 'color':
       return (
@@ -343,6 +392,12 @@ function StylePanel({ style, onChange }: { style: SectionStyle; onChange: (patch
               <span className="st-range__v">{Math.round((style.bgOverlay ?? 0.5) * 100)}%</span>
             </div>
           </Row>
+          {safeImg(style.bgImage) && (
+            <Row label="Encuadre" hint="Qué parte de la foto se conserva cuando el recorte la corta.">
+              <FocalField value={style.bgFocal} preview={style.bgImage}
+                          onChange={v => onChange({ bgFocal: v })} />
+            </Row>
+          )}
         </>
       )}
       <Row label="Color de fondo propio">
@@ -371,10 +426,88 @@ function StylePanel({ style, onChange }: { style: SectionStyle; onChange: (patch
   );
 }
 
-// ── Inspector ─────────────────────────────────────────────────────────────────
-export default function Inspector({ section, onPatch }: {
+/**
+ * Lo que se puede cambiar solo en celular.
+ *
+ * Es a propósito una lista corta: espacio vertical, alineación y columnas. Nada
+ * de posicionar cajas a mano, que es por donde los constructores libres terminan
+ * rompiendo el teléfono. Mientras el interruptor está apagado, `style.mobile` no
+ * existe y la sección hereda todo de escritorio; al prenderlo se copian los
+ * valores actuales para que se vea desde dónde arranca.
+ */
+function MobilePanel({ section, onPatch, setProp }: {
   section: PageSection;
   onPatch: (patch: Partial<PageSection>) => void;
+  setProp: (key: string, value: unknown) => void;
+}) {
+  const { style } = section;
+  const m = style.mobile;
+  const def = BLOCK_DEFS[section.type];
+  const tieneColumnas = def.controls.some(c => 'key' in c && c.key === 'columns');
+  // La galería en celular ya venía en dos columnas, y el resto de las grillas en
+  // una: el control tiene que arrancar mostrando lo que se ve, no un valor
+  // inventado.
+  const colsPorDefecto = section.type === 'gallery' ? 2 : 1;
+  const cols = section.props.columnsMobile ?? colsPorDefecto;
+
+  return (
+    <>
+      <Toggle
+        label="Espaciado y alineación propios"
+        checked={!!m}
+        onChange={v => onPatch({
+          style: {
+            ...style,
+            mobile: v
+              ? { padTop: style.padTop ?? 'md', padBottom: style.padBottom ?? 'md', align: style.align ?? 'left' }
+              : undefined,
+          },
+        })}
+      />
+
+      {m ? (
+        <>
+          <Row label="Espacio arriba">
+            <Segmented value={m.padTop ?? 'md'} options={PADS as unknown as { value: string; label: string }[]}
+                       onChange={v => onPatch({ style: { ...style, mobile: { ...m, padTop: v as SectionStyle['padTop'] } } })} />
+          </Row>
+          <Row label="Espacio abajo">
+            <Segmented value={m.padBottom ?? 'md'} options={PADS as unknown as { value: string; label: string }[]}
+                       onChange={v => onPatch({ style: { ...style, mobile: { ...m, padBottom: v as SectionStyle['padBottom'] } } })} />
+          </Row>
+          <Row label="Alineación">
+            <Segmented value={m.align ?? 'left'} options={[
+              { value: 'left', label: 'Izquierda' }, { value: 'center', label: 'Centro' }, { value: 'right', label: 'Derecha' },
+            ]} onChange={v => onPatch({ style: { ...style, mobile: { ...m, align: v as SectionStyle['align'] } } })} />
+          </Row>
+        </>
+      ) : (
+        <p className="st-note">Toma el espaciado y la alineación de escritorio.</p>
+      )}
+
+      {tieneColumnas && (
+        <Row label="Columnas" hint="Más de dos rara vez se leen bien en un teléfono.">
+          <div className="st-range">
+            <input type="range" min={1} max={3} step={1} value={cols}
+                   onChange={e => setProp('columnsMobile', Number(e.target.value))} />
+            <span className="st-range__v">{cols} col</span>
+          </div>
+        </Row>
+      )}
+
+      <p className="st-note">
+        El resto —fondo, colores, bordes y animación— es el mismo en todas las pantallas.
+      </p>
+    </>
+  );
+}
+
+// ── Inspector ─────────────────────────────────────────────────────────────────
+export default function Inspector({ section, onPatch, device }: {
+  section: PageSection;
+  onPatch: (patch: Partial<PageSection>) => void;
+  /** Vista activa en el editor: en celular aparece el panel propio de celular. */
+  device?: 'desktop' | 'tablet' | 'mobile';
 }) {
   const def = BLOCK_DEFS[section.type];
   if (!def) return null;
@@ -395,6 +528,12 @@ export default function Inspector({ section, onPatch }: {
         ))}
       </Collapse>
 
+      {device === 'mobile' && (
+        <Collapse title="Solo en celular">
+          <MobilePanel section={section} onPatch={onPatch} setProp={setProp} />
+        </Collapse>
+      )}
+
       <Collapse title="Diseño de la sección" defaultOpen={false}>
         <StylePanel style={section.style} onChange={patch => onPatch({ style: { ...section.style, ...patch } })} />
       </Collapse>
@@ -409,6 +548,17 @@ export default function Inspector({ section, onPatch }: {
           <input className="st-input" value={section.anchor ?? ''}
                  placeholder={section.id}
                  onChange={e => onPatch({ anchor: e.target.value.replace(/[^a-z0-9-]/gi, '').toLowerCase() })} />
+        </Row>
+        <Row label="Mostrar en" hint="Su enlace del menú se esconde junto con ella.">
+          <Segmented value={section.hideOn === 'mobile' ? 'desktop' : section.hideOn === 'desktop' ? 'mobile' : 'all'}
+                     options={[
+                       { value: 'all', label: 'Todas' },
+                       { value: 'mobile', label: 'Solo celular' },
+                       { value: 'desktop', label: 'Solo escritorio' },
+                     ]}
+                     onChange={v => onPatch({
+                       hideOn: v === 'all' ? undefined : v === 'mobile' ? 'desktop' : 'mobile',
+                     })} />
         </Row>
       </Collapse>
     </div>

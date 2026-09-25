@@ -233,7 +233,7 @@ export default function EditorPage() {
 
           <div className="st-right__body">
             {panel === 'section' && (selected
-              ? <Inspector section={selected} onPatch={patch => b.patchSection(selected.id, patch)} />
+              ? <Inspector section={selected} device={device} onPatch={patch => b.patchSection(selected.id, patch)} />
               : <p className="st-note st-note--pad">Elegí una sección en la lista de la izquierda, o hacé clic sobre ella en la vista previa.</p>
             )}
             {panel === 'design' && (

@@ -8,7 +8,7 @@
  */
 
 import type { CSSProperties } from 'react';
-import type { PageSection, SectionStyle, CtaAction, PageDesign } from '@/types/builder';
+import type { PageSection, SectionStyle, CtaAction, PageDesign, FocalKey } from '@/types/builder';
 import type { Shop } from '@/types/public';
 import { padPx } from './design';
 
@@ -70,6 +70,33 @@ export function resolveCta(
   }
 }
 
+// ── Image framing ─────────────────────────────────────────────────────────────
+/**
+ * Punto focal → `background-position` / `object-position`.
+ *
+ * Una foto horizontal recortada a la pantalla de un teléfono pierde los
+ * costados, y por defecto el recorte es al centro: si el sujeto está a un lado,
+ * desaparece. Esto deja elegir qué parte se conserva.
+ */
+const FOCAL: Record<FocalKey, string> = {
+  'top-left':     '0% 0%',
+  top:            '50% 0%',
+  'top-right':    '100% 0%',
+  left:           '0% 50%',
+  center:         '50% 50%',
+  right:          '100% 50%',
+  'bottom-left':  '0% 100%',
+  bottom:         '50% 100%',
+  'bottom-right': '100% 100%',
+};
+
+export const FOCAL_KEYS = Object.keys(FOCAL) as FocalKey[];
+
+/** Devuelve undefined en el centro: es el valor por defecto del navegador. */
+export function focalCss(key?: FocalKey): string | undefined {
+  return key && key !== 'center' ? FOCAL[key] : undefined;
+}
+
 // ── Section styling ───────────────────────────────────────────────────────────
 const WIDTHS: Record<string, string> = {
   narrow: '760px', normal: '1120px', wide: '1360px', full: '100%',
@@ -82,10 +109,18 @@ const WIDTHS: Record<string, string> = {
  * out of the declaration it lands in.
  */
 export function sectionCss(style: SectionStyle, design: PageDesign): CSSProperties {
+  // El espacio vertical va en variables y no en `padding-top` directo: los
+  // estilos en línea no admiten media queries, así que la hoja de estilos es la
+  // que elige entre el valor de escritorio y el de celular. Sin esto, «espacio
+  // arriba» por dispositivo no se puede expresar.
   const css: Record<string, string> = {
-    paddingTop: padPx(style.padTop, 'md'),
-    paddingBottom: padPx(style.padBottom, 'md'),
+    '--pb-pad-t': padPx(style.padTop, 'md'),
+    '--pb-pad-b': padPx(style.padBottom, 'md'),
   };
+
+  const m = style.mobile;
+  if (m?.padTop)    css['--pb-pad-t-m'] = padPx(m.padTop, 'md');
+  if (m?.padBottom) css['--pb-pad-b-m'] = padPx(m.padBottom, 'md');
 
   if (style.width) css['--pb-section-width'] = WIDTHS[style.width] ?? WIDTHS.normal;
   if (style.textColor) css.color = style.textColor;
@@ -110,7 +145,7 @@ export function sectionCss(style: SectionStyle, design: PageDesign): CSSProperti
       if (style.bgImage) {
         css.backgroundImage = `url("${style.bgImage.replace(/"/g, '%22')}")`;
         css.backgroundSize = 'cover';
-        css.backgroundPosition = 'center';
+        css.backgroundPosition = focalCss(style.bgFocal) ?? 'center';
       }
       break;
     default:
@@ -120,6 +155,20 @@ export function sectionCss(style: SectionStyle, design: PageDesign): CSSProperti
   if (style.bgColor && style.bgKind !== 'image') css.background = style.bgColor;
 
   return css as CSSProperties;
+}
+
+/**
+ * Atributos que la hoja de estilos lee para lo que depende del tamaño de
+ * pantalla. Van como `data-*` y no como clases porque las reglas de celular
+ * tienen que poder ganarle a las de escritorio (`.pb-align-center .pb-sub` y
+ * compañía) sin repetir la lista entera con más especificidad.
+ */
+export function sectionData(section: PageSection): Record<string, string | undefined> {
+  const s = section.style;
+  return {
+    'data-hide': section.hideOn,
+    'data-align-m': s.mobile?.align,
+  };
 }
 
 export function sectionClass(section: PageSection): string {

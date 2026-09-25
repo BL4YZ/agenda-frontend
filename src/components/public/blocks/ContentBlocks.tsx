@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import type { BlockComponentProps } from './primitives';
 import { SectionHead, Cta, CtaRow, Img, Grid } from './primitives';
-import { paragraphs, openStatus, videoEmbed, RATIO, safeImg } from '@/lib/builder/runtime';
+import { paragraphs, openStatus, videoEmbed, RATIO, safeImg, focalCss } from '@/lib/builder/runtime';
 
 // ── Announcement ──────────────────────────────────────────────────────────────
 export function AnnouncementBlock({ section, ctx }: BlockComponentProps) {
@@ -80,7 +80,8 @@ export function HeroBlock({ section, ctx }: BlockComponentProps) {
           {text}
           <div className="pb-hero__figure">
             {image
-              ? <Img src={image} alt={shop.name} className="pb-hero__figure-img" />
+              ? <Img src={image} alt={shop.name} className="pb-hero__figure-img"
+                     style={{ objectPosition: focalCss(props.imageFocal) }} />
               : <div className="pb-hero__figure-ph" aria-hidden="true">{shop.name.charAt(0)}</div>}
           </div>
         </div>
@@ -101,7 +102,9 @@ export function HeroBlock({ section, ctx }: BlockComponentProps) {
       <div className="pb-hero pb-hero--card" data-height={props.height ?? 'tall'}>
         <div
           className="pb-hero__bg"
-          style={image ? { backgroundImage: `url("${image.replace(/"/g, '%22')}")` } : undefined}
+          style={image
+            ? { backgroundImage: `url("${image.replace(/"/g, '%22')}")`, backgroundPosition: focalCss(props.imageFocal) }
+            : undefined}
           aria-hidden="true"
         />
         <div className="pb-hero__scrim" style={{ opacity: props.overlay ?? 0.45 }} aria-hidden="true" />
@@ -117,7 +120,9 @@ export function HeroBlock({ section, ctx }: BlockComponentProps) {
     <div className="pb-hero pb-hero--cover" data-height={props.height ?? 'tall'}>
       <div
         className="pb-hero__bg"
-        style={image ? { backgroundImage: `url("${image.replace(/"/g, '%22')}")` } : undefined}
+        style={image
+          ? { backgroundImage: `url("${image.replace(/"/g, '%22')}")`, backgroundPosition: focalCss(props.imageFocal) }
+          : undefined}
         aria-hidden="true"
       />
       <div className="pb-hero__scrim" style={{ opacity: props.overlay ?? 0.55 }} aria-hidden="true" />
@@ -163,7 +168,8 @@ export function ImageTextBlock({ section, ctx }: BlockComponentProps) {
       <div className={`pb-split${props.reverse ? ' pb-split--reverse' : ''}`}>
         <div className="pb-split__media">
           {safeImg(props.image)
-            ? <Img src={props.image} alt={props.imageAlt} className="pb-split__img" />
+            ? <Img src={props.image} alt={props.imageAlt} className="pb-split__img"
+                   style={{ objectPosition: focalCss(props.imageFocal) }} />
             : <div className="pb-split__ph" aria-hidden="true" />}
         </div>
         <div className="pb-split__body">
@@ -186,7 +192,8 @@ export function ImageBlock({ section }: BlockComponentProps) {
   const variant = props.variant ?? 'contained';
   const figure = (
     <figure className={`pb-figure pb-figure--${variant}`}>
-      <Img src={props.image} alt={props.imageAlt} className="pb-figure__img" />
+      <Img src={props.image} alt={props.imageAlt} className="pb-figure__img"
+           style={{ objectPosition: focalCss(props.imageFocal) }} />
       {props.text && <figcaption className="pb-figure__cap">{props.text}</figcaption>}
     </figure>
   );
@@ -253,7 +260,7 @@ export function LogosBlock({ section }: BlockComponentProps) {
     return (
       <div className="pb-container">
         <SectionHead props={props} />
-        <Grid cols={props.columns ?? 4} className="pb-logos-grid">
+        <Grid cols={props.columns ?? 4} colsMobile={props.columnsMobile} className="pb-logos-grid">
           {items.map((it, i) => cell(it, String(i)))}
         </Grid>
       </div>

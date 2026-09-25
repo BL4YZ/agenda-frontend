@@ -38,6 +38,9 @@ export type WidthKey   = 'narrow' | 'normal' | 'wide' | 'full';
 export type PadKey     = 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 export type AlignKey   = 'left' | 'center' | 'right';
 export type BgKind     = 'none' | 'surface' | 'accent' | 'contrast' | 'image' | 'gradient';
+/** Qué parte de una foto se conserva cuando el recorte la corta. */
+export type FocalKey   = 'center' | 'top' | 'bottom' | 'left' | 'right'
+                       | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 export type CtaAction  = 'reserve' | 'link' | 'scroll' | 'whatsapp' | 'phone' | 'none';
 
 export interface DesignColors {
@@ -72,6 +75,21 @@ export interface PageDesign {
   colors?: DesignColors;
 }
 
+/**
+ * Lo que se puede pisar en celular.
+ *
+ * Deliberadamente corto. No están el ancho del contenido (a 390px las cuatro
+ * opciones dan lo mismo) ni el fondo ni los colores: cuantas menos cosas puedan
+ * diferir entre pantallas, menos formas hay de dejar la página rota en una sola
+ * de ellas sin darse cuenta. Lo que sí cambia de verdad en un teléfono es el
+ * aire vertical, la alineación del texto y la cantidad de columnas.
+ */
+export interface MobileStyle {
+  padTop?: PadKey;
+  padBottom?: PadKey;
+  align?: AlignKey;
+}
+
 export interface SectionStyle {
   padTop?: PadKey;
   padBottom?: PadKey;
@@ -85,6 +103,10 @@ export interface SectionStyle {
   radius?: RadiusKey;
   divider?: 'none' | 'line' | 'fade' | 'wave' | 'slant';
   animate?: 'none' | 'fade' | 'up' | 'zoom' | 'left' | 'right' | 'blur';
+  /** Encuadre de la imagen de fondo. Solo se usa con `bgKind: 'image'`. */
+  bgFocal?: FocalKey;
+  /** Pisa los valores de arriba en pantallas de 760px o menos. */
+  mobile?: MobileStyle;
 }
 
 /**
@@ -124,6 +146,8 @@ export interface BlockProps {
   layout?: string;
   variant?: string;
   columns?: number;
+  /** Columnas en celular. Sin esto, el CSS baja todo a una sola. */
+  columnsMobile?: number;
   limit?: number;
   ctaLabel?: string;
   ctaHref?: string;
@@ -133,6 +157,7 @@ export interface BlockProps {
   secondaryAction?: CtaAction;
   image?: string;
   imageAlt?: string;
+  imageFocal?: FocalKey;
   showPrices?: boolean;
   showDuration?: boolean;
   showImages?: boolean;
@@ -163,6 +188,8 @@ export interface PageSection {
   type: BlockType;
   name?: string;
   hidden?: boolean;
+  /** Oculta la sección en un tamaño de pantalla; `hidden` la oculta en todos. */
+  hideOn?: 'mobile' | 'desktop';
   anchor?: string;
   props: BlockProps;
   style: SectionStyle;

@@ -342,6 +342,45 @@
 .st-range input { flex: 1; accent-color: var(--st-accent); }
 .st-range__v { font-size: 11px; color: var(--st-fg-2); min-width: 42px; text-align: right; font-variant-numeric: tabular-nums; }
 
+/* ── Punto focal ───────────────────────────────────────────────────────────
+   Nueve zonas sobre la foto que se está encuadrando. `min-width: 0` no hace
+   falta acá porque el ancho es fijo, pero el panel mide 299px: 100% y nada de
+   anchos intrínsecos. */
+.st-focal {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 2px;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  padding: 2px;
+  border: 1px solid var(--st-line);
+  border-radius: 8px;
+  background-color: var(--st-panel-2);
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+}
+.st-focal__d {
+  border: 0;
+  border-radius: 4px;
+  padding: 0;
+  cursor: pointer;
+  background: var(--st-line);
+  transition: background .12s ease, box-shadow .12s ease;
+}
+/* Sobre una foto el velo es oscuro en los dos temas: lo que hay debajo es una
+   imagen cualquiera, no el fondo del panel. */
+.st-focal.has-img .st-focal__d { background: rgba(0, 0, 0, .3); }
+.st-focal__d:hover { background: var(--st-fg-3); }
+.st-focal.has-img .st-focal__d:hover { background: rgba(0, 0, 0, .08); }
+.st-focal__d.is-on,
+.st-focal.has-img .st-focal__d.is-on {
+  background: none;
+  box-shadow: inset 0 0 0 2px var(--st-accent);
+}
+.st-focal__d:focus-visible { outline: 2px solid var(--st-accent); outline-offset: 1px; }
+
 .st-color { display: flex; align-items: center; gap: 6px; }
 .st-color input[type='color'] {
   width: 30px; height: 30px; padding: 0; flex-shrink: 0;

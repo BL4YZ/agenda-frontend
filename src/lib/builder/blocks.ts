@@ -19,6 +19,7 @@ export type Control =
   | { k: 'toggle';   key: string; label: string; hint?: string }
   | { k: 'select';   key: string; label: string; options: { value: string; label: string }[] }
   | { k: 'image';    key: string; label: string }
+  | { k: 'focal';    key: string; label: string; hint?: string }
   | { k: 'color';    key: string; label: string }
   | { k: 'cta';      label: string; actionKey: string; labelKey: string; hrefKey: string }
   | { k: 'items';    key: string; label: string; addLabel: string; titleKey: string; fields: Control[] }
@@ -103,6 +104,7 @@ export const BLOCK_DEFS: Record<BlockType, BlockDef> = {
       { k: 'text',     key: 'title',    label: 'Título', placeholder: 'Se usa el nombre del negocio si lo dejás vacío' },
       { k: 'textarea', key: 'subtitle', label: 'Subtítulo', rows: 3 },
       { k: 'image',    key: 'image',    label: 'Imagen de fondo' },
+      { k: 'focal', key: 'imageFocal', label: 'Encuadre', hint: 'Qué parte de la foto se conserva cuando el recorte la corta.' },
       { k: 'number',   key: 'overlay',  label: 'Oscurecer imagen', min: 0, max: 1, step: 0.05 },
       { k: 'cta',      label: 'Botón principal',  actionKey: 'ctaAction',       labelKey: 'ctaLabel',       hrefKey: 'ctaHref' },
       { k: 'cta',      label: 'Botón secundario', actionKey: 'secondaryAction', labelKey: 'secondaryLabel', hrefKey: 'secondaryHref' },
@@ -147,6 +149,7 @@ export const BLOCK_DEFS: Record<BlockType, BlockDef> = {
     controls: [
       { k: 'image',    key: 'image',    label: 'Imagen' },
       { k: 'text',     key: 'imageAlt', label: 'Texto alternativo', placeholder: 'Descripción para lectores de pantalla' },
+      { k: 'focal', key: 'imageFocal', label: 'Encuadre', hint: 'Qué parte de la foto se conserva cuando el recorte la corta.' },
       { k: 'text',     key: 'eyebrow',  label: 'Etiqueta', hint: 'Texto corto arriba del título' },
       { k: 'text',     key: 'title',    label: 'Título' },
       { k: 'textarea', key: 'text',     label: 'Texto', rows: 6 },
@@ -163,6 +166,7 @@ export const BLOCK_DEFS: Record<BlockType, BlockDef> = {
     controls: [
       { k: 'image',  key: 'image',    label: 'Imagen' },
       { k: 'text',   key: 'imageAlt', label: 'Texto alternativo' },
+      { k: 'focal', key: 'imageFocal', label: 'Encuadre', hint: 'Qué parte de la foto se conserva cuando el recorte la corta.' },
       { k: 'text',   key: 'text',     label: 'Epígrafe' },
       { k: 'select', key: 'variant',  label: 'Ancho', options: [
         { value: 'contained', label: 'Dentro del contenedor' },
