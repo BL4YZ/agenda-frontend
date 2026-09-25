@@ -107,6 +107,26 @@ function PBNav({ doc, ctx }: { doc: PageDoc; ctx: BlockCtx }) {
     });
   };
 
+  /**
+   * ¿La barra arranca apoyada sobre una superficie oscura?
+   *
+   * La barra «minimal» es transparente, así que hereda los colores de la paleta.
+   * Con una paleta clara sobre una portada con foto queda texto casi negro sobre
+   * la imagen: invisible. Las otras barras no sufren esto porque tienen fondo
+   * propio —la de vidrio es el fondo de la página al 72%— y ahí la paleta es la
+   * correcta.
+   *
+   * Solo importa arriba de todo: al scrollear, la barra deja atrás la portada.
+   */
+  const sobreOscuro = useMemo(() => {
+    const primera = doc.sections.find(s => !s.hidden && s.type !== 'announcement');
+    if (!primera) return false;
+    if (primera.style.bgKind === 'image' && primera.style.bgImage) return true;
+    if (primera.type !== 'hero') return false;
+    const layout = primera.props.layout ?? 'cover';
+    return layout === 'cover' && !!safeImg(primera.props.image);
+  }, [doc.sections]);
+
   const cta = resolveCta(nav.ctaAction ?? 'reserve', nav.ctaLabel ?? 'Reservar', nav.ctaHref, shop);
   const logo = safeImg(shop.logo_url);
   const showLogo = nav.logoMode !== 'name' && !!logo;
@@ -120,6 +140,7 @@ function PBNav({ doc, ctx }: { doc: PageDoc; ctx: BlockCtx }) {
         `pb-nav--${nav.align ?? 'split'}`,
         nav.sticky ? 'is-sticky' : '',
         scrolled ? 'is-scrolled' : '',
+        sobreOscuro && !scrolled ? 'is-over-dark' : '',
         open ? 'is-menu-open' : '',
       ].filter(Boolean).join(' ')}
       data-mobile-menu={mobileMenu}

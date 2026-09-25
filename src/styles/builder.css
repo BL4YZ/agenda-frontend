@@ -211,7 +211,33 @@
 }
 .pb-nav--glass.is-scrolled { border-bottom-color: var(--pb-line); }
 .pb-nav--solid { background: var(--pb-bg-2); border-bottom: 1px solid var(--pb-line); }
+/* ⚠️ La única barra sin fondo propio. Apoyada sobre una portada con foto hereda
+   los colores de la paleta, y con una paleta clara eso es texto casi negro sobre
+   la imagen. `is-over-dark` la pone en claro mientras está arriba de todo; al
+   scrollear se la saca y además gana fondo, porque ahí ya está sobre el
+   contenido de la página y la paleta vuelve a ser la correcta.
+
+   Las demás barras no llevan este trato: la de vidrio y la flotante tienen
+   superficie propia derivada del fondo de la página, así que la paleta ya
+   funciona sobre ellas. */
 .pb-nav--minimal { background: transparent; }
+.pb-nav--minimal.is-over-dark {
+  --pb-fg: #ffffff;
+  --pb-fg-soft: rgba(255, 255, 255, 0.85);
+  --pb-accent: #ffffff;
+  --pb-accent-fg: #111113;
+  --pb-line: rgba(255, 255, 255, 0.45);
+  color: #fff;
+}
+/* El `:not(.is-menu-open)` no es adorno: este selector tiene más especificidad
+   que la regla que apaga el `backdrop-filter` con el menú abierto, y un
+   backdrop-filter en la barra vuelve a encerrar el menú a pantalla completa
+   dentro de ella. */
+.pb-nav--minimal.is-sticky.is-scrolled:not(.is-menu-open) {
+  background: color-mix(in oklab, var(--pb-bg) 92%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--pb-line);
+}
 /* Barra flotante: la pastilla necesita aire arriba, y el mismo aire en reposo
    que cuando queda fija.
 
