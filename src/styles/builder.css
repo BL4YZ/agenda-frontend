@@ -102,14 +102,28 @@
 .pb-div-slant { clip-path: polygon(0 0, 100% 3vw, 100% 100%, 0 100%); }
 .pb-div-wave  { border-bottom-left-radius: 50% 4vw; border-bottom-right-radius: 50% 4vw; }
 
+/* ── Aparición al entrar en pantalla ─────────────────────────────────────
+   ⚠️ Todo cuelga de `.pb-anim-ready`, que pone el cliente al montar. Sin
+   JavaScript no se esconde nada y la página se lee entera — importa porque esto
+   es contenido público e indexable. El observador agrega `is-in` una sola vez.  */
 @media (prefers-reduced-motion: no-preference) {
-  .pb-anim-fade > .pb-section__inner { animation: pb-fade .7s var(--pb-ease, ease) both; }
-  .pb-anim-up   > .pb-section__inner { animation: pb-up   .7s cubic-bezier(.16,1,.3,1) both; }
-  .pb-anim-zoom > .pb-section__inner { animation: pb-zoom .7s cubic-bezier(.16,1,.3,1) both; }
+  .pb-anim-ready [data-anim] > .pb-section__inner { opacity: 0; }
+  .pb-anim-ready [data-anim='up']    > .pb-section__inner { transform: translateY(26px); }
+  .pb-anim-ready [data-anim='left']  > .pb-section__inner { transform: translateX(-34px); }
+  .pb-anim-ready [data-anim='right'] > .pb-section__inner { transform: translateX(34px); }
+  .pb-anim-ready [data-anim='zoom']  > .pb-section__inner { transform: scale(.94); }
+  .pb-anim-ready [data-anim='blur']  > .pb-section__inner { filter: blur(12px); }
+
+  .pb-anim-ready [data-anim].is-in > .pb-section__inner {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: opacity .6s ease,
+                transform .7s cubic-bezier(.16, 1, .3, 1),
+                filter .6s ease;
+  }
 }
 @keyframes pb-fade { from { opacity: 0 } to { opacity: 1 } }
-@keyframes pb-up   { from { opacity: 0; transform: translateY(24px) } to { opacity: 1; transform: none } }
-@keyframes pb-zoom { from { opacity: 0; transform: scale(.96) } to { opacity: 1; transform: none } }
 
 /* ── Tipografía de sección ────────────────────────────────────────────── */
 .pb-head { margin-bottom: calc(44px * var(--pb-gap-scale, 1)); }
@@ -221,7 +235,29 @@
    superficie propia derivada del fondo de la página, así que la paleta ya
    funciona sobre ellas. */
 .pb-nav--minimal { background: transparent; }
-.pb-nav--minimal.is-over-dark {
+.pb-nav--bordered { background: transparent; border-bottom: 1px solid var(--pb-line); }
+.pb-nav--bordered.is-sticky.is-scrolled:not(.is-menu-open) {
+  background: color-mix(in oklab, var(--pb-bg) 92%, transparent);
+  backdrop-filter: blur(10px);
+}
+
+/* Apilada: la marca arriba y los enlaces debajo, centrados. Silueta editorial,
+   la más distinta de todas. En celular vuelve a una fila: apilada dejaría la
+   hamburguesa colgando en un tercer renglón. */
+.pb-nav--stacked { background: var(--pb-bg-2); border-bottom: 1px solid var(--pb-line); }
+@media (min-width: 761px) {
+  .pb-nav--stacked .pb-nav__inner { flex-direction: column; gap: 14px; }
+  .pb-nav--stacked .pb-nav__links { margin-inline: auto; }
+  .pb-nav--stacked .pb-nav__right { margin-left: 0; }
+}
+
+/* Alto de la barra. */
+.pb-nav--size-compact .pb-nav__inner { padding-block: 9px; }
+.pb-nav--size-normal  .pb-nav__inner { padding-block: 16px; }
+.pb-nav--size-tall    .pb-nav__inner { padding-block: 28px; }
+
+.pb-nav--minimal.is-over-dark,
+.pb-nav--bordered.is-over-dark {
   --pb-fg: #ffffff;
   --pb-fg-soft: rgba(255, 255, 255, 0.85);
   --pb-accent: #ffffff;

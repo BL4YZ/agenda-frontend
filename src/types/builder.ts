@@ -84,7 +84,7 @@ export interface SectionStyle {
   textColor?: string;
   radius?: RadiusKey;
   divider?: 'none' | 'line' | 'fade' | 'wave' | 'slant';
-  animate?: 'none' | 'fade' | 'up' | 'zoom';
+  animate?: 'none' | 'fade' | 'up' | 'zoom' | 'left' | 'right' | 'blur';
 }
 
 /**
@@ -175,7 +175,9 @@ export interface PageNav {
   mobileMenu?: 'panel' | 'overlay' | 'drawer';
   logoMode?: 'logo' | 'name' | 'both';
   align?: 'left' | 'center' | 'split';
-  style?: 'glass' | 'solid' | 'minimal' | 'floating';
+  style?: 'glass' | 'solid' | 'minimal' | 'floating' | 'bordered' | 'stacked';
+  /** Alto de la barra. */
+  size?: 'compact' | 'normal' | 'tall';
   ctaLabel?: string;
   ctaAction?: Exclude<CtaAction, 'scroll'>;
   ctaHref?: string;

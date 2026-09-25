@@ -354,11 +354,18 @@ function StylePanel({ style, onChange }: { style: SectionStyle; onChange: (patch
           { value: 'fade', label: 'Degradado' }, { value: 'slant', label: 'Diagonal' }, { value: 'wave', label: 'Curva' },
         ]} onChange={v => onChange({ divider: v as SectionStyle['divider'] })} />
       </Row>
-      <Row label="Animación al aparecer">
-        <Segmented value={style.animate ?? 'none'} options={[
-          { value: 'none', label: 'Nada' }, { value: 'fade', label: 'Fundido' },
-          { value: 'up', label: 'Subir' },  { value: 'zoom', label: 'Zoom' },
-        ]} onChange={v => onChange({ animate: v as SectionStyle['animate'] })} />
+      {/* Siete opciones no entran en un segmentado de 299px de ancho. */}
+      <Row label="Animación al aparecer" hint="Se ejecuta al llegar a la sección bajando. En la vista previa no se muestra.">
+        <select className="st-input st-select" value={style.animate ?? 'none'}
+                onChange={e => onChange({ animate: e.target.value as SectionStyle['animate'] })}>
+          <option value="none">Nada</option>
+          <option value="fade">Fundido</option>
+          <option value="up">Subir</option>
+          <option value="left">Entrar desde la izquierda</option>
+          <option value="right">Entrar desde la derecha</option>
+          <option value="zoom">Acercar</option>
+          <option value="blur">Desenfoque</option>
+        </select>
       </Row>
     </>
   );

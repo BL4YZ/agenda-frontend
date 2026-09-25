@@ -130,7 +130,6 @@ export function sectionClass(section: PageSection): string {
     s.align ? `pb-align-${s.align}` : '',
     s.radius ? `pb-r-${s.radius}` : '',
     s.divider && s.divider !== 'none' ? `pb-div-${s.divider}` : '',
-    s.animate && s.animate !== 'none' ? `pb-anim-${s.animate}` : '',
     s.bgKind === 'image' ? 'pb-section--bgimage' : '',
   ].filter(Boolean).join(' ');
 }

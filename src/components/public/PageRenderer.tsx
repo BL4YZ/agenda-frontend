@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import type { PageDoc, PageSection, BlockType } from '@/types/builder';
 import type { Shop } from '@/types/public';
 import { BLOCK_RENDERERS } from './blocks';
@@ -146,6 +146,7 @@ function PBNav({ doc, ctx }: { doc: PageDoc; ctx: BlockCtx }) {
         'pb-nav',
         `pb-nav--${nav.style ?? 'glass'}`,
         `pb-nav--${nav.align ?? 'split'}`,
+        `pb-nav--size-${nav.size ?? 'normal'}`,
         nav.sticky ? 'is-sticky' : '',
         scrolled ? 'is-scrolled' : '',
         sobreOscuro && !scrolled ? 'is-over-dark' : '',
@@ -301,6 +302,8 @@ function Section({ section, doc, ctx }: { section: PageSection; doc: PageDoc; ct
       style={sectionCss(section.style, doc.design)}
       data-block={section.type}
       data-section-id={section.id}
+      data-anim={!ctx.editing && section.style.animate && section.style.animate !== 'none'
+        ? section.style.animate : undefined}
     >
       {section.style.bgKind === 'image' && (
         <div className="pb-section__scrim" style={{ opacity: section.style.bgOverlay ?? 0.5 }} aria-hidden="true" />
@@ -323,6 +326,39 @@ export interface PageRendererProps {
 
 export default function PageRenderer({ doc, shop, onReserve, editing }: PageRendererProps) {
   const ctx: BlockCtx = useMemo(() => ({ shop, onReserve, editing }), [shop, onReserve, editing]);
+  const raiz = useRef<HTMLDivElement>(null);
+
+  /**
+   * Revela las secciones al entrar en pantalla.
+   *
+   * ⚠️ La clase `pb-anim-ready` la pone el cliente, no el servidor. El CSS solo
+   * esconde lo que está dentro de ella, así que sin JavaScript no se oculta
+   * nada: la página se sirve completa y legible igual. Antes las animaciones
+   * eran `animation` a secas y corrían al cargar, o sea que todo lo de abajo del
+   * pliegue ya se había animado antes de que nadie lo viera.
+   *
+   * En el editor no se marca nada (ver `data-anim`): el documento cambia con
+   * cada tecla y React reescribiría la clase que pone el observador.
+   */
+  useEffect(() => {
+    const root = raiz.current;
+    if (!root) return;
+    root.classList.add('pb-anim-ready');
+
+    const objetivos = Array.from(root.querySelectorAll<HTMLElement>('[data-anim]'));
+    if (objetivos.length === 0) return;
+
+    const io = new IntersectionObserver(entradas => {
+      for (const e of entradas) {
+        if (!e.isIntersecting) continue;
+        e.target.classList.add('is-in');
+        io.unobserve(e.target);     // una sola vez: no se re-anima al volver
+      }
+    }, { threshold: 0.08, rootMargin: '0px 0px -8% 0px' });
+
+    objetivos.forEach(t => io.observe(t));
+    return () => io.disconnect();
+  }, [doc.sections]);
   const vars = useMemo(() => designToCssVars(doc.design), [doc.design]);
 
   // React iza este <link> al <head>. Solo aparece si el dueño escribió una
@@ -339,6 +375,7 @@ export default function PageRenderer({ doc, shop, onReserve, editing }: PageRend
       data-pb-mode={doc.design.mode}
       style={vars}
       id="top"
+      ref={raiz}
     >
       {fuentePropia && <link rel="stylesheet" href={fuentePropia} />}
       {announcement && (

@@ -59,10 +59,20 @@ export default function SettingsPanel({ doc, plan, slug, hasLogo, onNav, onFoote
           <>
             <Toggle label="Fija al hacer scroll" checked={doc.nav.sticky !== false} onChange={v => onNav({ sticky: v })} />
             <Row label="Estilo">
-              <Seg value={doc.nav.style ?? 'glass'} options={[
-                { value: 'glass', label: 'Vidrio' }, { value: 'solid', label: 'Sólida' },
-                { value: 'minimal', label: 'Minimal' }, { value: 'floating', label: 'Flotante' },
-              ]} onChange={v => onNav({ style: v })} />
+              <select className="st-input st-select" value={doc.nav.style ?? 'glass'}
+                      onChange={e => onNav({ style: e.target.value as NonNullable<PageNav['style']> })}>
+                <option value="glass">Vidrio</option>
+                <option value="solid">Sólida</option>
+                <option value="minimal">Minimal</option>
+                <option value="floating">Flotante</option>
+                <option value="bordered">Con línea</option>
+                <option value="stacked">Apilada</option>
+              </select>
+            </Row>
+            <Row label="Alto">
+              <Seg value={doc.nav.size ?? 'normal'} options={[
+                { value: 'compact', label: 'Baja' }, { value: 'normal', label: 'Normal' }, { value: 'tall', label: 'Alta' },
+              ]} onChange={v => onNav({ size: v })} />
             </Row>
             <Row label="Menú en celular" hint="Cómo se abre al tocar las tres rayas">
               <Seg value={doc.nav.mobileMenu ?? 'panel'} options={[
