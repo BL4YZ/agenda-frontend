@@ -5,7 +5,7 @@ import type { PageDoc, PageSection, BlockType } from '@/types/builder';
 import type { Shop } from '@/types/public';
 import { BLOCK_RENDERERS } from './blocks';
 import type { BlockCtx } from './blocks';
-import { designToCssVars } from '@/lib/builder/design';
+import { designToCssVars, googleFontsHref } from '@/lib/builder/design';
 import { sectionCss, sectionClass, resolveCta, safeImg, DAY_NAMES } from '@/lib/builder/runtime';
 import '@/styles/builder.css';
 
@@ -296,6 +296,10 @@ export default function PageRenderer({ doc, shop, onReserve, editing }: PageRend
   const ctx: BlockCtx = useMemo(() => ({ shop, onReserve, editing }), [shop, onReserve, editing]);
   const vars = useMemo(() => designToCssVars(doc.design), [doc.design]);
 
+  // React iza este <link> al <head>. Solo aparece si el dueño escribió una
+  // familia propia; las 15 del catálogo ya vienen en builder.css.
+  const fuentePropia = useMemo(() => googleFontsHref(doc.design), [doc.design]);
+
   const visible = doc.sections.filter(s => !s.hidden);
   const announcement = visible.find(s => s.type === 'announcement');
   const body = visible.filter(s => s.type !== 'announcement');
@@ -307,6 +311,7 @@ export default function PageRenderer({ doc, shop, onReserve, editing }: PageRend
       style={vars}
       id="top"
     >
+      {fuentePropia && <link rel="stylesheet" href={fuentePropia} />}
       {announcement && (
         <Section section={announcement} doc={doc} ctx={ctx} />
       )}

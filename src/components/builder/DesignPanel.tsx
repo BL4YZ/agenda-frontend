@@ -38,6 +38,10 @@ function FontSelect({ value, onChange }: { value: FontKey; onChange: (v: FontKey
   );
 }
 
+/** Familia para la muestra: la propia si la escribió, si no la del catálogo. */
+const muestra = (propia: string | undefined, key: FontKey) =>
+  propia ? `"${propia}", ${FONTS[key]?.stack ?? ''}` : FONTS[key]?.stack;
+
 export default function DesignPanel({ doc, plan, onChange }: {
   doc: PageDoc;
   plan: PlanKey;
@@ -121,10 +125,30 @@ export default function DesignPanel({ doc, plan, onChange }: {
       <Collapse title="Tipografía">
         <Row label="Títulos"><FontSelect value={d.fontDisplay} onChange={v => onChange({ fontDisplay: v })} /></Row>
         <Row label="Textos"> <FontSelect value={d.fontBody}    onChange={v => onChange({ fontBody: v })} /></Row>
-        <div className="st-type-preview" style={{ fontFamily: FONTS[d.fontDisplay]?.stack }}>
+        <div className="st-type-preview" style={{ fontFamily: muestra(d.customFontDisplay, d.fontDisplay) }}>
           Aa
-          <small style={{ fontFamily: FONTS[d.fontBody]?.stack }}>El zorro marrón salta sobre el perro.</small>
+          <small style={{ fontFamily: muestra(d.customFontBody, d.fontBody) }}>El zorro marrón salta sobre el perro.</small>
         </div>
+        <div className="st-group">
+          <span className="st-group__t">Usar otra tipografía</span>
+          <p className="st-note">
+            Escribí el nombre exacto de una familia de{' '}
+            <a href="https://fonts.google.com" target="_blank" rel="noopener noreferrer">Google Fonts</a>
+            {' '}—por ejemplo «Bebas Neue»— y reemplaza a la elegida arriba. Si el nombre no
+            existe, se usa la del catálogo.
+          </p>
+          <Row label="Títulos">
+            <input className="st-input" placeholder="Dejar vacío para usar la de arriba"
+                   value={d.customFontDisplay ?? ''}
+                   onChange={e => onChange({ customFontDisplay: e.target.value || undefined })} />
+          </Row>
+          <Row label="Textos">
+            <input className="st-input" placeholder="Dejar vacío para usar la de arriba"
+                   value={d.customFontBody ?? ''}
+                   onChange={e => onChange({ customFontBody: e.target.value || undefined })} />
+          </Row>
+        </div>
+
         <Row label="Tamaño general">
           <div className="st-range">
             <input type="range" min={0.85} max={1.25} step={0.05} value={d.scale ?? 1}

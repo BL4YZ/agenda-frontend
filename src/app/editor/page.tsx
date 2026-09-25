@@ -13,6 +13,7 @@ import Inspector from '@/components/builder/Inspector';
 import DesignPanel from '@/components/builder/DesignPanel';
 import SettingsPanel from '@/components/builder/SettingsPanel';
 import { TEMPLATES } from '@/lib/builder/templates';
+import { googleFontsHref } from '@/lib/builder/design';
 import type { PageDoc } from '@/types/builder';
 import '@/styles/system.css';
 import '@/styles/dashboard.css';
@@ -123,6 +124,11 @@ export default function EditorPage() {
 
   return (
     <div className="st-root" data-theme="dark">
+      {/* La vista previa la carga por su cuenta; esto es para que la muestra
+          «Aa» del panel de Diseño use la familia de verdad y no su respaldo. */}
+      {googleFontsHref(doc.design) && (
+        <link rel="stylesheet" href={googleFontsHref(doc.design)!} />
+      )}
       {/* ── Topbar ── */}
       <header className="st-top">
         <div className="st-top__l">

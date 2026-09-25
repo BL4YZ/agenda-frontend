@@ -143,6 +143,38 @@ export function resolvePalette(design: PageDesign): Palette {
 }
 
 /**
+ * Familia efectiva. Si el dueño escribió una propia, va primero y la del
+ * catálogo queda de respaldo: si Google no tiene esa familia, la página cae en
+ * una tipografía elegida, no en la del sistema.
+ *
+ * Las comillas son seguras porque el saneador solo admite letras, dígitos y
+ * espacios en el nombre.
+ */
+function familyStack(custom: string | undefined, key: FontKey, porDefecto: FontKey): string {
+  const base = FONTS[key]?.stack ?? FONTS[porDefecto].stack;
+  return custom ? `"${custom}", ${base}` : base;
+}
+
+/** Familias propias que hay que traer de Google Fonts. */
+export function customFontFamilies(design: PageDesign): string[] {
+  return [...new Set([design.customFontDisplay, design.customFontBody].filter(Boolean) as string[])];
+}
+
+/**
+ * Hoja de estilos de Google Fonts para esas familias, o null si no hay ninguna.
+ * `fonts.googleapis.com` ya está en la allowlist de la CSP, así que esto no
+ * necesita tocarla.
+ */
+export function googleFontsHref(design: PageDesign): string | null {
+  const familias = customFontFamilies(design);
+  if (familias.length === 0) return null;
+  const q = familias
+    .map(f => `family=${encodeURIComponent(f).replace(/%20/g, '+')}`)
+    .join('&');
+  return `https://fonts.googleapis.com/css2?${q}&display=swap`;
+}
+
+/**
  * The single style object applied to the page root. Blocks read only these,
  * so there is exactly one place where the design system is materialised.
  */
@@ -159,8 +191,8 @@ export function designToCssVars(design: PageDesign): CSSProperties {
     '--pb-accent': p.accent,
     '--pb-accent-fg': p.accentFg,
     '--pb-line': p.line,
-    '--pb-font-display': FONTS[design.fontDisplay]?.stack ?? FONTS.editorial.stack,
-    '--pb-font-body': FONTS[design.fontBody]?.stack ?? FONTS.modern.stack,
+    '--pb-font-display': familyStack(design.customFontDisplay, design.fontDisplay, 'editorial'),
+    '--pb-font-body': familyStack(design.customFontBody, design.fontBody, 'modern'),
     '--pb-radius': RADIUS[design.radius] ?? RADIUS.md,
     '--pb-radius-btn': RADIUS[design.buttonRadius] ?? RADIUS.full,
     '--pb-pad-scale': String(d.pad),

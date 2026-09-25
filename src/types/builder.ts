@@ -55,6 +55,13 @@ export interface PageDesign {
   mode: 'dark' | 'light';
   fontDisplay: FontKey;
   fontBody: FontKey;
+  /**
+   * Familias de Google Fonts escritas por el dueño. Pisan a `fontDisplay` /
+   * `fontBody`. Solo el nombre: la fuente se carga desde fonts.googleapis.com,
+   * que la CSP ya permite.
+   */
+  customFontDisplay?: string;
+  customFontBody?: string;
   radius: RadiusKey;
   density: DensityKey;
   width: WidthKey;
