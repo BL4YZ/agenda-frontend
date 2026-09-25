@@ -136,7 +136,7 @@ function PBNav({ doc, ctx }: { doc: PageDoc; ctx: BlockCtx }) {
             {/* El menú que tapa la pantalla necesita su propio cierre: la
                 hamburguesa queda en la barra, chica y separada de lo que
                 cierra. En modo panel no hace falta — se ve la página detrás. */}
-            {cubrePantalla && (
+            {open && cubrePantalla && (
               <button
                 type="button" className="pb-nav__close"
                 aria-label="Cerrar menú" onClick={() => setOpen(false)}
