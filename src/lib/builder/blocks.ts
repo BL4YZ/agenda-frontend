@@ -84,6 +84,10 @@ export const BLOCK_DEFS: Record<BlockType, BlockDef> = {
       ctaLabel: 'Reservar online', ctaAction: 'reserve',
       secondaryLabel: 'Llamar', secondaryAction: 'phone',
     },
+    // Una portada a pantalla completa se espera de borde a borde: con el espacio
+    // de arriba por defecto queda una franja del color de la página encima de la
+    // foto, que no la quiere nadie.
+    defaultStyle: { padTop: 'none', padBottom: 'none' },
     controls: [
       layoutControl([
         { value: 'cover',   label: 'Imagen a pantalla completa' },

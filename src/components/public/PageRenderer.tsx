@@ -121,6 +121,14 @@ function PBNav({ doc, ctx }: { doc: PageDoc; ctx: BlockCtx }) {
   const sobreOscuro = useMemo(() => {
     const primera = doc.sections.find(s => !s.hidden && s.type !== 'announcement');
     if (!primera) return false;
+
+    // ⚠️ No alcanza con que la primera sección tenga foto: si además tiene
+    // espacio arriba, ese espacio se pinta con el fondo de la página y la barra
+    // se apoya sobre ÉL, no sobre la imagen. Con una paleta clara eso es una
+    // banda blanca, y ponerle texto claro encima lo hace invisible — que es
+    // exactamente lo que se rompió la primera vez.
+    if ((primera.style.padTop ?? 'md') !== 'none') return false;
+
     if (primera.style.bgKind === 'image' && primera.style.bgImage) return true;
     if (primera.type !== 'hero') return false;
     const layout = primera.props.layout ?? 'cover';
