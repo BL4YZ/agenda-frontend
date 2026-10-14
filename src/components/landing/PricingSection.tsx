@@ -128,9 +128,9 @@ export default function PricingSection() {
     <section className="vc-pricing container-pad" id="precios">
       <div className="reveal" style={{ textAlign: 'center', marginBottom: 60 }}>
         <span className="eyebrow">— Planes</span>
-        <h2 className="vc-h2" style={{ marginTop: 16 }}>Con precios <em>accesibles.</em></h2>
+        <h2 className="vc-h2" style={{ marginTop: 16 }}>Empezá gratis y cambiá de plan <em>cuando lo necesites.</em></h2>
         <p style={{ color: 'var(--fg-2)', marginTop: 16, fontSize: 14 }}>
-          Precios en pesos uruguayos · IVA incluido · Cancelá cuando quieras
+          Precios mensuales en pesos uruguayos, IVA incluido. Sin permanencia.
         </p>
       </div>
 

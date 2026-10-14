@@ -67,7 +67,7 @@ export default function VariantC() {
           <section className="vc-words" aria-hidden="true">
             <div className="vc-words-track">
               <div className="vc-words-row">
-                {Array(2).fill(['reservas', 'pagos', 'recordatorios', 'agenda', 'clientes', 'reportes']).flat().map((w, i) => (
+                {Array(2).fill(['reservas', 'señas', 'recordatorios', 'agenda', 'equipo', 'página web', 'reportes']).flat().map((w, i) => (
                   <span key={i} className="vc-word">
                     {w}
                     <span className="vc-word-star">✦</span>

@@ -49,32 +49,36 @@ function MiniMonth() {
 
 export default function HeroSection({ heroRef, mp }: HeroSectionProps) {
   return (
-    <section ref={heroRef as RefObject<HTMLElement>} className="vc-hero" id="producto">
+    <section ref={heroRef as RefObject<HTMLElement>} className="vc-hero">
       <div className="vc-hero-l">
         <div className="vc-eyeline reveal">
           <span className="vc-eyeline-bar" />
-          <span className="mono">PARA NEGOCIOS DE SERVICIOS · 2026</span>
+          <span className="mono">AGENDA ONLINE PARA NEGOCIOS DE SERVICIOS</span>
         </div>
 
         <h1 className="vc-h1">
-          <span className="vc-h1-part vc-h1-out">Tu tiempo</span>
-          <span className="vc-h1-part vc-h1-mid">deja de perderse</span>
-          <span className="vc-h1-part vc-h1-bright">aquí.</span>
+          <span className="vc-h1-part vc-h1-out">Tu agenda,</span>
+          <span className="vc-h1-part vc-h1-mid">tus cobros</span>
+          <span className="vc-h1-part vc-h1-bright">y tu página.</span>
         </h1>
 
         <p className="vc-hero-sub">
-          Novu toma reservas, envía recordatorios, cobra pagos y te muestra cómo va tu negocio.
-          Sin instalar nada. Sin contratar a nadie.
+          Tus clientes reservan desde tu link y pueden dejar la seña paga con MercadoPago.
+          Vos ves cada cita en tu agenda y Novu les manda la confirmación y el recordatorio.
         </p>
 
         <div className="vc-cta-row">
           <Link href="/register" className="btn btn-primary">
-            Empezar gratis
+            Crear cuenta gratis
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <path d="M5 12h14M13 5l7 7-7 7" />
             </svg>
           </Link>
+          <a href="#precios" className="btn btn-ghost">Ver planes</a>
         </div>
+        <p className="mono" style={{ marginTop: 18, fontSize: 11, letterSpacing: '0.1em', color: 'var(--fg-3)' }}>
+          SIN TARJETA · PLAN GRATIS SIN VENCIMIENTO
+        </p>
       </div>
 
       <div className="vc-hero-r">
@@ -104,8 +108,8 @@ export default function HeroSection({ heroRef, mp }: HeroSectionProps) {
               </svg>
             </div>
             <div>
-              <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-0)' }}>Pago recibido</div>
-              <div className="mono" style={{ fontSize: 10, color: 'var(--fg-2)' }}>$ 17.500 · Andrea M.</div>
+              <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-0)' }}>Seña cobrada</div>
+              <div className="mono" style={{ fontSize: 10, color: 'var(--fg-2)' }}>$ 500 · Andrea M.</div>
             </div>
           </div>
         </div>

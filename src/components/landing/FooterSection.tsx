@@ -41,8 +41,8 @@ export default function FooterSection() {
         <div style={{ maxWidth: 360 }}>
           <MiAgendaLogo variant="inline" size={24} color="var(--fg-0)" />
           <p style={{ color: 'var(--fg-2)', marginTop: 16, fontSize: 14 }}>
-            La agenda online para profesionales y pequeños negocios.<br />
-            Hecho en LATAM, para LATAM.
+            Agenda online, cobros y página web para barberías, peluquerías,
+            estéticas, consultorios y otros negocios de servicios.
           </p>
         </div>
         <div className="vc-footer-cols">

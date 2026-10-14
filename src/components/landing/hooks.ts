@@ -67,6 +67,53 @@ export function useCounter(
   return val;
 }
 
+/** True once the element has entered the viewport (never flips back) */
+export function useInView(ref: RefObject<HTMLElement | null>, threshold = 0.4): boolean {
+  const [seen, setSeen] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || seen) return;
+    const io = new IntersectionObserver(
+      (entries) => { if (entries.some(e => e.isIntersecting)) { setSeen(true); io.disconnect(); } },
+      { threshold }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [ref, threshold, seen]);
+  return seen;
+}
+
+/**
+ * Tweens from the currently displayed value to `target` whenever the target changes.
+ * Unlike useCounter it never restarts from 0, so live updates count up smoothly.
+ * Stays at 0 until `active`.
+ */
+export function useAnimatedNumber(target: number, active: boolean, duration = 1200): number {
+  const [val, setVal] = useState(0);
+  const current = useRef(0);
+  useEffect(() => {
+    if (!active) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      current.current = target;
+      setVal(target);
+      return;
+    }
+    const from = current.current;
+    const t0 = performance.now();
+    let raf = 0;
+    const tick = (t: number) => {
+      const k = Math.min(1, (t - t0) / duration);
+      const v = from + (target - from) * (1 - Math.pow(1 - k, 3));
+      current.current = v;
+      setVal(v);
+      if (k < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, active, duration]);
+  return val;
+}
+
 /** 3D tilt effect on mouse movement */
 export function useTilt(ref: RefObject<HTMLElement | null>, max = 8): void {
   useEffect(() => {
