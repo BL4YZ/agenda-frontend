@@ -40,8 +40,8 @@
   --st-scroll:       rgba(26, 21, 48, 0.22);
   --st-scroll-hover: rgba(26, 21, 48, 0.38);
 }
-.st-root *, .st-root *::before, .st-root *::after { box-sizing: border-box; }
-
+.st-root *, .st-root *::before, .st-root *::after { box-sizing: border-box; }
+
 /* Barras de scroll del editor.
    En Windows las barras clásicas son claras, anchas y con flechas: dentro de un
    panel oscuro cantan muchísimo, y además se comen ~15px de ancho útil, que es
@@ -96,23 +96,50 @@
   border: 1px solid var(--st-line); background: var(--st-panel-2);
   color: var(--st-fg); font: inherit; font-weight: 600; font-size: 12.5px;
   text-decoration: none; cursor: pointer;
-  transition: background .15s ease, border-color .15s ease, opacity .15s ease;
+  user-select: none;   /* un clic sostenido o doble no debe pintar el texto */
+  /* El rebote vive en la vuelta: al soltar, `transform` vuelve con una curva que
+     se pasa apenas de 1. Al apretar, :active pisa la duración para que el
+     hundido sea inmediato — con la misma curva se sentiría lento. */
+  transition: background .15s ease, border-color .15s ease, opacity .15s ease,
+              box-shadow .25s ease, transform .35s cubic-bezier(.34, 1.56, .64, 1);
 }
-.st-btn:hover:not(:disabled) { border-color: var(--st-accent); }
+.st-btn:hover:not(:disabled) { border-color: var(--st-accent); transform: translateY(-1px); }
+.st-btn:active:not(:disabled) {
+  transform: translateY(0) scale(.95);
+  transition-duration: .15s, .15s, .15s, .08s, .08s;
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--st-accent) 22%, transparent);
+}
+.st-btn:focus-visible { outline: 2px solid var(--st-accent); outline-offset: 2px; }
 .st-btn:disabled { opacity: .45; cursor: not-allowed; }
 .st-btn--sm { padding: 7px 12px; font-size: 12px; }
 .st-btn--primary { background: var(--st-accent); border-color: var(--st-accent); color: #0d0a1a; }
+.st-btn--primary:hover:not(:disabled) {
+  box-shadow: 0 6px 18px -6px color-mix(in oklab, var(--st-accent) 70%, transparent);
+}
+.st-btn--primary:active:not(:disabled) {
+  box-shadow: 0 0 0 5px color-mix(in oklab, var(--st-accent) 35%, transparent);
+}
 .st-btn--danger  { background: var(--st-danger); border-color: var(--st-danger); color: #fff; }
+.st-btn--danger:active:not(:disabled) {
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--st-danger) 30%, transparent);
+}
 
 .st-icon-btn {
   display: inline-grid; place-items: center;
   width: 30px; height: 30px; border-radius: 8px;
   border: 1px solid transparent; background: transparent;
   color: var(--st-fg-2); cursor: pointer;
-  transition: background .15s ease, color .15s ease;
+  transition: background .15s ease, color .15s ease, transform .35s cubic-bezier(.34, 1.56, .64, 1);
 }
 .st-icon-btn:hover:not(:disabled) { background: var(--st-panel-2); color: var(--st-fg); }
+.st-icon-btn:active:not(:disabled) { transform: scale(.88); transition-duration: .15s, .15s, .08s; }
+.st-icon-btn:focus-visible { outline: 2px solid var(--st-accent); outline-offset: 1px; }
 .st-icon-btn:disabled { opacity: .35; cursor: not-allowed; }
+
+@media (prefers-reduced-motion: reduce) {
+  .st-btn, .st-icon-btn { transition: background .15s ease, border-color .15s ease, color .15s ease; }
+  .st-btn:hover:not(:disabled), .st-btn:active:not(:disabled), .st-icon-btn:active:not(:disabled) { transform: none; }
+}
 .st-icon-btn.is-on { background: var(--st-panel-2); color: var(--st-accent); border-color: var(--st-line); }
 .st-icon-btn--danger:hover { color: var(--st-danger); }
 

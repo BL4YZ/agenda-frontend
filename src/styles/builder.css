@@ -302,6 +302,27 @@
   box-shadow: var(--pb-shadow);
 }
 
+/* Portada detrás del menú (`underNav` en el hero, decidido por heroUnderNav()).
+   La primera sección sube el alto medido de la barra (--pb-nav-h, en <main>) y
+   la portada lo devuelve como relleno, así el texto no queda tapado y la foto
+   —que es `inset: 0` dentro de .pb-hero— cubre también la franja de la barra.
+
+   ⚠️ El espacio superior de la sección se anula: si quedara, se pintaría con el
+   fondo de la página justo debajo de la barra, que es la franja que esta opción
+   existe para sacar. Pisa también la regla de celular (misma especificidad
+   que acá no alcanza a `.pb-section`, por eso el selector largo).
+
+   ⚠️ Una barra no fija es `position: static`, y ahí su z-index no cuenta: la
+   portada, que viene después en el DOM, la taparía. */
+.pb-page--nav-over > .pb-nav:not(.is-sticky) { position: relative; }
+.pb-page--nav-over > main > .pb-section:first-child {
+  margin-top: calc(-1 * var(--pb-nav-h, 0px));
+  padding-top: 0;
+}
+.pb-page--nav-over > main > .pb-section:first-child .pb-hero--cover {
+  padding-top: var(--pb-nav-h, 0px);
+}
+
 .pb-nav__brand {
   display: inline-flex; align-items: center; gap: 10px;
   font-family: var(--pb-font-display); font-size: 1.1rem; font-weight: 600;

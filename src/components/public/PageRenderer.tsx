@@ -36,6 +36,22 @@ const MAX_AUTO_LINKS = 6;
 
 const domId = (s: PageSection) => s.anchor || s.id;
 
+/**
+ * ¿La portada sube detrás del menú? (`underNav` en el bloque hero)
+ *
+ * Solo con la disposición a pantalla completa, con foto, y siendo la primera
+ * sección: en cualquier otro caso no hay imagen que mostrar detrás de la barra,
+ * y la barra se pondría en claro sobre el fondo de la página — texto invisible
+ * con una paleta clara. La misma regla decide la clase de la página y el color
+ * de la barra, así que no pueden contradecirse.
+ */
+function heroUnderNav(doc: PageDoc): boolean {
+  if (doc.nav.enabled === false) return false;
+  const primera = doc.sections.find(s => !s.hidden && s.type !== 'announcement');
+  if (!primera || primera.type !== 'hero' || primera.props.underNav !== true) return false;
+  return (primera.props.layout ?? 'cover') === 'cover' && !!safeImg(primera.props.image);
+}
+
 // ── Nav ───────────────────────────────────────────────────────────────────────
 function PBNav({ doc, ctx }: { doc: PageDoc; ctx: BlockCtx }) {
   const { nav } = doc;
@@ -121,6 +137,10 @@ function PBNav({ doc, ctx }: { doc: PageDoc; ctx: BlockCtx }) {
    * Solo importa arriba de todo: al scrollear, la barra deja atrás la portada.
    */
   const sobreOscuro = useMemo(() => {
+    // Con la portada detrás del menú, la barra está sobre la foto sin importar
+    // el espacio superior: ese espacio se anula (ver `.pb-page--nav-over`).
+    if (heroUnderNav(doc)) return true;
+
     const primera = doc.sections.find(s => !s.hidden && s.type !== 'announcement');
     if (!primera) return false;
 
@@ -135,7 +155,7 @@ function PBNav({ doc, ctx }: { doc: PageDoc; ctx: BlockCtx }) {
     if (primera.type !== 'hero') return false;
     const layout = primera.props.layout ?? 'cover';
     return layout === 'cover' && !!safeImg(primera.props.image);
-  }, [doc.sections]);
+  }, [doc]);
 
   const cta = resolveCta(nav.ctaAction ?? 'reserve', nav.ctaLabel ?? 'Reservar', nav.ctaHref, shop);
   const logo = safeImg(shop.logo_url);
@@ -373,9 +393,29 @@ export default function PageRenderer({ doc, shop, onReserve, editing }: PageRend
   const announcement = visible.find(s => s.type === 'announcement');
   const body = visible.filter(s => s.type !== 'announcement');
 
+  /**
+   * Portada detrás del menú: la primera sección sube exactamente el alto de la
+   * barra. Ese alto cambia con el estilo, el tamaño, el logo y el ancho de
+   * pantalla, así que se mide en vez de adivinarlo, y se deja en `<main>` (que
+   * no tiene `style` propio que React pueda pisar).
+   */
+  const navOver = heroUnderNav(doc);
+  const principal = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const main = principal.current;
+    const nav = raiz.current?.querySelector<HTMLElement>(':scope > .pb-nav');
+    if (!main) return;
+    if (!navOver || !nav) { main.style.removeProperty('--pb-nav-h'); return; }
+    const medir = () => main.style.setProperty('--pb-nav-h', `${nav.offsetHeight}px`);
+    medir();
+    const ro = new ResizeObserver(medir);
+    ro.observe(nav);
+    return () => ro.disconnect();
+  }, [navOver]);
+
   return (
     <div
-      className={`pb-page pb-texture-${doc.design.texture ?? 'none'} pb-btn-${doc.design.buttonStyle ?? 'solid'}`}
+      className={`pb-page pb-texture-${doc.design.texture ?? 'none'} pb-btn-${doc.design.buttonStyle ?? 'solid'}${navOver ? ' pb-page--nav-over' : ''}`}
       data-pb-mode={doc.design.mode}
       style={vars}
       id="top"
@@ -387,7 +427,7 @@ export default function PageRenderer({ doc, shop, onReserve, editing }: PageRend
       )}
       {doc.nav.enabled !== false && <PBNav doc={doc} ctx={ctx} />}
 
-      <main>
+      <main ref={principal}>
         {body.map(s => <Section key={s.id} section={s} doc={doc} ctx={ctx} />)}
       </main>
 

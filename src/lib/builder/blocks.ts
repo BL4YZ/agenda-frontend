@@ -100,6 +100,8 @@ export const BLOCK_DEFS: Record<BlockType, BlockDef> = {
         { value: 'auto', label: 'Automática' }, { value: 'half', label: 'Media pantalla' },
         { value: 'tall', label: 'Alta' },       { value: 'full', label: 'Pantalla completa' },
       ]},
+      { k: 'toggle',   key: 'underNav', label: 'Imagen detrás del menú',
+        hint: 'La foto sube hasta arriba de todo y el menú queda encima de ella. Solo con «Imagen a pantalla completa» y la portada como primera sección.' },
       { k: 'text',     key: 'eyebrow',  label: 'Etiqueta', placeholder: 'Desde 2019', hint: 'Texto corto arriba del título' },
       { k: 'text',     key: 'title',    label: 'Título', placeholder: 'Se usa el nombre del negocio si lo dejás vacío' },
       { k: 'textarea', key: 'subtitle', label: 'Subtítulo', rows: 3 },

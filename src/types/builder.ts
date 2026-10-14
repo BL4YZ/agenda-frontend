@@ -170,6 +170,8 @@ export interface BlockProps {
   showRating?: boolean;
   showStatus?: boolean;
   showChips?: boolean;
+  /** Cover layout only: the photo rises behind the nav instead of starting below it. */
+  underNav?: boolean;
   videoUrl?: string;
   // video
   url?: string;
