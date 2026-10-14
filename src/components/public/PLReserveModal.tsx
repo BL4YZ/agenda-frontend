@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import axios from 'axios';
 import type { Shop, Service } from '@/types/public';
+import Turnstile, { TURNSTILE_ENABLED, type TurnstileHandle } from '@/components/Turnstile';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? '';
 
@@ -76,6 +77,8 @@ export default function PLReserveModal({ open, onClose, shop, initialServiceId, 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'mercadopago' | 'cash' | 'transfer' | ''>('');
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaRef = useRef<TurnstileHandle>(null);
 
   const overlayRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -179,6 +182,10 @@ export default function PLReserveModal({ open, onClose, shop, initialServiceId, 
       setError('No hay profesionales disponibles para este servicio. Contactá al negocio.');
       return;
     }
+    if (TURNSTILE_ENABLED && !captchaToken) {
+      setError('Completá la verificación anti-bot.');
+      return;
+    }
     setError(''); setSubmitting(true);
     try {
       const method = availableMethods.length === 1 ? availableMethods[0].value : paymentMethod;
@@ -190,10 +197,12 @@ export default function PLReserveModal({ open, onClose, shop, initialServiceId, 
         clientPhone,
         clientEmail,
         paymentMethod: method || undefined,
+        turnstileToken: captchaToken,
       });
       setStep(3);
-    } catch {
-      setError('No se pudo confirmar la reserva. El horario puede no estar disponible.');
+    } catch (err) {
+      setError((err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'No se pudo confirmar la reserva. El horario puede no estar disponible.');
+      captchaRef.current?.reset();
     } finally { setSubmitting(false); }
   };
 
@@ -498,6 +507,8 @@ export default function PLReserveModal({ open, onClose, shop, initialServiceId, 
               </div>
             </div>
 
+            <Turnstile ref={captchaRef} action="booking" onToken={setCaptchaToken} style={{ marginBottom: 12 }} />
+
             {error && (
               <p role="alert" style={{ color: '#f87171', fontSize: 13, marginBottom: 12 }}>{error}</p>
             )}
@@ -507,7 +518,7 @@ export default function PLReserveModal({ open, onClose, shop, initialServiceId, 
               <button
                 className="pl-btn pl-btn--primary"
                 style={{ flex: 2, justifyContent: 'center' }}
-                disabled={submitting || !clientName || !clientPhone || !clientEmail}
+                disabled={submitting || !clientName || !clientPhone || !clientEmail || (TURNSTILE_ENABLED && !captchaToken)}
                 onClick={handleSubmit}
                 aria-busy={submitting}
               >

@@ -3,12 +3,13 @@
 import '@/styles/system.css';
 import '@/styles/auth.css';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Link from 'next/link';
 import axios from 'axios';
 import AuthBackdrop from './AuthBackdrop';
 import AuthLogo from './AuthLogo';
 import GlassInput from './GlassInput';
+import Turnstile, { TURNSTILE_ENABLED, type TurnstileHandle } from '../Turnstile';
 
 function validateEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -20,6 +21,8 @@ export default function ForgotPasswordScreen() {
   const [serverError, setServerError] = useState('');
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaRef = useRef<TurnstileHandle>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -29,12 +32,17 @@ export default function ForgotPasswordScreen() {
       return;
     }
     setEmailError('');
+    if (TURNSTILE_ENABLED && !captchaToken) {
+      setServerError('Completá la verificación anti-bot.');
+      return;
+    }
     setLoading(true);
     try {
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/users/forgot-password`, { email });
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/users/forgot-password`, { email, turnstileToken: captchaToken });
       setSent(true);
     } catch {
       setServerError('Ocurrió un error. Por favor intentá de nuevo.');
+      captchaRef.current?.reset();
     } finally {
       setLoading(false);
     }
@@ -119,7 +127,9 @@ export default function ForgotPasswordScreen() {
                       error={emailError}
                     />
 
-                    <button type="submit" className="auth-cta" disabled={loading}>
+                    <Turnstile ref={captchaRef} action="forgot_password" onToken={setCaptchaToken} />
+
+                    <button type="submit" className="auth-cta" disabled={loading || (TURNSTILE_ENABLED && !captchaToken)}>
                       <span>{loading ? 'Enviando…' : 'Enviar enlace'}</span>
                       {!loading && (
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">

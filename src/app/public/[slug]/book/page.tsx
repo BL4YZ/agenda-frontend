@@ -1,10 +1,11 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import axios from 'axios';
 import { format, addDays, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
+import Turnstile, { TURNSTILE_ENABLED, type TurnstileHandle } from '@/components/Turnstile';
 import { ChevronLeft, ChevronRight, Check, ArrowLeft, CreditCard, Calendar, Clock, User } from 'lucide-react';
 
 type Employee = { id: number; name: string };
@@ -47,6 +48,9 @@ function BookingContent() {
     const [unavailableDates, setUnavailableDates] = useState<Set<string>>(new Set());
     const [closedDays, setClosedDays] = useState<Set<number>>(new Set());
     const [paymentMethod, setPaymentMethod] = useState<'mercadopago' | 'cash' | 'transfer' | ''>('');
+    const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+    const captchaRef = useRef<TurnstileHandle>(null);
+    const captchaMissing = TURNSTILE_ENABLED && !captchaToken;
 
     const brandColor = business?.brand_color || '#6366f1';
 
@@ -110,6 +114,7 @@ function BookingContent() {
     const handleSubmitFree = async (e: React.FormEvent) => {
         e.preventDefault();
         if (hasMultiplePaymentMethods && !paymentMethod) { setError('Seleccioná un método de pago.'); return; }
+        if (captchaMissing) { setError('Completá la verificación anti-bot.'); return; }
         setError('');
         setSubmitting(true);
         const method = hasMultiplePaymentMethods ? paymentMethod : (mpEnabled ? 'mercadopago' : altMethods[0]?.value);
@@ -121,14 +126,17 @@ function BookingContent() {
                 clientName,
                 clientEmail,
                 paymentMethod: method || undefined,
+                turnstileToken: captchaToken,
             });
             setStep('done');
-        } catch {
-            setError('No se pudo crear la cita. El horario puede no estar disponible.');
+        } catch (err) {
+            setError((err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'No se pudo crear la cita. El horario puede no estar disponible.');
+            captchaRef.current?.reset();
         } finally { setSubmitting(false); }
     };
 
     const handlePay = async () => {
+        if (captchaMissing) { setError('Completá la verificación anti-bot.'); return; }
         setError('');
         setSubmitting(true);
         try {
@@ -138,10 +146,12 @@ function BookingContent() {
                 startTime: `${selectedDate}T${selectedSlot}:00`,
                 clientName,
                 clientEmail,
+                turnstileToken: captchaToken,
             });
             window.location.href = res.data.init_point;
-        } catch {
-            setError('No se pudo iniciar el pago. Intenta de nuevo.');
+        } catch (err) {
+            setError((err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'No se pudo iniciar el pago. Intenta de nuevo.');
+            captchaRef.current?.reset();
             setSubmitting(false);
         }
     };
@@ -438,6 +448,11 @@ function BookingContent() {
                                     </div>
                                 )}
 
+                                {/* En el camino a MercadoPago el widget va en el paso de pago, que es el que llama a la API. */}
+                                {!(needsMpPayment && paymentMethod !== 'cash' && paymentMethod !== 'transfer') && (
+                                    <Turnstile ref={captchaRef} action="booking" onToken={setCaptchaToken} />
+                                )}
+
                                 {error && <p className="text-sm text-red-500 dark:text-red-400">{error}</p>}
 
                                 <div className="flex gap-3 pt-2">
@@ -445,7 +460,7 @@ function BookingContent() {
                                         className="flex-1 py-3 rounded-xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 text-sm font-medium hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
                                         Volver
                                     </button>
-                                    <button type="submit" disabled={submitting}
+                                    <button type="submit" disabled={submitting || (captchaMissing && !(needsMpPayment && paymentMethod !== 'cash' && paymentMethod !== 'transfer'))}
                                         className="flex-1 py-3 text-white rounded-xl text-sm font-bold disabled:opacity-40 transition-all hover:opacity-90 active:scale-[0.98] shadow-lg"
                                         style={{ background: brandColor, boxShadow: `0 4px 20px ${brandColor}45` }}>
                                         {submitting ? 'Reservando...' : (needsMpPayment && paymentMethod !== 'cash' && paymentMethod !== 'transfer') ? 'Continuar al pago' : 'Confirmar reserva'}
@@ -484,6 +499,8 @@ function BookingContent() {
                                 )}
                             </div>
 
+                            <Turnstile ref={captchaRef} action="booking" onToken={setCaptchaToken} style={{ marginBottom: 16 }} />
+
                             {error && <p className="text-sm text-red-500 dark:text-red-400 mb-4">{error}</p>}
 
                             <div className="flex gap-3">
@@ -491,7 +508,7 @@ function BookingContent() {
                                     className="flex-1 py-3 rounded-xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 text-sm font-medium hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
                                     Volver
                                 </button>
-                                <button onClick={handlePay} disabled={submitting}
+                                <button onClick={handlePay} disabled={submitting || captchaMissing}
                                     className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#009ee3] hover:bg-[#007eb5] text-white rounded-xl text-sm font-bold disabled:opacity-40 transition-all active:scale-[0.98] shadow-lg shadow-sky-500/25">
                                     <CreditCard size={15} />
                                     {submitting ? 'Redirigiendo...' : 'Pagar con MercadoPago'}

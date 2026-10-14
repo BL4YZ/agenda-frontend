@@ -335,6 +335,14 @@ production — plus YouTube/Vimeo for the builder's video block. `videoEmbed()` 
 `lib/builder/runtime.ts` only ever emits those two hosts, so the two lists cannot drift
 into rendering an iframe the browser kills.
 
+`challenges.cloudflare.com` sits in `script-src`, `frame-src` and `connect-src` for
+**Cloudflare Turnstile** (`components/Turnstile.tsx`). The widget guards login, signup,
+forgot-password, `/public/[slug]/book` and `PLReserveModal`; each sends
+`turnstileToken` in the body and resets the widget after a failed submit (tokens are
+single-use). With `NEXT_PUBLIC_TURNSTILE_SITE_KEY` unset the widget renders nothing and
+forms don't wait for a token. The backend enforces it only once `TURNSTILE_SECRET_KEY` is
+set there — deploy the site key here **first**.
+
 `'unsafe-inline' 'unsafe-eval'` in `script-src` is a known App Router concession
 (hydration injects inline scripts without nonces in this setup). The real protection is
 the third-party allowlist, `object-src 'none'`, and `frame-ancestors`.

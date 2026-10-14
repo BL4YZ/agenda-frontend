@@ -19,7 +19,9 @@ const MERCADOPAGO = "https://*.mercadopago.com https://*.mercadolibre.com";
 // frame-src el primero, connect-src el segundo.
 const OSM = "https://www.openstreetmap.org";
 const NOMINATIM = "https://nominatim.openstreetmap.org";
-const VIDEO = "https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com";
+// Cloudflare Turnstile (anti-bot): carga su script y renderiza el desafío en un iframe.
+const TURNSTILE = "https://challenges.cloudflare.com";
+const VIDEO ="https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com";
 
 // La API vive en otro host (Railway). Sin esto, connect-src bloquea todo axios.
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
@@ -30,14 +32,14 @@ const csp = [
   // hidratación de Next.js inyecta scripts inline sin nonce en este setup.
   // El trabajo real contra XSS/clickjacking lo hacen la allowlist de terceros,
   // object-src 'none' y frame-ancestors.
-  `script-src 'self' 'unsafe-inline' 'unsafe-eval' ${CLARITY} ${GOOGLE_AUTH} ${GOOGLE_MAPS}`,
+  `script-src 'self' 'unsafe-inline' 'unsafe-eval' ${CLARITY} ${GOOGLE_AUTH} ${GOOGLE_MAPS} ${TURNSTILE}`,
   `style-src 'self' 'unsafe-inline' ${GOOGLE_FONTS} ${FONTSHARE}`,
   `font-src 'self' data: ${GOOGLE_FONTS} ${FONTSHARE}`,
   // Los negocios suben logos/portadas a hosts arbitrarios (images.remotePatterns
   // ya permite cualquier https), así que img-src tiene que acompañar.
   "img-src 'self' data: blob: https:",
-  `connect-src 'self' ${API} ${CLARITY} ${GOOGLE_AUTH} ${GOOGLE_MAPS} ${NOMINATIM}`,
-  `frame-src 'self' ${GOOGLE_AUTH} ${MERCADOPAGO} ${OSM} ${VIDEO}`,
+  `connect-src 'self' ${API} ${CLARITY} ${GOOGLE_AUTH} ${GOOGLE_MAPS} ${NOMINATIM} ${TURNSTILE}`,
+  `frame-src 'self' ${GOOGLE_AUTH} ${MERCADOPAGO} ${OSM} ${VIDEO} ${TURNSTILE}`,
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",

@@ -3,7 +3,7 @@
 import '@/styles/system.css';
 import '@/styles/auth.css';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
@@ -14,6 +14,7 @@ import AuthLogo from './AuthLogo';
 import AuthVisual from './AuthVisual';
 import GlassInput from './GlassInput';
 import StrengthMeter from './StrengthMeter';
+import Turnstile, { TURNSTILE_ENABLED, type TurnstileHandle } from '../Turnstile';
 
 interface FormErrors {
   name?: string;
@@ -45,6 +46,8 @@ export default function SignupScreen() {
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaRef = useRef<TurnstileHandle>(null);
   const router = useRouter();
   const { login } = useAuth();
 
@@ -85,6 +88,10 @@ export default function SignupScreen() {
       setServerError('Debes aceptar los Términos y la Política de Privacidad.');
       return;
     }
+    if (TURNSTILE_ENABLED && !captchaToken) {
+      setServerError('Completá la verificación anti-bot.');
+      return;
+    }
 
     setLoading(true);
     try {
@@ -95,6 +102,7 @@ export default function SignupScreen() {
         email,
         password: pwd,
         businessName: name.trim(),
+        turnstileToken: captchaToken,
       });
       setSuccess(true);
     } catch (err: unknown) {
@@ -105,6 +113,7 @@ export default function SignupScreen() {
       } else {
         setServerError('Error al registrarse. Intentá de nuevo.');
       }
+      captchaRef.current?.reset();
     } finally {
       setLoading(false);
     }
@@ -236,7 +245,9 @@ export default function SignupScreen() {
                   <Link href="/privacy">Privacidad</Link>
                 </label>
 
-                <button type="submit" className="auth-cta" disabled={loading}>
+                <Turnstile ref={captchaRef} action="register" onToken={setCaptchaToken} />
+
+                <button type="submit" className="auth-cta" disabled={loading || (TURNSTILE_ENABLED && !captchaToken)}>
                   <span>{loading ? 'Creando cuenta…' : 'Crear cuenta gratis'}</span>
                   {!loading && (
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">

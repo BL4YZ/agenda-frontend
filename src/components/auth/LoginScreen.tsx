@@ -3,7 +3,7 @@
 import '@/styles/system.css';
 import '@/styles/auth.css';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Link from 'next/link';
 import axios from 'axios';
 import { useGoogleLogin } from '@react-oauth/google';
@@ -12,6 +12,7 @@ import AuthBackdrop from './AuthBackdrop';
 import AuthLogo from './AuthLogo';
 import AuthVisual from './AuthVisual';
 import GlassInput from './GlassInput';
+import Turnstile, { TURNSTILE_ENABLED, type TurnstileHandle } from '../Turnstile';
 
 interface FormErrors {
   email?: string;
@@ -30,6 +31,8 @@ export default function LoginScreen() {
   const [serverError, setServerError] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaRef = useRef<TurnstileHandle>(null);
   const { login } = useAuth();
 
   const googleLogin = useGoogleLogin({
@@ -62,17 +65,23 @@ export default function LoginScreen() {
     e.preventDefault();
     setServerError('');
     if (!validate()) return;
+    if (TURNSTILE_ENABLED && !captchaToken) {
+      setServerError('Completá la verificación anti-bot.');
+      return;
+    }
 
     setLoading(true);
     try {
       const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/users/login`, {
         email,
         password: pwd,
+        turnstileToken: captchaToken,
       });
       if (res.data.token) login(res.data.token, remember);
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
       setServerError(msg ?? 'Credenciales inválidas. Por favor intentá de nuevo.');
+      captchaRef.current?.reset();
     } finally {
       setLoading(false);
     }
@@ -161,7 +170,9 @@ export default function LoginScreen() {
                 Mantener sesión iniciada
               </label>
 
-              <button type="submit" className="auth-cta" disabled={loading}>
+              <Turnstile ref={captchaRef} action="login" onToken={setCaptchaToken} />
+
+              <button type="submit" className="auth-cta" disabled={loading || (TURNSTILE_ENABLED && !captchaToken)}>
                 <span>{loading ? 'Entrando…' : 'Entrar'}</span>
                 {!loading && (
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
